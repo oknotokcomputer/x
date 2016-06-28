@@ -349,9 +349,9 @@ REGIONS_LIST = [
         'ph', 'xkb:us::eng', 'Asia/Manila', 'en-US', _KML.ANSI,
         'Philippines', None, 25),
     Region(
-        'ru', 'xkb:ru::rus', 'Europe/Moscow', 'ru', _KML.ANSI, 'Russia',
-        'For R31+ only; R30 and earlier must use US keyboard for login',
-        26),
+        'ru', ['xkb:us::eng' ,'xkb:ru::rus'], 'Europe/Moscow', 'ru', _KML.ANSI,
+        'Russia', 'For R31+ only; R30 and earlier must use US keyboard '
+        'for login', 26),
     Region(
         'se', 'xkb:se::swe', 'Europe/Stockholm', 'sv', _KML.ISO, 'Sweden',
         (
@@ -445,8 +445,27 @@ REGIONS_LIST = [
         _KML.ANSI, 'Switzerland (US Intl)',
         'Switzerland with US International keyboard layout.', 50),
     Region(
-        'tr', 'xkb:tr::tur', 'Europe/Istanbul',
-        ['tr', 'ku', 'diq', 'az', 'av'], _KML.ISO, 'Turkey', None, 224)]
+        'pe', 'xkb:latam::spa', 'America/Lima', 'es-PE',
+        _KML.ANSI, 'Peru', None, 115),
+    Region(
+        'sa', 'xkb:us::eng', 'Asia/Riyadh', ['ar-SA', 'en'], _KML.ANSI,
+        'Saudi Arabia', None, 128),
+    Region(
+        'mx', 'xkb:latam::spa', 'America/Mexico_City', 'es-MX', _KML.ANSI,
+        'Mexico', None, 154),
+    Region(
+        'cl', 'xkb:latam::spa', 'America/Santiago', 'es-CL', _KML.ANSI, 'Chile',
+        None, 176),
+    Region(
+        'kw', ['xkb:us::eng', 'm17n:ar', 't13n:ar'], 'Asia/Kuwait',
+        ['ar-KW', 'en'], _KML.ANSI, 'Kuwait', None, 201),
+    Region(
+        'uy', 'xkb:latam::spa', 'America/Montevideo', 'es-UY', _KML.ANSI,
+        'Uruguay', None, 216),
+    Region(
+        'tr', ['xkb:tr::tur', 'xkb:tr:f:tur'], 'Europe/Istanbul',
+        ['tr', 'en-GB'], _KML.ISO, 'Turkey', None, 224)]
+
 """A list of :py:class:`regions.Region` objects for
 all **confirmed** regions.  A confirmed region is a region whose
 properties are known to be correct and valid: all contents (locale / timezone /

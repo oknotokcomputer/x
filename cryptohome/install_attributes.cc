@@ -108,7 +108,8 @@ bool InstallAttributes::Init(TpmInit* tpm_init) {
     }
 
     set_is_initialized(true);
-    tpm_init->RemoveTpmOwnerDependency(TpmInit::kInstallAttributes);
+    tpm_init->RemoveTpmOwnerDependency(
+        Tpm::TpmOwnerDependency::kInstallAttributes);
     return true;
   }
 

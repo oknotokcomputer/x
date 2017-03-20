@@ -22,8 +22,8 @@ import yaml
 
 # The regular expression to check values in Region.keyboards and Region.locales.
 # Keyboards should come with xkb: protocol, or the input methods (ime:, m17n:).
-# Examples: xkb:us:intl:eng, ime:ime:zh-t:cangjie
-KEYBOARD_PATTERN = re.compile(r'^xkb:\w+:\w*:\w+$|'
+# Examples: xkb:us:intl:eng, ime:ime:zh-t:cangjie, xkb:us:altgr-intl:eng
+KEYBOARD_PATTERN = re.compile(r'^xkb:\w+:[\w-]*:\w+$|'
                               r'^(ime|m17n|t13n):[\w:-]+$')
 # Locale should be a combination of language and location.
 # Examples: en-US, ja.
@@ -461,8 +461,18 @@ REGIONS_LIST = [
         'kw', 'xkb:kw::ara', 'Asia/Kuwait', ['ar-KW', 'en'], _KML.ANSI,
         'Kuwait', None, 201),
     Region(
-        'uy', 'xkb:uy::spa', 'America/Montevideo', 'es-UY', _KML.ANSI,
-        'Uruguay', None, 216)]
+        'uy', 'xkb:latam::spa', 'America/Montevideo', 'es-UY', _KML.ANSI,
+        'Uruguay', None, 216),
+    Region(
+        'tr', ['xkb:tr::tur', 'xkb:tr:f:tur'], 'Europe/Istanbul',
+        ['tr', 'en-GB'], _KML.ISO, 'Turkey', None, 224),
+    Region(
+        'ar', 'xkb:latam::spa', 'America/Argentina/Buenos_Aires',
+        ['es-AR'], _KML.ANSI, 'Argentina', None, 251),
+    Region(
+        'gb.usext', 'xkb:us:altgr-intl:eng', 'Europe/London', 'en-GB',
+        _KML.ISO, 'UK', 'GB with US extended keyboard', 258)]
+
 """A list of :py:class:`regions.Region` objects for
 all **confirmed** regions.  A confirmed region is a region whose
 properties are known to be correct and valid: all contents (locale / timezone /
@@ -996,9 +1006,6 @@ UNCONFIRMED_REGIONS_LIST = [
         ['en-TT', 'hns', 'fr', 'es', 'zh'], _KML.ANSI,
         'Trinidad and Tobago', None, 223),
     Region(
-        'tr', 'xkb:tr::tur', 'Europe/Istanbul',
-        ['tr', 'ku', 'diq', 'az', 'av'], _KML.ISO, 'Turkey', None, 224),
-    Region(
         'lk', 'xkb:lk::sin', 'Asia/Colombo', ['si', 'ta', 'en'],
         _KML.ANSI, 'Sri Lanka', None, 225),
     Region(
@@ -1077,16 +1084,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'as', 'xkb:as::eng', 'Pacific/Pago_Pago', ['en-AS', 'sm', 'to'],
         _KML.ANSI, 'American Samoa', None, 250),
-    Region(
-        'ar', 'xkb:ar::spa',
-        ['America/Argentina/Buenos_Aires', 'America/Argentina/Cordoba',
-         'America/Argentina/Salta', 'America/Argentina/Jujuy',
-         'America/Argentina/Tucuman', 'America/Argentina/Catamarca',
-         'America/Argentina/La_Rioja', 'America/Argentina/San_Juan',
-         'America/Argentina/Mendoza', 'America/Argentina/San_Luis',
-         'America/Argentina/Rio_Gallegos', 'America/Argentina/Ushuaia'],
-        ['es-AR', 'en', 'it', 'de', 'fr', 'gn'], _KML.ANSI, 'Argentina',
-        None, 251),
     Region(
         'aw', 'xkb:aw::nld', 'America/Aruba', ['nl-AW', 'es', 'en'],
         _KML.ANSI, 'Aruba', None, 252),

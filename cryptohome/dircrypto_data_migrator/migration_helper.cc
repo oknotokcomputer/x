@@ -255,13 +255,13 @@ bool MigrationHelper::MigrateFile(const base::FilePath& from,
       from,
       base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
   if (!from_file.IsValid()) {
-    LOG(ERROR) << "Failed to open file " << from.value();
+    PLOG(ERROR) << "Failed to open file " << from.value();
     return false;
   }
 
   base::File to_file(to, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
   if (!to_file.IsValid()) {
-    LOG(ERROR) << "Failed to open file " << to.value();
+    PLOG(ERROR) << "Failed to open file " << to.value();
     return false;
   }
 
@@ -283,7 +283,7 @@ bool MigrationHelper::MigrateFile(const base::FilePath& from,
     // allocation will occur when attempting to write into space in the file
     // which is not yet allocated.
     if (!to_file.SetLength(from_length)) {
-      LOG(ERROR) << "Failed to set file length of " << to.value();
+      PLOG(ERROR) << "Failed to set file length of " << to.value();
       return false;
     }
   }
@@ -310,7 +310,7 @@ bool MigrationHelper::MigrateFile(const base::FilePath& from,
       return false;
     }
     if (!to_file.Flush()) {
-      LOG(ERROR) << "Failed to flush " << to.value();
+      PLOG(ERROR) << "Failed to flush " << to.value();
       return false;
     }
     IncrementMigratedBytes(to_read);
@@ -321,7 +321,7 @@ bool MigrationHelper::MigrateFile(const base::FilePath& from,
       new_file = false;
     }
     if (!from_file.SetLength(offset)) {
-      LOG(ERROR) << "Failed to truncate file " << from.value();
+      PLOG(ERROR) << "Failed to truncate file " << from.value();
       return false;
     }
   }

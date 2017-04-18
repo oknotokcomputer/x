@@ -3204,7 +3204,8 @@ gboolean Service::NeedsDircryptoMigration(const GArray* account_id,
     return FALSE;
   }
 
-  *OUT_needs_migration = homedirs_->NeedsDircryptoMigration(credentials);
+  *OUT_needs_migration = !force_ecryptfs_ &&
+      homedirs_->NeedsDircryptoMigration(credentials);
   return TRUE;
 }
 

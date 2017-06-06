@@ -467,7 +467,7 @@ REGIONS_LIST = [
         ['tr', 'en-GB'], _KML.ISO, 'Turkey', None, 224),
     Region(
         'ar', 'xkb:latam::spa', 'America/Argentina/Buenos_Aires',
-        ['es-AR'], _KML.ANSI, 'Argentina', None, 251)]
+        ['es-AR'], _KML.ISO, 'Argentina', None, 251)]
 
 """A list of :py:class:`regions.Region` objects for
 all **confirmed** regions.  A confirmed region is a region whose

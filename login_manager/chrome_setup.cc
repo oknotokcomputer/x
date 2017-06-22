@@ -112,6 +112,8 @@ void AddArcFlags(ChromiumCommandBuilder* builder,
 
   if (builder->UseFlagIsSet("arc_oobe_optin"))
     builder->AddArg("--enable-arc-oobe-optin");
+  if (builder->UseFlagIsSet("arc_migration_policy_check"))
+    builder->AddArg("--need-arc-migration-policy-check");
 }
 
 // Blatantly copied from //components/crx_file/id_util.cc.

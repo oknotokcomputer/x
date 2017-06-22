@@ -57,8 +57,10 @@ constexpr size_t kDefaultMaxJobListSize = 100000;
 // to report other status, call an appropriate method to overwrite it.
 class MigrationStartAndEndStatusReporter {
  public:
-  explicit MigrationStartAndEndStatusReporter(bool resumed) :
+  MigrationStartAndEndStatusReporter(bool resumed,
+                                     const AtomicFlag& is_cancelled) :
       resumed_(resumed),
+      is_cancelled_(is_cancelled),
       end_status_(resumed ? kResumedMigrationFailedGeneric :
                   kNewMigrationFailedGeneric) {
     ReportDircryptoMigrationStartStatus(
@@ -66,6 +68,10 @@ class MigrationStartAndEndStatusReporter {
   }
 
   ~MigrationStartAndEndStatusReporter() {
+    if (is_cancelled_.IsSet()) {
+      end_status_ = resumed_ ?
+          kResumedMigrationCancelled : kNewMigrationCancelled;
+    }
     ReportDircryptoMigrationEndStatus(end_status_);
   }
 
@@ -94,6 +100,7 @@ class MigrationStartAndEndStatusReporter {
 
  private:
   const bool resumed_;
+  const AtomicFlag& is_cancelled_;
   DircryptoMigrationEndStatus end_status_;
 
   DISALLOW_COPY_AND_ASSIGN(MigrationStartAndEndStatusReporter);
@@ -304,7 +311,7 @@ bool MigrationHelper::Migrate(const ProgressCallback& progress_callback) {
   base::ElapsedTimer timer;
   skipped_file_list_path_ = to_base_path_.Append(kSkippedFileListFileName);
   const bool resumed = IsMigrationStarted();
-  MigrationStartAndEndStatusReporter status_reporter(resumed);
+  MigrationStartAndEndStatusReporter status_reporter(resumed, is_cancelled_);
 
   if (progress_callback.is_null()) {
     LOG(ERROR) << "Invalid progress callback";

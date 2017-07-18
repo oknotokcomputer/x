@@ -65,6 +65,7 @@ const char kPackageField[] = "package";
 const char kProcessField[] = "process";
 const char kProductField[] = "prod";
 const char kSignatureField[] = "sig";
+const char kTargetSdkField[] = "target_sdk";
 const char kUptimeField[] = "uptime";
 
 // If this metadata key is set to "true", the report is uploaded silently, i.e.
@@ -77,6 +78,7 @@ const char kCrashTagKey[] = "Crash-Tag";
 const char kPackageKey[] = "Package";
 const char kProcessKey[] = "Process";
 const char kSubjectKey[] = "Subject";
+const char kTargetSdkKey[] = "Target-SDK";
 
 // Keys for build properties.
 const char kBoardProperty[] = "ro.product.board";
@@ -481,6 +483,10 @@ bool ArcCollector::CreateReportForJavaCrash(const std::string &crash_type,
   if (map.count(kCrashTagKey))
     AddCrashMetaUploadData(kCrashTagField,
                            GetCrashLogHeader(map, kCrashTagKey));
+
+  if (map.count(kTargetSdkKey))
+    AddCrashMetaUploadData(kTargetSdkField,
+                           GetCrashLogHeader(map, kTargetSdkKey));
 
   if (exception_info.empty()) {
     if (const char * const tag = GetSubjectTag(crash_type)) {

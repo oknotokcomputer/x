@@ -2168,7 +2168,7 @@ class StartTPMFirmwareUpdateTest : public SessionManagerImplTest {
         .WillByDefault(Invoke(this, &StartTPMFirmwareUpdateTest::FileExists));
     ON_CALL(*device_policy_service_, InstallAttributesEnterpriseMode())
         .WillByDefault(Return(false));
-    ON_CALL(vpd_process_, RunInBackground(_, _))
+    ON_CALL(vpd_process_, RunInBackground(_, _, _))
         .WillByDefault(
             Invoke(this, &StartTPMFirmwareUpdateTest::RunVpdProcess));
 
@@ -2205,8 +2205,10 @@ class StartTPMFirmwareUpdateTest : public SessionManagerImplTest {
   }
 
   bool RunVpdProcess(const VpdProcess::KeyValuePairs& updates,
+                     bool ignore_cache,
                      const VpdProcess::CompletionCallback& completion) {
     EXPECT_EQ(1, updates.size());
+    EXPECT_TRUE(ignore_cache);
     if (updates.size() == 1) {
       EXPECT_EQ(SessionManagerImpl::kTPMFirmwareUpdateModeVPDKey,
                 updates[0].first);

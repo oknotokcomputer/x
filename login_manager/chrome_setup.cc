@@ -328,6 +328,9 @@ void AddUiFlags(ChromiumCommandBuilder* builder,
   if (builder->UseFlagIsSet("eve")) {
     builder->AddArg("--force-clamshell-power-button");
     builder->AddArg("--enable-instant-tethering");
+  } else {
+    // TODO(tbarzic): Remove in M63: https://crbug.com/767698
+    builder->AddArg("--disable-lock-screen-apps");
   }
 
   if (builder->UseFlagIsSet("kevin")) {

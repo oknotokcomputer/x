@@ -968,4 +968,30 @@ gboolean ServiceDistributed::InitializeCastKey(const GArray* request,
   return TRUE;
 }
 
+gboolean ServiceDistributed::TpmAttestationGetEnrollmentId(
+    GArray** OUT_enrollment_id,
+    gboolean* OUT_success,
+    GError** error) {
+  attestation::GetEnrollmentIdRequest request;
+  attestation::GetEnrollmentIdReply reply;
+  auto method = base::Bind(&AttestationInterface::GetEnrollmentId,
+                           base::Unretained(attestation_interface_), request);
+  // We must set the GArray now because if we return without setting it,
+  // dbus-glib loops forever.
+  *OUT_enrollment_id = g_array_new(false,
+                                   false,
+                                   sizeof(SecureBlob::value_type));
+  if (!SendRequestAndWait(method, &reply)) {
+    ReportSendFailure(error);
+    return FALSE;
+  }
+  VLOG_IF(1, reply.status() != AttestationStatus::STATUS_SUCCESS)
+      << "Attestation daemon returned status " << reply.status();
+  *OUT_success = (reply.status() == AttestationStatus::STATUS_SUCCESS);
+  g_array_append_vals(*OUT_enrollment_id,
+                      reply.enrollment_id().data(),
+                      reply.enrollment_id().size());
+  return TRUE;
+}
+
 }  // namespace cryptohome

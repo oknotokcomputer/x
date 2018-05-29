@@ -1677,6 +1677,22 @@ bool SessionManagerImpl::UpgradeArcContainerInternal(
                    << request.packages_cache_mode() << ".";
   }
 
+  if (request.has_locale()) {
+    keyvals.emplace_back("LOCALE=" + request.locale());
+  } else {
+    // TODO(khmel): Remove once Chrome is updated.
+    LOG(WARNING) << "Locale is not set, using default en_US";
+    keyvals.emplace_back("LOCALE=en_US");
+  }
+
+  std::string preferred_languages;
+  for (int i = 0; i < request.preferred_languages_size(); ++i) {
+    if (i != 0)
+      preferred_languages += ",";
+    preferred_languages += request.preferred_languages(i);
+  }
+  keyvals.emplace_back("PREFERRED_LANGUAGES=" + preferred_languages);
+
   if (!init_controller_->TriggerImpulse(
           kContinueArcBootImpulse, keyvals,
           InitDaemonController::TriggerMode::SYNC)) {

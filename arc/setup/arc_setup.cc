@@ -1678,8 +1678,9 @@ void ArcSetup::ContinueContainerBoot(ArcBootType boot_type,
       // /data/system/pacakges.xml to /data/system/pacakges_copy.xml after the
       // initialization stage of PackageManagerService.
       "--copy-packages-cache",
-      GetEnvOrDie(arc_paths_->env.get(), "COPY_PACKAGES_CACHE"),
-  };
+      GetEnvOrDie(arc_paths_->env.get(), "COPY_PACKAGES_CACHE"), "--locale",
+      GetEnvOrDie(arc_paths_->env.get(), "LOCALE"), "--preferred-languages",
+      GetEnvOrDie(arc_paths_->env.get(), "PREFERRED_LANGUAGES")};
 
   base::ElapsedTimer timer;
   if (!LaunchAndWait(command_line)) {

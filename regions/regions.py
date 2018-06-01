@@ -443,7 +443,10 @@ REGIONS_LIST = [
     Region(
         'ch.usintl', 'xkb:us:intl:eng', 'Europe/Zurich', 'en-US',
         _KML.ANSI, 'Switzerland (US Intl)',
-        'Switzerland with US International keyboard layout.', 50)]
+        'Switzerland with US International keyboard layout.', 50),
+    Region(
+        'tr', 'xkb:tr::tur', 'Europe/Istanbul',
+        ['tr', 'ku', 'diq', 'az', 'av'], _KML.ISO, 'Turkey', None, 224)]
 """A list of :py:class:`regions.Region` objects for
 all **confirmed** regions.  A confirmed region is a region whose
 properties are known to be correct and valid: all contents (locale / timezone /
@@ -998,9 +1001,6 @@ UNCONFIRMED_REGIONS_LIST = [
         'tt', 'xkb:tt::eng', 'America/Port_of_Spain',
         ['en-TT', 'hns', 'fr', 'es', 'zh'], _KML.ANSI,
         'Trinidad and Tobago', None, 223),
-    Region(
-        'tr', 'xkb:tr::tur', 'Europe/Istanbul',
-        ['tr', 'ku', 'diq', 'az', 'av'], _KML.ISO, 'Turkey', None, 224),
     Region(
         'lk', 'xkb:lk::sin', 'Asia/Colombo', ['si', 'ta', 'en'],
         _KML.ANSI, 'Sri Lanka', None, 225),

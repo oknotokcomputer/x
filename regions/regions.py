@@ -459,6 +459,14 @@ REGIONS_LIST = [
         'gb.usext', 'xkb:us:altgr-intl:eng', 'Europe/London', 'en-GB', KML.ISO,
         'UK (US extended keyboard)', (
             'GB with US extended keyboard')),
+    # b/79954930: 'cn' and 'is' here are currently for projects with MNC deal
+    # only.
+    Region(
+        'cn', 'xkb:us::eng', 'Asia/Shanghai', 'zh-CN', KML.ANSI,
+        'China'),
+    Region(
+        'is', 'xkb:is::ice', 'Atlantic/Reykjavik', ['is', 'en-GB'], KML.ISO,
+        'Iceland'),
     ]
 
 """A list of :py:class:`regions.Region` objects for
@@ -848,9 +856,6 @@ UNCONFIRMED_REGIONS_LIST = [
         'co', 'xkb:latam::spa', 'America/Bogota', 'es-419', KML.ANSI,
         'Colombia'),
     Region(
-        'cn', 'xkb:us::eng', 'Asia/Shanghai', 'zh-CN', KML.ANSI,
-        'China'),
-    Region(
         'cm', 'xkb:cm::eng', 'Africa/Douala', ['en-CM', 'fr-CM'], KML.ANSI,
         'Cameroon'),
     Region(
@@ -1057,9 +1062,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'vi', 'xkb:vi::eng', 'America/St_Thomas', 'en-VI', KML.ANSI,
         'U.S. Virgin Islands'),
-    Region(
-        'is', 'xkb:is::ice', 'Atlantic/Reykjavik', ['is', 'en-GB'], KML.ISO,
-        'Iceland'),
     Region(
         'ir', 'xkb:ir::fas', 'Asia/Tehran', ['fa-IR', 'ku'], KML.ANSI,
         'Iran'),

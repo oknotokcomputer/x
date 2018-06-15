@@ -685,7 +685,6 @@ class SessionManagerImplTest : public ::testing::Test,
       bool dev_mode,
       bool disable_boot_completed_callback,
       bool enable_vendor_privileged,
-      const std::string& demo_session_apps_path,
       bool skip_packages_cache,
       bool copy_packages_cache,
       const std::string& locale,
@@ -700,8 +699,6 @@ class SessionManagerImplTest : public ::testing::Test,
         "ENABLE_VENDOR_PRIVILEGED=" + std::to_string(enable_vendor_privileged),
         // The upgrade signal has a PID.
         "CONTAINER_PID=" + std::to_string(kAndroidPid),
-        "SUPERVISION_TRANSITION=0",
-        "DEMO_SESSION_APPS_PATH=" + demo_session_apps_path,
         ExpectedSkipPackagesCacheSetupFlagValue(skip_packages_cache),
         ExpectedCopyPackagesCacheFlagValue(copy_packages_cache),
         "LOCALE=" + locale, "PREFERRED_LANGUAGES=" + preferred_languages};
@@ -2432,7 +2429,6 @@ TEST_F(SessionManagerPackagesCacheTest, LocaleAndPreferredLanguages) {
           GetUpgradeContainerExpectations(
               false /* dev_mode */, false /* disable_boot_completed_callback */,
               false /* enable_vendor_privileged */,
-              std::string() /* demo_session_apps_path */,
               false /* skip_packages_cache */, false /* copy_packages_cache */,
               "fr_FR" /* locale */, "ru,en" /* preferred_languages */),
           InitDaemonController::TriggerMode::SYNC))

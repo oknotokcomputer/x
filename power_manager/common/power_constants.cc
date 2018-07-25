@@ -82,6 +82,10 @@ const char kTpmStatusIntervalSecPref[] = "tpm_status_interval_sec";
 const char kSuspendToIdlePref[] = "suspend_to_idle";
 const char kSetWifiTransmitPowerForTabletModePref[] =
     "set_wifi_transmit_power_for_tablet_mode";
+const char kSetWifiTransmitPowerForProximityPref[] =
+    "set_wifi_transmit_power_for_proximity";
+const char kSetCellularTransmitPowerForProximityPref[] =
+    "set_cellular_transmit_power_for_proximity";
 
 // Miscellaneous constants.
 const char kInternalBacklightPath[] = "/sys/class/backlight";
@@ -135,6 +139,19 @@ std::string TabletModeToString(TabletMode mode) {
   }
   NOTREACHED() << "Unhandled tablet mode " << static_cast<int>(mode);
   return base::StringPrintf("unknown (%d)", static_cast<int>(mode));
+}
+
+std::string UserProximityToString(UserProximity proximity) {
+  switch (proximity) {
+    case UserProximity::NEAR:
+      return "near";
+    case UserProximity::FAR:
+      return "far";
+    case UserProximity::UNKNOWN:
+      return "unknown";
+  }
+  NOTREACHED() << "Unhandled user proximity " << static_cast<int>(proximity);
+  return base::StringPrintf("unknown (%d)", static_cast<int>(proximity));
 }
 
 std::string SessionStateToString(SessionState state) {

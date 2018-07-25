@@ -213,6 +213,12 @@ extern const char kSuspendToIdlePref[];
 // If true, update wifi transmit power when in tablet vs. clamshell mode.
 extern const char kSetWifiTransmitPowerForTabletModePref[];
 
+// If true, update wifi transmit power based on proximity sensors.
+extern const char kSetWifiTransmitPowerForProximityPref[];
+
+// If true, update cellular transmit power based on proximity sensors.
+extern const char kSetCellularTransmitPowerForProximityPref[];
+
 // Miscellaneous constants.
 
 // sysfs directory containing internal backlight devices and a glob-style
@@ -264,12 +270,26 @@ enum class LidState {
   NOT_PRESENT,
 };
 
+enum class RadioTransmitPower {
+  LOW,
+  HIGH,
+  UNSPECIFIED,
+};
+
 // Convertible Chromebooks may either be folded into a tablet or used as a
 // clamshell.
 enum class TabletMode {
   ON,
   OFF,
   UNSUPPORTED,
+};
+
+// Chromebooks may have one or more sensors that are able to indicate
+// the user's physical proximity to the device.
+enum class UserProximity {
+  NEAR,
+  FAR,
+  UNKNOWN,
 };
 
 enum class SessionState {
@@ -313,6 +333,7 @@ enum class ShutdownReason {
 std::string PowerSourceToString(PowerSource source);
 std::string LidStateToString(LidState state);
 std::string TabletModeToString(TabletMode mode);
+std::string UserProximityToString(UserProximity proximity);
 std::string SessionStateToString(SessionState state);
 std::string DisplayModeToString(DisplayMode mode);
 std::string ButtonStateToString(ButtonState state);

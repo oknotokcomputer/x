@@ -51,6 +51,7 @@
 #include "power_manager/powerd/system/lockfile_checker.h"
 #include "power_manager/powerd/system/peripheral_battery_watcher.h"
 #include "power_manager/powerd/system/power_supply.h"
+#include "power_manager/powerd/system/sar_watcher_interface.h"
 #include "power_manager/powerd/system/udev.h"
 #include "power_manager/proto_bindings/idle.pb.h"
 #include "power_manager/proto_bindings/policy.pb.h"
@@ -248,6 +249,7 @@ Daemon::Daemon(DaemonDelegate* delegate, const base::FilePath& run_dir)
       input_device_controller_(new policy::InputDeviceController),
       suspender_(new policy::Suspender),
       wifi_controller_(std::make_unique<policy::WifiController>()),
+      cellular_controller_(std::make_unique<policy::CellularController>()),
       metrics_collector_(new metrics::MetricsCollector),
       arc_timer_manager_(std::make_unique<system::ArcTimerManager>()),
       retry_shutdown_for_lockfile_timer_(false /* retain_user_task */,
@@ -386,10 +388,17 @@ void Daemon::Init() {
   }
 
   wifi_controller_->Init(this, prefs_.get(), udev_.get(), tablet_mode);
+  cellular_controller_->Init(this, prefs_.get());
+
   peripheral_battery_watcher_ =
       delegate_->CreatePeripheralBatteryWatcher(dbus_wrapper_.get());
   power_override_lockfile_checker_ = delegate_->CreateLockfileChecker(
       base::FilePath(kPowerOverrideLockfileDir), {});
+
+  sar_watcher_ = delegate_->CreateSarWatcher(prefs_.get(), udev_.get());
+  sar_handler_ = std::make_unique<policy::SarHandler>();
+  sar_handler_->Init(sar_watcher_.get(), wifi_controller_.get(),
+                     cellular_controller_.get());
 
   arc_timer_manager_->Init(dbus_wrapper_.get());
 
@@ -690,14 +699,22 @@ void Daemon::ShutDownForDarkResume() {
   ShutDown(ShutdownMode::POWER_OFF, ShutdownReason::DARK_RESUME);
 }
 
-void Daemon::SetWifiTransmitPower(TabletMode mode) {
-  std::string args = (mode == TabletMode::ON)
+void Daemon::SetWifiTransmitPower(RadioTransmitPower power) {
+  std::string args = (power == RadioTransmitPower::LOW)
                          ? "--wifi_transmit_power_tablet"
                          : "--nowifi_transmit_power_tablet";
 
-  LOG(INFO) << ((mode == TabletMode::ON) ? "Enabling" : "Disabling")
+  LOG(INFO) << ((power == RadioTransmitPower::LOW) ? "Enabling" : "Disabling")
             << " tablet mode wifi transmit power";
   RunSetuidHelper("set_wifi_transmit_power", args, false);
+}
+
+void Daemon::SetCellularTransmitPower(RadioTransmitPower power) {
+  // TODO(benchan): write the helper to change power
+  // TODO(egranata): run the helper tool here
+  NOTIMPLEMENTED() << "Cellular antenna power should be set to "
+                   << (power == RadioTransmitPower::LOW ? "low " : "high ")
+                   << "at this point - but that's a TODO";
 }
 
 void Daemon::OnAudioStateChange(bool active) {

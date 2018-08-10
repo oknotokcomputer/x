@@ -690,12 +690,12 @@ void Daemon::ShutDownForDarkResume() {
   ShutDown(ShutdownMode::POWER_OFF, ShutdownReason::DARK_RESUME);
 }
 
-void Daemon::SetWifiTransmitPower(RadioTransmitPower power) {
-  std::string args = (power == RadioTransmitPower::LOW)
+void Daemon::SetWifiTransmitPower(TabletMode mode) {
+  std::string args = (mode == TabletMode::ON)
                          ? "--wifi_transmit_power_tablet"
                          : "--nowifi_transmit_power_tablet";
 
-  LOG(INFO) << ((power == RadioTransmitPower::LOW) ? "Enabling" : "Disabling")
+  LOG(INFO) << ((mode == TabletMode::ON) ? "Enabling" : "Disabling")
             << " tablet mode wifi transmit power";
   RunSetuidHelper("set_wifi_transmit_power", args, false);
 }

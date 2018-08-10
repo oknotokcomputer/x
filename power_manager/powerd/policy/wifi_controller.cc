@@ -53,18 +53,9 @@ void WifiController::OnUdevEvent(const system::UdevEvent& event) {
 }
 
 void WifiController::UpdateTransmitPower() {
-  if (set_transmit_power_for_tablet_mode_) {
-    switch (tablet_mode_) {
-      case TabletMode::UNSUPPORTED:
-        break;
-      case TabletMode::ON:
-        delegate_->SetWifiTransmitPower(RadioTransmitPower::LOW);
-        break;
-      case TabletMode::OFF:
-        delegate_->SetWifiTransmitPower(RadioTransmitPower::HIGH);
-        break;
-    }
-  }
+  if (set_transmit_power_for_tablet_mode_ &&
+      tablet_mode_ != TabletMode::UNSUPPORTED)
+    delegate_->SetWifiTransmitPower(tablet_mode_);
 }
 
 }  // namespace policy

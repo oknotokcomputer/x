@@ -82,8 +82,6 @@ const char kTpmStatusIntervalSecPref[] = "tpm_status_interval_sec";
 const char kSuspendToIdlePref[] = "suspend_to_idle";
 const char kSetWifiTransmitPowerForTabletModePref[] =
     "set_wifi_transmit_power_for_tablet_mode";
-const char kSetWifiTransmitPowerForProximityPref[] =
-    "set_wifi_transmit_power_for_proximity";
 
 // Miscellaneous constants.
 const char kInternalBacklightPath[] = "/sys/class/backlight";

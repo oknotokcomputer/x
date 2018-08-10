@@ -216,9 +216,6 @@ extern const char kSetWifiTransmitPowerForTabletModePref[];
 // If true, update wifi transmit power based on proximity sensors.
 extern const char kSetWifiTransmitPowerForProximityPref[];
 
-// If true, update cellular transmit power based on proximity sensors.
-extern const char kSetCellularTransmitPowerForProximityPref[];
-
 // Miscellaneous constants.
 
 // sysfs directory containing internal backlight devices and a glob-style

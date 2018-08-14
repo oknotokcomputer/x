@@ -72,7 +72,7 @@
             ],
           },
           'sources': [
-            'biod_storage_unittest.cc',
+            'biod_storage_test.cc',
           ],
         },
       ],

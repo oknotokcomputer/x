@@ -86,19 +86,29 @@ bool HostNotifier::OpenUrlInHost(const std::string& url) {
   if (token.empty() || host_ip.empty()) {
     return false;
   }
-  vm_tools::container::ContainerListener::Stub stub(grpc::CreateChannel(
-      base::StringPrintf("%s:%u", host_ip.c_str(), vm_tools::kGarconPort),
-      grpc::InsecureChannelCredentials()));
+  std::unique_ptr<vm_tools::container::ContainerListener::Stub> stub;
+  stub = std::make_unique<vm_tools::container::ContainerListener::Stub>(
+      grpc::CreateChannel(base::StringPrintf("vsock:%d:%u", VMADDR_CID_HOST,
+                                             vm_tools::kGarconPort),
+                          grpc::InsecureChannelCredentials()));
   grpc::ClientContext ctx;
   vm_tools::container::OpenUrlRequest url_request;
   url_request.set_token(token);
   url_request.set_url(url);
   vm_tools::EmptyMessage empty;
-  grpc::Status status = stub.OpenUrl(&ctx, url_request, &empty);
+  grpc::Status status = stub->OpenUrl(&ctx, url_request, &empty);
   if (!status.ok()) {
-    LOG(WARNING) << "Failed to request host system to open url \"" << url
-                 << "\" error: " << status.error_message();
-    return false;
+    // Fallback to IPv4.
+    stub = std::make_unique<vm_tools::container::ContainerListener::Stub>(
+        grpc::CreateChannel(
+            base::StringPrintf("%s:%u", host_ip.c_str(), vm_tools::kGarconPort),
+            grpc::InsecureChannelCredentials()));
+    status = stub->OpenUrl(&ctx, url_request, &empty);
+    if (!status.ok()) {
+      LOG(WARNING) << "Failed to request host system to open url \"" << url
+                   << "\" error: " << status.error_message();
+      return false;
+    }
   }
   return true;
 }

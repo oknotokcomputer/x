@@ -25,7 +25,7 @@
 
 namespace brillo {
 
-CrosConfigJson::CrosConfigJson() : model_dict_(nullptr) {}
+CrosConfigJson::CrosConfigJson() : config_dict_(nullptr) {}
 
 CrosConfigJson::~CrosConfigJson() {}
 
@@ -44,59 +44,53 @@ bool CrosConfigJson::SelectConfigByIdentity(
   if (json_config_->GetAsDictionary(&root_dict)) {
     const base::DictionaryValue* chromeos = nullptr;
     if (root_dict->GetDictionary("chromeos", &chromeos)) {
-      const base::ListValue* models_list = nullptr;
-      if (chromeos->GetList("configs", &models_list) ||
-          chromeos->GetList("models", &models_list)) {
-        size_t num_models = models_list->GetSize();
-        for (size_t i = 0; i < num_models; ++i) {
-          const base::DictionaryValue* model_dict = nullptr;
-          if (models_list->GetDictionary(i, &model_dict)) {
+      const base::ListValue* configs_list = nullptr;
+      if (chromeos->GetList("configs", &configs_list)) {
+        size_t num_configs = configs_list->GetSize();
+        for (size_t i = 0; i < num_configs; ++i) {
+          const base::DictionaryValue* config_dict = nullptr;
+          if (configs_list->GetDictionary(i, &config_dict)) {
             const base::DictionaryValue* identity_dict = nullptr;
-            if (model_dict->GetDictionary("identity", &identity_dict)) {
+            if (config_dict->GetDictionary("identity", &identity_dict)) {
+              int find_sku_id = -1;
               bool platform_specific_match = false;
               if (identity_x86) {
-                const std::string& find_name = identity_x86->GetName();
-                int find_sku_id = identity_x86->GetSkuId();
-                int current_sku_id;
-                bool sku_match = true;
-                if (find_sku_id > -1 &&
-                    identity_dict->GetInteger("sku-id", &current_sku_id)) {
-                  sku_match = current_sku_id == find_sku_id;
-                }
+                find_sku_id = identity_x86->GetSkuId();
 
-                bool name_match = true;
+                const std::string& find_name = identity_x86->GetName();
                 std::string current_name;
                 if (identity_dict->GetString("smbios-name-match",
-                                             &current_name) &&
-                    !find_name.empty()) {
-                  name_match = current_name == find_name;
+                                             &current_name)) {
+                  platform_specific_match = current_name == find_name;
                 }
-                platform_specific_match = sku_match && name_match;
               } else if (identity_arm) {
-                bool dt_compatible_match = false;
+                find_sku_id = identity_arm->GetSkuId();
+
                 std::string current_dt_compatible_match;
                 if (identity_dict->GetString("device-tree-compatible-match",
                                              &current_dt_compatible_match)) {
-                  dt_compatible_match =
+                  platform_specific_match =
                       identity_arm->IsCompatible(current_dt_compatible_match);
                 }
-                platform_specific_match = dt_compatible_match;
+              }
+              bool sku_match = true;
+              int current_sku_id;
+              if (find_sku_id > -1 &&
+                  identity_dict->GetInteger("sku-id", &current_sku_id)) {
+                sku_match = current_sku_id == find_sku_id;
               }
 
-              bool vpd_tag_match = true;
-              std::string current_vpd_tag;
-              if ((identity_dict->GetString("whitelabel-tag",
-                                           &current_vpd_tag) ||
-                  identity_dict->GetString("customization-id",
-                                           &current_vpd_tag)) &&
-                  !current_vpd_tag.empty()) {
-                // Currently, the find_whitelabel_name can be either the
-                // whitelabel-tag or the customization-id.
-                vpd_tag_match = current_vpd_tag == find_whitelabel_name;
+              std::string current_vpd_tag = "";
+              identity_dict->GetString("whitelabel-tag", &current_vpd_tag);
+              if (current_vpd_tag.empty()) {
+                identity_dict->GetString("customization-id", &current_vpd_tag);
               }
+              // Currently, the find_whitelabel_name can be either the
+              // whitelabel-tag or the customization-id.
+              bool vpd_tag_match = current_vpd_tag == find_whitelabel_name;
 
-              if (platform_specific_match && vpd_tag_match) {
-                model_dict_ = model_dict;
+              if (platform_specific_match && sku_match && vpd_tag_match) {
+                config_dict_ = config_dict;
                 break;
               }
             }
@@ -105,7 +99,7 @@ bool CrosConfigJson::SelectConfigByIdentity(
       }
     }
   }
-  if (!model_dict_) {
+  if (!config_dict_) {
     if (identity_arm) {
       CROS_CONFIG_LOG(ERROR)
           << "Failed to find config for device-tree compatible string: "
@@ -150,7 +144,7 @@ bool CrosConfigJson::GetString(const std::string& path,
   }
 
   bool valid_path = true;
-  const base::DictionaryValue* attr_dict = model_dict_;
+  const base::DictionaryValue* attr_dict = config_dict_;
 
   if (path.length() > 1) {
     std::vector<std::string> path_tokens = base::SplitString(
@@ -164,10 +158,28 @@ bool CrosConfigJson::GetString(const std::string& path,
     }
   }
 
-  std::string value;
-  if (valid_path && attr_dict->GetString(prop, &value)) {
-    val_out->assign(value);
-    return true;
+  if (valid_path) {
+    std::string value;
+    if (attr_dict->GetString(prop, &value)) {
+      val_out->assign(value);
+      return true;
+    }
+
+    int int_value;
+    if (attr_dict->GetInteger(prop, &int_value)) {
+      val_out->assign(std::to_string(int_value));
+      return true;
+    }
+
+    bool bool_value;
+    if (attr_dict->GetBoolean(prop, &bool_value)) {
+      if (bool_value) {
+        val_out->assign("true");
+      } else {
+        val_out->assign("false");
+      }
+      return true;
+    }
   }
   return false;
 }
@@ -186,16 +198,6 @@ bool CrosConfigJson::ReadConfigFile(const base::FilePath& filepath) {
     CROS_CONFIG_LOG(ERROR) << "Fail to parse config.json: " << error_msg;
     return false;
   }
-
-  // TODO(crbug.com/xxx): Figure out a way to represent this. For now it is
-  // hard-coded
-  target_dirs_["alsa-conf"] = "/usr/share/alsa/ucm";
-  target_dirs_["cras-config-dir"] = "/etc/cras";
-  target_dirs_["dptf-dv"] = "/etc/dptf";
-  target_dirs_["dsp-ini"] = "/etc/cras";
-  target_dirs_["hifi-conf"] = "/usr/share/alsa/ucm";
-  target_dirs_["topology-bin"] = "/lib/firmware";
-  target_dirs_["volume"] = "/etc/cras";
 
   return true;
 }

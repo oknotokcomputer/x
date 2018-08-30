@@ -12,14 +12,15 @@ import re
 import subprocess
 import unittest
 
-import fdt_util
-
 CLI_FILE = 'python -m cros_config_host.cros_config_host'
-DTS_FILE = '../libcros_config/test.dts'
 YAML_FILE = '../libcros_config/test.yaml'
 
 
-class CommonTests(object):
+class CrosConfigHostTest(unittest.TestCase):
+  """Tests for master configuration in yaml format"""
+  def setUp(self):
+    self.conf_file = os.path.join(os.path.dirname(__file__), YAML_FILE)
+
   """Common tests shared between the YAML and FDT implementations."""
   def CheckManyLinesWithoutSpaces(self, output, lines=3):
     # Expect there to be a few lines
@@ -45,6 +46,20 @@ class CommonTests(object):
         CLI_FILE, self.conf_file).split()
     output = subprocess.check_output(call_args)
     self.CheckManyLinesWithoutSpaces(output, lines=2)
+
+  def testListModelsWithFilter(self):
+    call_args = '{} -c {} --model=another list-models'.format(
+        CLI_FILE, self.conf_file).split()
+    output = subprocess.check_output(call_args)
+    self.assertEqual("another\n", output)
+
+  def testListModelsWithEnvFilter(self):
+    call_args = '{} -c {} list-models'.format(
+        CLI_FILE, self.conf_file).split()
+    os.environ['CROS_CONFIG_MODEL'] = 'another'
+    output = subprocess.check_output(call_args)
+    del os.environ['CROS_CONFIG_MODEL']
+    self.assertEqual("another\n", output)
 
   def testGetPropSingle(self):
     call_args = '{} -c {} --model=another get / wallpaper'.format(
@@ -72,7 +87,7 @@ class CommonTests(object):
     self.assertEqual(output, os.linesep)
 
   def testGetFirmwareUris(self):
-    call_args = '{} -c {} --model=another get-firmware-uris'.format(
+    call_args = '{} -c {} get-firmware-uris'.format(
         CLI_FILE, self.conf_file).split()
     output = subprocess.check_output(call_args)
     self.CheckManyLines(output)
@@ -89,6 +104,12 @@ class CommonTests(object):
     output = subprocess.check_output(call_args)
     self.CheckManyLines(output, 10)
 
+  def testGetBluetoothFiles(self):
+    call_args = '{} -c {} get-bluetooth-files'.format(
+        CLI_FILE, self.conf_file).split()
+    output = subprocess.check_output(call_args)
+    self.CheckManyLines(output, 1)
+
   def testGetFirmwareBuildTargets(self):
     call_args = '{} -c {} get-firmware-build-targets coreboot'.format(
         CLI_FILE, self.conf_file).split()
@@ -101,60 +122,6 @@ class CommonTests(object):
     output = subprocess.check_output(call_args)
     self.CheckManyLines(output, 1)
 
-
-class CrosConfigHostTestFdt(unittest.TestCase, CommonTests):
-  """Tests for master configuration in device-tree format"""
-  def setUp(self):
-    path = os.path.join(os.path.dirname(__file__), DTS_FILE)
-    (self.conf_file, self.temp_file) = fdt_util.EnsureCompiled(path)
-
-  def tearDown(self):
-    os.remove(self.temp_file.name)
-
-  def testReadStdin(self):
-    call_args = '{} -c - list-models < {}'.format(CLI_FILE, self.conf_file)
-    output = subprocess.check_output(call_args, shell=True)
-    self.CheckManyLinesWithoutSpaces(output, lines=2)
-
-  def testListModelsInvalid(self):
-    call_args = '{} -c invalid.dtb list-models'.format(CLI_FILE).split()
-    with open(os.devnull, 'w') as devnull:
-      with self.assertRaises(subprocess.CalledProcessError):
-        subprocess.check_call(call_args, stdout=devnull, stderr=devnull)
-
-  def testWriteTargetDirectories(self):
-    """Test that we can write out a list of file paths"""
-    call_args = '{} write-target-dirs'.format(CLI_FILE).split()
-    output = subprocess.check_output(call_args)
-    lines = [line for line in output.splitlines()]
-    # Just check for one line, of the form:
-    #   alsa-conf = "/usr/share/alsa/ucm";
-    alsa_lines = [line for line in lines if 'alsa-conf' in line]
-    self.assertEqual(len(alsa_lines), 1)
-    m = re.match(r'\s+([-a-z]+) = "(.*)";', alsa_lines[0])
-    name, value = m.groups()
-    self.assertEqual(name, 'alsa-conf')
-    self.assertEqual(value, '/usr/share/alsa/ucm')
-
-  def testWritePhandleProperties(self):
-    """Test that we can write out a list of phandle properties"""
-    call_args = '{} write-phandle-properties'.format(CLI_FILE).split()
-    output = subprocess.check_output(call_args)
-    lines = [line for line in output.splitlines()]
-    # Find the line of the form:
-    #   phandle-properties = ...;
-    phandle_props = [line for line in lines if 'phandle-properties' in line]
-    self.assertEqual(len(phandle_props), 1)
-    m = re.match(r'.* = "(.*)";', phandle_props[0])
-    self.assertTrue(m != None)
-    props = m.group(0).split('", "')
-    self.assertTrue(len(props) > 5)
-
-
-class CrosConfigHostTestYaml(unittest.TestCase, CommonTests):
-  """Tests for master configuration in yaml format"""
-  def setUp(self):
-    self.conf_file = os.path.join(os.path.dirname(__file__), YAML_FILE)
 
 
 if __name__ == '__main__':

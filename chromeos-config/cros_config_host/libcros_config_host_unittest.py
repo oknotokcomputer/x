@@ -10,16 +10,16 @@ from __future__ import print_function
 from collections import OrderedDict
 from contextlib import contextmanager
 from io import BytesIO
+import copy
+import json
 import os
 import sys
 import unittest
 
-import fdt_util
-from libcros_config_host import CrosConfig, FORMAT_FDT
+from libcros_config_host import CrosConfig
 from libcros_config_host_base import BaseFile, TouchFile, FirmwareInfo
 
 
-DTS_FILE = '../libcros_config/test.dts'
 YAML_FILE = '../libcros_config/test.yaml'
 MODELS = sorted(['some', 'another', 'whitelabel'])
 ANOTHER_BUCKET = ('gs://chromeos-binaries/HOME/bcs-another-private/overlay-'
@@ -50,9 +50,21 @@ def capture_sys_output():
   finally:
     sys.stdout, sys.stderr = old_out, old_err
 
+def _FormatNamedTuplesDict(value):
+   result = copy.deepcopy(value)
+   for key, value in result.iteritems():
+     result[key] = value._asdict()
 
-class CommonTests(object):
-  """Shared tests between the YAML and FDT implementations."""
+   return json.dumps(result, indent=2)
+
+
+class CrosConfigHostTest(unittest.TestCase):
+  def setUp(self):
+    self.filepath = os.path.join(os.path.dirname(__file__), YAML_FILE)
+
+  def _assertEqualsNamedTuplesDict(self, expected, result):
+    self.assertEqual(
+        _FormatNamedTuplesDict(expected), _FormatNamedTuplesDict(result))
 
   def testGetProperty(self):
     config = CrosConfig(self.filepath)
@@ -90,6 +102,15 @@ class CommonTests(object):
             source='some/hardware_features',
             dest='/usr/share/chromeos-config/sbin/some/hardware_features')])
 
+  def testGetBluetoothFiles(self):
+    config = CrosConfig(self.filepath)
+    bluetooth_files = config.GetBluetoothFiles()
+    self.assertEqual(
+        bluetooth_files,
+        [BaseFile(
+            source='some/main.conf',
+            dest='/etc/bluetooth/some/main.conf')])
+
   def testGetThermalFiles(self):
     config = CrosConfig(self.filepath)
     thermal_files = config.GetThermalFiles()
@@ -107,7 +128,8 @@ class CommonTests(object):
     self.assertSequenceEqual(config.GetFirmwareBuildTargets('coreboot'),
                              ['another'])
     self.assertSequenceEqual(config.GetFirmwareBuildTargets('ec'),
-                             ['another', 'another_base', 'another_cr50'])
+                             ['another', 'another_base', 'another_cr50',
+                              'extra1', 'extra2'])
     del os.environ['FW_NAME']
 
   def testFileTree(self):
@@ -139,13 +161,20 @@ class CommonTests(object):
     self.assertEqual(lines[3].split(), ['missing', 'cras/'])
 
 
-  def testFimwareBuildCombinations(self):
+  def testFirmwareBuildCombinations(self):
     """Test generating a dict of firmware build combinations."""
     config = CrosConfig(self.filepath)
     expected = OrderedDict(
         [('another', ['another', 'another']),
          ('some', ['some', 'some'])])
     result = config.GetFirmwareBuildCombinations(['coreboot', 'depthcharge'])
+    self.assertEqual(result, expected)
+
+    # Should not explode when devices do not specify requested target.
+    expected = OrderedDict(
+        [('another', ['another_base']),
+         ('some', [])])
+    result = config.GetFirmwareBuildCombinations(['base'])
     self.assertEqual(result, expected)
 
     os.environ['FW_NAME'] = 'another'
@@ -244,13 +273,10 @@ class CommonTests(object):
 
   def testFirmware(self):
     """Test access to firmware information"""
-    config = CrosConfig(self.filepath)
-    self.assertEqual('updater4.sh', config.GetFirmwareScript())
-
     expected = OrderedDict(
         [('another',
           FirmwareInfo(model='another',
-                       shared_model=None,
+                       shared_model='another',
                        key_id='ANOTHER',
                        have_image=True,
                        bios_build_target='another',
@@ -259,10 +285,8 @@ class CommonTests(object):
                        main_rw_image_uri='bcs://Another_RW.1111.11.1.tbz2',
                        ec_image_uri='bcs://Another_EC.1111.11.1.tbz2',
                        pd_image_uri='',
-                       extra=['${FILESDIR}/extra'],
-                       create_bios_rw_image=False,
-                       tools=['${FILESDIR}/tools1', '${FILESDIR}/tools2'],
-                       sig_id='another')),
+                       sig_id='another',
+                       brand_code='')),
          ('some',
           FirmwareInfo(model='some',
                        shared_model='some',
@@ -274,14 +298,12 @@ class CommonTests(object):
                        main_rw_image_uri='bcs://Some_RW.1111.11.1.tbz2',
                        ec_image_uri='bcs://Some_EC.1111.11.1.tbz2',
                        pd_image_uri='',
-                       extra=[],
-                       create_bios_rw_image=False,
-                       tools=[],
-                       sig_id='some')),
+                       sig_id='some',
+                       brand_code='')),
          ('whitelabel',
           FirmwareInfo(model='whitelabel',
                        shared_model='some',
-                       key_id='',
+                       key_id='WHITELABEL1',
                        have_image=True,
                        bios_build_target='some',
                        ec_build_target='some',
@@ -289,10 +311,8 @@ class CommonTests(object):
                        main_rw_image_uri='bcs://Some_RW.1111.11.1.tbz2',
                        ec_image_uri='bcs://Some_EC.1111.11.1.tbz2',
                        pd_image_uri='',
-                       extra=[],
-                       create_bios_rw_image=False,
-                       tools=[],
-                       sig_id='sig-id-in-customization-id')),
+                       sig_id='sig-id-in-customization-id',
+                       brand_code='')),
          ('whitelabel-whitelabel1',
           FirmwareInfo(model='whitelabel-whitelabel1',
                        shared_model='some',
@@ -304,10 +324,8 @@ class CommonTests(object):
                        main_rw_image_uri='bcs://Some_RW.1111.11.1.tbz2',
                        ec_image_uri='bcs://Some_EC.1111.11.1.tbz2',
                        pd_image_uri='',
-                       extra=[],
-                       create_bios_rw_image=False,
-                       tools=[],
-                       sig_id='whitelabel-whitelabel1')),
+                       sig_id='whitelabel-whitelabel1',
+                       brand_code='WLBA')),
          ('whitelabel-whitelabel2',
           FirmwareInfo(model='whitelabel-whitelabel2',
                        shared_model='some',
@@ -319,160 +337,10 @@ class CommonTests(object):
                        main_rw_image_uri='bcs://Some_RW.1111.11.1.tbz2',
                        ec_image_uri='bcs://Some_EC.1111.11.1.tbz2',
                        pd_image_uri='',
-                       extra=[],
-                       create_bios_rw_image=False,
-                       tools=[],
-                       sig_id='whitelabel-whitelabel2'))])
-    result = config.GetFirmwareInfo()
-    self.assertEqual(result, expected)
-
-
-class CrosConfigHostTestFdt(unittest.TestCase, CommonTests):
-  """Tests for master configuration in device tree format"""
-  def setUp(self):
-    path = os.path.join(os.path.dirname(__file__), DTS_FILE)
-    (self.filepath, self.temp_file) = fdt_util.EnsureCompiled(path)
-
-  def tearDown(self):
-    os.remove(self.temp_file.name)
-
-  def testGoodDtbFile(self):
-    self.assertIsNotNone(CrosConfig(self.filepath))
-
-  def testNodeSubnames(self):
-    config = CrosConfig(self.filepath)
-    for name, model in config.models.iteritems():
-      self.assertEqual(name, model.name)
-
-  def testPathNode(self):
-    config = CrosConfig(self.filepath)
-    self.assertIsNotNone(config.models['another'].PathNode('/firmware'))
-
-  def testBadPathNode(self):
-    config = CrosConfig(self.filepath)
-    self.assertIsNone(config.models['another'].PathNode('/dne'))
-
-  def testPathProperty(self):
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    ec_image = another.PathProperty('/firmware', 'ec-image')
-    self.assertEqual(ec_image.value, 'bcs://Another_EC.1111.11.1.tbz2')
-
-  def testBadPathProperty(self):
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    self.assertIsNone(another.PathProperty('/firmware', 'dne'))
-    self.assertIsNone(another.PathProperty('/dne', 'ec-image'))
-
-  def testSinglePhandleFollowProperty(self):
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    bcs_overlay = another.PathProperty('/firmware', 'bcs-overlay')
-    self.assertEqual(bcs_overlay.value, 'overlay-another-private')
-
-  def testSinglePhandleFollowNode(self):
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    target = another.PathProperty('/firmware/build-targets', 'coreboot')
-    self.assertEqual(target.value, 'another')
-
-  def testGetMergedPropertiesAnother(self):
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    stylus = another.PathNode('touch/stylus')
-    props = another.GetMergedProperties(stylus, 'touch-type')
-    self.assertSequenceEqual(
-        props,
-        {'version': 'another-version',
-         'vendor': 'some_stylus_vendor',
-         'firmware-bin': '{vendor}/{version}.hex',
-         'firmware-symlink': '{vendor}_firmware_{MODEL}.bin'})
-
-  def testGetMergedPropertiesSome(self):
-    config = CrosConfig(self.filepath)
-    some = config.models['some']
-    touchscreen = some.PathNode('touch/touchscreen@0')
-    props = some.GetMergedProperties(touchscreen, 'touch-type')
-    self.assertEqual(
-        props,
-        {'pid': 'some-other-pid',
-         'version': 'some-other-version',
-         'vendor': 'some_touch_vendor',
-         'firmware-bin': '{vendor}/{pid}_{version}.bin',
-         'firmware-symlink': '{vendor}ts_i2c_{pid}.bin'})
-
-  def testGetMergedPropertiesDefault(self):
-    """Test that the 'default' property is used when collecting properties"""
-    config = CrosConfig(self.filepath)
-    another = config.models['another']
-    audio = another.PathNode('/audio/main')
-    props = another.GetMergedProperties(audio, 'audio-type')
-    self.assertSequenceEqual(
-        props,
-        {'cras-config-dir': 'another',
-         'ucm-suffix': 'another',
-         'topology-name': 'another',
-         'card': 'a-card',
-         'volume': 'cras-config/{cras-config-dir}/{card}',
-         'dsp-ini': 'cras-config/{cras-config-dir}/dsp.ini',
-         'hifi-conf': 'ucm-config/{card}.{ucm-suffix}/HiFi.conf',
-         'alsa-conf': 'ucm-config/{card}.{ucm-suffix}/{card}.' +
-                      '{ucm-suffix}.conf',
-         'topology-bin': 'topology/{topology-name}-tplg.bin'})
-
-  def testWriteTargetDirectories(self):
-    """Test that we can write out a list of file paths"""
-    config = CrosConfig(self.filepath)
-    target_dirs = config.GetTargetDirectories()
-    self.assertEqual(target_dirs['dptf-dv'], '/etc/dptf')
-    self.assertEqual(target_dirs['hifi-conf'], '/usr/share/alsa/ucm')
-    self.assertEqual(target_dirs['alsa-conf'], '/usr/share/alsa/ucm')
-    self.assertEqual(target_dirs['volume'], '/etc/cras')
-    self.assertEqual(target_dirs['dsp-ini'], '/etc/cras')
-    self.assertEqual(target_dirs['cras-config-dir'], '/etc/cras')
-
-  def testSubmodel(self):
-    """Test that we can read properties from the submodel"""
-    config = CrosConfig(self.filepath)
-    some = config.models['some']
-    self.assertEqual(
-        some.SubmodelPathProperty('touch', '/audio/main', 'ucm-suffix').value,
-        'some')
-    self.assertEqual(
-        some.SubmodelPathProperty('touch', '/touch', 'present').value, 'yes')
-    self.assertEqual(
-        some.SubmodelPathProperty('notouch', '/touch', 'present').value, 'no')
-
-  def testGetProperty(self):
-    """Test that we can read properties from non-model nodes"""
-    config = CrosConfig(self.filepath)
-    # pylint: disable=protected-access
-    self.assertEqual(config._GetProperty('/chromeos/family/firmware',
-                                         'script').value, 'updater4.sh')
-    firmware = config.GetFamilyNode('/firmware')
-    self.assertEqual(firmware.name, 'firmware')
-    self.assertEqual(firmware.Property('script').value, 'updater4.sh')
-    self.assertEqual(
-        config.GetFamilyProperty('/firmware', 'script').value, 'updater4.sh')
-
-  def testDefaultConfig(self):
-    if 'SYSROOT' in os.environ:
-      del os.environ['SYSROOT']
-    with self.assertRaisesRegexp(ValueError,
-                                 'No master configuration is available'):
-      CrosConfig()
-
-    os.environ['SYSROOT'] = 'fred'
-    with self.assertRaises(IOError) as e:
-      CrosConfig()
-    self.assertIn('fred/usr/share/chromeos-config/config.dtb',
-                  str(e.exception))
-
-
-class CrosConfigHostTestYaml(unittest.TestCase, CommonTests):
-  """Tests for master configuration in yaml format"""
-  def setUp(self):
-    self.filepath = os.path.join(os.path.dirname(__file__), YAML_FILE)
+                       sig_id='whitelabel-whitelabel2',
+                       brand_code='WLBB'))])
+    result = CrosConfig(self.filepath).GetFirmwareInfo()
+    self._assertEqualsNamedTuplesDict(result, expected)
 
 
 if __name__ == '__main__':

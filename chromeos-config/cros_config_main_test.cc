@@ -28,11 +28,7 @@ std::vector<std::string> GetCrosConfigCommand(
     const std::vector<std::string>& params) {
   std::vector<std::string> cmd = {
       base::StringPrintf("%s/cros_config", installed_dir),
-#ifndef USE_JSON
-      "--test_database=test.dtb",
-#else
-      "--test_database=test.json",
-#endif
+      "--test_file=test.json",
       "--test_name=Another"};
   cmd.insert(cmd.end(), params.begin(), params.end());
   return cmd;
@@ -58,28 +54,6 @@ TEST(CrosConfigTest, GetStringNonRoot) {
       base::GetAppOutput(GetCrosConfigCommand({"/touch", "present"}), &val);
   EXPECT_TRUE(success);
   EXPECT_EQ("probe", val);
-}
-
-TEST(CrosConfigTest, GetAbsPath) {
-  std::string val;
-
-  bool success = base::GetAppOutput(
-      GetCrosConfigCommand({"/audio/main", "cras-config-dir"}), &val);
-  EXPECT_TRUE(success);
-  EXPECT_EQ("another", val);
-
-  success = base::GetAppOutput(
-      GetCrosConfigCommand({"--abspath", "/audio/main", "cras-config-dir"}),
-      &val);
-  EXPECT_TRUE(success);
-  EXPECT_EQ("/etc/cras/another", val);
-
-  // We are not allowed to request an absolute path on something that is not
-  // a PropFile.
-  success = base::GetAppOutput(
-      GetCrosConfigCommand({"--abspath", "/", "wallpaper"}), &val);
-  EXPECT_FALSE(success);
-  EXPECT_EQ("", val);
 }
 
 int main(int argc, char** argv) {

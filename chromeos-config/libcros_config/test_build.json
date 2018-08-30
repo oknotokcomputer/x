@@ -41,6 +41,15 @@
             "ucm-suffix": "some"
           }
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -50,18 +59,27 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "SOME",
           "signature-id": "some"
         },
+        "hardware-properties": {
+          "has-base-accelerometer": true,
+          "has-base-gyroscope": true,
+          "has-lid-accelerometer": true,
+          "is-lid-convertible": true
+        },
         "identity": {
           "platform-name": "Some",
           "sku-id": 0,
           "smbios-name-match": "Some"
+        },
+        "modem": {
+          "firmware-variant": "some"
         },
         "name": "some",
         "oem-id": "0",
@@ -152,6 +170,15 @@
             "ucm-suffix": "some"
           }
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -161,18 +188,24 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "SOME",
           "signature-id": "some"
         },
+        "hardware-properties": {
+          "is-lid-convertible": false
+        },
         "identity": {
           "platform-name": "Some",
           "sku-id": 1,
           "smbios-name-match": "Some"
+        },
+        "modem": {
+          "firmware-variant": "some"
         },
         "name": "some",
         "oem-id": "0",
@@ -258,22 +291,22 @@
             "cr50": "another_cr50",
             "depthcharge": "another",
             "ec": "another",
+            "ec_extras": [
+              "extra1",
+              "extra2"
+            ],
             "libpayload": "another"
           },
-          "ec-image": "bcs://Another_EC.1111.11.1.tbz2",
-          "extra": [
-            "${FILESDIR}/extra"
-          ],
-          "main-image": "bcs://Another.1111.11.1.tbz2",
-          "main-rw-image": "bcs://Another_RW.1111.11.1.tbz2",
-          "tools": [
-            "${FILESDIR}/tools1",
-            "${FILESDIR}/tools2"
-          ]
+          "ec-ro-image": "bcs://Another_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Another.1111.11.1.tbz2",
+          "main-rw-image": "bcs://Another_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "ANOTHER",
           "signature-id": "another"
+        },
+        "hardware-properties": {
+          "is-lid-convertible": true
         },
         "identity": {
           "platform-name": "Another",
@@ -333,6 +366,16 @@
             }
           ]
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "brand-code": "WLBA",
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -342,14 +385,17 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "WHITELABEL1",
           "sig-id-in-customization-id": true,
           "signature-id": "whitelabel-whitelabel1"
+        },
+        "hardware-properties": {
+          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",
@@ -409,6 +455,16 @@
             }
           ]
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "brand-code": "WLBA",
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -418,14 +474,17 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "WHITELABEL1",
           "sig-id-in-customization-id": true,
           "signature-id": "whitelabel-whitelabel1"
+        },
+        "hardware-properties": {
+          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",
@@ -484,6 +543,16 @@
             }
           ]
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "brand-code": "WLBB",
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -493,14 +562,17 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "WHITELABEL2",
           "sig-id-in-customization-id": true,
           "signature-id": "whitelabel-whitelabel2"
+        },
+        "hardware-properties": {
+          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",
@@ -560,6 +632,16 @@
             }
           ]
         },
+        "bluetooth": {
+          "config": {
+            "build-path": "some/main.conf",
+            "system-path": "/etc/bluetooth/some/main.conf"
+          }
+        },
+        "brand-code": "WLBB",
+        "camera": {
+          "count": 1
+        },
         "firmware": {
           "bcs-overlay": "overlay-some-private",
           "build-targets": {
@@ -569,14 +651,17 @@
             "libpayload": "some",
             "u-boot": "some"
           },
-          "ec-image": "bcs://Some_EC.1111.11.1.tbz2",
-          "main-image": "bcs://Some.1111.11.1.tbz2",
+          "ec-ro-image": "bcs://Some_EC.1111.11.1.tbz2",
+          "main-ro-image": "bcs://Some.1111.11.1.tbz2",
           "main-rw-image": "bcs://Some_RW.1111.11.1.tbz2"
         },
         "firmware-signing": {
           "key-id": "WHITELABEL2",
           "sig-id-in-customization-id": true,
           "signature-id": "whitelabel-whitelabel2"
+        },
+        "hardware-properties": {
+          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",

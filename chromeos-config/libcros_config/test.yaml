@@ -44,6 +44,12 @@ some_base_config: &some_base_config
         destination: "/usr/share/chromeos-config/sbin/some/hardware_features"
     build-properties:
       first-api-level: "27"
+  bluetooth:
+    config:
+      build-path: "some/main.conf"
+      system-path: "/etc/bluetooth/some/main.conf"
+  camera:
+    count: 1
   firmware:
     bcs-overlay: "overlay-some-private"
     build-targets:
@@ -53,8 +59,8 @@ some_base_config: &some_base_config
       libpayload: "some"
       u-boot: "some"
 
-    ec-image: "bcs://Some_EC.1111.11.1.tbz2"
-    main-image: "bcs://Some.1111.11.1.tbz2"
+    ec-ro-image: "bcs://Some_EC.1111.11.1.tbz2"
+    main-ro-image: "bcs://Some.1111.11.1.tbz2"
     main-rw-image: "bcs://Some_RW.1111.11.1.tbz2"
   power:
     charging-ports: |
@@ -80,15 +86,20 @@ some_config: &some_config
   firmware-signing:
     key-id: "{{$key-id}}"
     signature-id: "{{$name}}"
+  hardware-properties:
+    is-lid-convertible: true
   identity:
     platform-name: "Some"
     smbios-name-match: "Some"
     sku-id: "{{$sku-id}}"
+  modem:
+    firmware-variant: "some"
   wallpaper: "some"
   $oem-id: "0"
 
 some_whitelabel_config: &some_whitelabel_config
   <<: *some_base_config
+  brand-code: "{{$brand-code}}"
   identity:
     platform-name: "Some"
     smbios-name-match: "Some"
@@ -98,6 +109,8 @@ some_whitelabel_config: &some_whitelabel_config
     key-id: "{{$key-id}}"
     signature-id: "{{$name}}-{{$whitelabel-tag}}"
     sig-id-in-customization-id: True
+  hardware-properties:
+    is-lid-convertible: false
   $oem-id: "1"
 
 some_touch_config: &some_touch_config
@@ -126,6 +139,11 @@ chromeos:
         - $sku-id: 0
           config:
             <<: *some_config
+            hardware-properties:
+              is-lid-convertible: true
+              has-base-accelerometer: true
+              has-base-gyroscope: true
+              has-lid-accelerometer: true
             touch:
               <<: *some_touch_config
               present: "probe"
@@ -138,6 +156,8 @@ chromeos:
         - $sku-id: 1
           config:
             <<: *some_config
+            hardware-properties:
+              is-lid-convertible: false
             touch:
               <<: *some_touch_config
               present: "no"
@@ -154,22 +174,22 @@ chromeos:
             audio:
               <<: *audio
               $topology-name: "another"
+            hardware-properties:
+              is-lid-convertible: true
             identity:
               platform-name: "Another"
               smbios-name-match: "Another"
             firmware:
               bcs-overlay: "overlay-another-private"
 
-              ec-image: "bcs://Another_EC.1111.11.1.tbz2"
-              main-image: "bcs://Another.1111.11.1.tbz2"
+              ec-ro-image: "bcs://Another_EC.1111.11.1.tbz2"
+              main-ro-image: "bcs://Another.1111.11.1.tbz2"
               main-rw-image: "bcs://Another_RW.1111.11.1.tbz2"
-              extra:
-                - "${FILESDIR}/extra"
-              tools:
-                - "${FILESDIR}/tools1"
-                - "${FILESDIR}/tools2"
               build-targets:
                 base: "another_base"
+                ec_extras:
+                  - "extra1"
+                  - "extra2"
                 coreboot: "another"
                 cr50: "another_cr50"
                 ec: "another"

@@ -64,7 +64,8 @@ const unsigned char kSha256DigestInfo[] = {
 const TSS_UUID kCryptohomeWellKnownUuid = {0x0203040b, 0, 0, 0, 0,
                                            {0, 9, 8, 1, 0, 3}};
 
-Tpm::TpmRetryAction ResultToRetryAction(TSS_RESULT result) {
+Tpm::TpmRetryAction ResultToRetryActionWithMessage(TSS_RESULT result,
+    const std::string& message) {
   Tpm::TpmRetryAction status = Tpm::kTpmRetryFatal;
   ReportTpmResult(GetTpmResultSample(result));
   switch (ERROR_CODE(result)) {
@@ -96,13 +97,19 @@ Tpm::TpmRetryAction ResultToRetryAction(TSS_RESULT result) {
     case ERROR_CODE(TPM_E_FAIL):
       status = Tpm::kTpmRetryReboot;
       ReportCryptohomeError(kTpmFail);
-      LOG(ERROR) << "The TPM returned TPM_E_FAIL.  A reboot is required.";
+      LOG(ERROR) << "The TPM returned TPM_E_FAIL. A reboot is required.";
       break;
     default:
       status = Tpm::kTpmRetryFailNoRetry;
+      TPM_LOG(ERROR, result) << (message.size() ? message
+                                                : "Retrying will not help.");
       break;
   }
   return status;
+}
+
+Tpm::TpmRetryAction ResultToRetryAction(TSS_RESULT result) {
+  return ResultToRetryActionWithMessage(result, "");
 }
 
 }  // namespace
@@ -537,18 +544,19 @@ Tpm::TpmRetryAction TpmImpl::EncryptBlob(TpmKeyHandle key_handle,
       key_handle,
       plaintext.size(),
       const_cast<BYTE*>(plaintext.data())))) {
-    TPM_LOG(ERROR, result) << "Error calling Tspi_Data_Bind";
+    TPM_LOG(ERROR, result) << __func__ << "Error calling Tspi_Data_Bind";
     return ResultToRetryAction(result);
   }
 
   SecureBlob enc_data_blob;
-  if (!GetDataAttribute(tpm_context_.value(),
-                        enc_handle,
-                        TSS_TSPATTRIB_ENCDATA_BLOB,
-                        TSS_TSPATTRIB_ENCDATABLOB_BLOB,
-                        &enc_data_blob)) {
+  Tpm::TpmRetryAction action = GetDataAttribute(tpm_context_.value(),
+      enc_handle,
+      TSS_TSPATTRIB_ENCDATA_BLOB,
+      TSS_TSPATTRIB_ENCDATABLOB_BLOB,
+      &enc_data_blob);
+  if (action != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read encrypted blob.";
-    return kTpmRetryFailNoRetry;
+    return action;
   }
   if (!CryptoLib::ObscureRSAMessage(enc_data_blob, key, ciphertext)) {
     LOG(ERROR) << "Error obscuring message.";
@@ -1456,7 +1464,7 @@ bool TpmImpl::PerformEnabledOwnedCheck(bool* enabled, bool* owned) {
   return true;
 }
 
-bool TpmImpl::GetEndorsementPublicKeyWithDelegate(
+Tpm::TpmRetryAction TpmImpl::GetEndorsementPublicKeyWithDelegate(
     brillo::SecureBlob* ek_public_key,
     const brillo::SecureBlob& delegate_blob,
     const brillo::SecureBlob& delegate_secret) {
@@ -1473,19 +1481,20 @@ bool TpmImpl::GetEndorsementPublicKeyWithDelegate(
       ek_public_key, context_handle.ptr(), &tpm_handle);
 }
 
-bool TpmImpl::GetEndorsementPublicKey(SecureBlob* ek_public_key) {
+Tpm::TpmRetryAction TpmImpl::GetEndorsementPublicKey(
+    SecureBlob* ek_public_key) {
   // Connect to the TPM as the owner if owned, user otherwise.
   ScopedTssContext context_handle;
   TSS_HTPM tpm_handle;
   if (is_owned_) {
     if (!ConnectContextAsOwner(context_handle.ptr(), &tpm_handle)) {
       LOG(ERROR) << "GetEndorsementPublicKey: Could not connect to the TPM.";
-      return false;
+      return Tpm::kTpmRetryFailNoRetry;
     }
   } else {
     if (!ConnectContextAsUser(context_handle.ptr(), &tpm_handle)) {
       LOG(ERROR) << "GetEndorsementPublicKey: Could not connect to the TPM.";
-      return false;
+      return Tpm::kTpmRetryFailNoRetry;
     }
   }
 
@@ -1493,7 +1502,7 @@ bool TpmImpl::GetEndorsementPublicKey(SecureBlob* ek_public_key) {
       ek_public_key, context_handle.ptr(), &tpm_handle);
 }
 
-bool TpmImpl::GetEndorsementPublicKeyInternal(
+Tpm::TpmRetryAction TpmImpl::GetEndorsementPublicKeyInternal(
     brillo::SecureBlob* ek_public_key,
     TSS_HCONTEXT* context_handle,
     TSS_HTPM* tpm_handle) {
@@ -1502,24 +1511,26 @@ bool TpmImpl::GetEndorsementPublicKeyInternal(
   TSS_RESULT result = Tspi_TPM_GetPubEndorsementKey(
       *tpm_handle, is_owned_, NULL, ek_public_key_object.ptr());
   if (TPM_ERROR(result)) {
-    TPM_LOG(ERROR, result) << "GetEndorsementPublicKey: Failed to get key.";
-    return false;
+    return ResultToRetryActionWithMessage(result,
+        "GetEndorsementPublicKeyInternal: Failed to get public key.");
   }
   // Get the public key in TPM_PUBKEY form.
   SecureBlob ek_public_key_blob;
-  if (!GetDataAttribute(*context_handle,
-                        ek_public_key_object,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
-                        &ek_public_key_blob)) {
-    LOG(ERROR) << __func__ << ": Failed to read public key.";
-    return false;
+  Tpm::TpmRetryAction action = GetDataAttribute(*context_handle,
+      ek_public_key_object,
+      TSS_TSPATTRIB_KEY_BLOB,
+      TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
+      &ek_public_key_blob);
+  if (action != Tpm::kTpmRetryNone) {
+    LOG(ERROR) << "GetEndorsementPublicKeyInternal: Failed to read public key.";
+    return action;
   }
   // Get the public key in DER encoded form.
   if (!ConvertPublicKeyToDER(ek_public_key_blob, ek_public_key)) {
-    return false;
+    LOG(ERROR) << __func__ << ": Failed to DER encode public key.";
+    return Tpm::kTpmRetryLater;
   }
-  return true;
+  return Tpm::kTpmRetryNone;
 }
 
 bool TpmImpl::GetEndorsementCredential(SecureBlob* credential) {
@@ -1799,11 +1810,11 @@ bool TpmImpl::MakeIdentity(SecureBlob* identity_public_key_der,
   }
 
   // Get the fake PCA public key in serialized TPM_PUBKEY form.
-  if (!GetDataAttribute(context_handle,
-                        pca_public_key_object,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
-                        pca_public_key)) {
+  if (GetDataAttribute(context_handle,
+                       pca_public_key_object,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
+                       pca_public_key) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read public key.";
     return false;
   }
@@ -1866,11 +1877,11 @@ bool TpmImpl::MakeIdentity(SecureBlob* identity_public_key_der,
   }
 
   // Get the AIK public key.
-  if (!GetDataAttribute(context_handle,
-                        identity_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
-                        identity_public_key)) {
+  if (GetDataAttribute(context_handle,
+                       identity_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
+                       identity_public_key) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read public key.";
     return false;
   }
@@ -1879,11 +1890,11 @@ bool TpmImpl::MakeIdentity(SecureBlob* identity_public_key_der,
   }
 
   // Get the AIK blob so we can load it later.
-  if (!GetDataAttribute(context_handle,
-                        identity_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_BLOB,
-                        identity_key_blob)) {
+  if (GetDataAttribute(context_handle,
+                       identity_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_BLOB,
+                       identity_key_blob) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read key blob.";
     return false;
   }
@@ -2185,11 +2196,11 @@ bool TpmImpl::CreateCertifiedKey(const SecureBlob& identity_key_blob,
   ScopedTssMemory scoped_proof(context_handle, validation.rgbValidationData);
 
   // Get the certified public key.
-  if (!GetDataAttribute(context_handle,
-                        signing_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
-                        certified_public_key)) {
+  if (GetDataAttribute(context_handle,
+                       signing_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
+                       certified_public_key) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << "CreateCertifiedKey: Failed to read public key.";
     return false;
   }
@@ -2198,11 +2209,11 @@ bool TpmImpl::CreateCertifiedKey(const SecureBlob& identity_key_blob,
   }
 
   // Get the certified key blob so we can load it later.
-  if (!GetDataAttribute(context_handle,
-                        signing_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_BLOB,
-                        certified_key_blob)) {
+  if (GetDataAttribute(context_handle,
+                       signing_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_BLOB,
+                       certified_key_blob) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << "CreateCertifiedKey: Failed to read key blob.";
     return false;
   }
@@ -2344,11 +2355,11 @@ bool TpmImpl::CreateDelegate(const std::set<uint32_t>& bound_pcrs,
   }
 
   // Save the delegation blob for later.
-  if (!GetDataAttribute(context_handle,
-                        policy,
-                        TSS_TSPATTRIB_POLICY_DELEGATION_INFO,
-                        TSS_TSPATTRIB_POLDEL_OWNERBLOB,
-                        delegate_blob)) {
+  if (GetDataAttribute(context_handle,
+                       policy,
+                       TSS_TSPATTRIB_POLICY_DELEGATION_INFO,
+                       TSS_TSPATTRIB_POLDEL_OWNERBLOB,
+                       delegate_blob) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << "CreateDelegate: Failed to get delegate blob.";
     return false;
   }
@@ -2578,11 +2589,11 @@ bool TpmImpl::CreatePCRBoundKey(const std::map<uint32_t, std::string>& pcr_map,
 
   // Get the public key.
   SecureBlob public_key;
-  if (!GetDataAttribute(context_handle,
-                        pcr_bound_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
-                        &public_key)) {
+  if (GetDataAttribute(context_handle,
+                       pcr_bound_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_PUBLIC_KEY,
+                       &public_key) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read public key.";
     return false;
   }
@@ -2591,11 +2602,11 @@ bool TpmImpl::CreatePCRBoundKey(const std::map<uint32_t, std::string>& pcr_map,
   }
 
   // Get the key blob so we can load it later.
-  if (!GetDataAttribute(context_handle,
-                        pcr_bound_key,
-                        TSS_TSPATTRIB_KEY_BLOB,
-                        TSS_TSPATTRIB_KEYBLOB_BLOB,
-                        key_blob)) {
+  if (GetDataAttribute(context_handle,
+                       pcr_bound_key,
+                       TSS_TSPATTRIB_KEY_BLOB,
+                       TSS_TSPATTRIB_KEYBLOB_BLOB,
+                       key_blob) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read key blob.";
     return false;
   }
@@ -2633,10 +2644,10 @@ bool TpmImpl::VerifyPCRBoundKey(const std::map<uint32_t, std::string>& pcr_map,
 
   // Check that |pcr_index| is selected.
   SecureBlob pcr_selection_blob;
-  if (!GetDataAttribute(context_handle, key,
-                        TSS_TSPATTRIB_KEY_PCR,
-                        TSS_TSPATTRIB_KEYPCR_SELECTION,
-                        &pcr_selection_blob)) {
+  if (GetDataAttribute(context_handle, key,
+                       TSS_TSPATTRIB_KEY_PCR,
+                       TSS_TSPATTRIB_KEYPCR_SELECTION,
+                       &pcr_selection_blob) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read PCR selection for key.";
     return false;
   }
@@ -2680,10 +2691,10 @@ bool TpmImpl::VerifyPCRBoundKey(const std::map<uint32_t, std::string>& pcr_map,
 
   // Check that the PCR value matches the key creation PCR value.
   SecureBlob pcr_at_creation;
-  if (!GetDataAttribute(context_handle, key,
-                        TSS_TSPATTRIB_KEY_PCR,
-                        TSS_TSPATTRIB_KEYPCR_DIGEST_ATCREATION,
-                        &pcr_at_creation)) {
+  if (GetDataAttribute(context_handle, key,
+                       TSS_TSPATTRIB_KEY_PCR,
+                       TSS_TSPATTRIB_KEYPCR_DIGEST_ATCREATION,
+                       &pcr_at_creation) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read PCR value at key creation.";
     return false;
   }
@@ -2695,10 +2706,10 @@ bool TpmImpl::VerifyPCRBoundKey(const std::map<uint32_t, std::string>& pcr_map,
 
   // Check that the PCR value matches the PCR value required to use the key.
   SecureBlob pcr_at_release;
-  if (!GetDataAttribute(context_handle, key,
-                        TSS_TSPATTRIB_KEY_PCR,
-                        TSS_TSPATTRIB_KEYPCR_DIGEST_ATRELEASE,
-                        &pcr_at_release)) {
+  if (GetDataAttribute(context_handle, key,
+                       TSS_TSPATTRIB_KEY_PCR,
+                       TSS_TSPATTRIB_KEYPCR_DIGEST_ATRELEASE,
+                       &pcr_at_release) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to read PCR value for key usage.";
     return false;
   }
@@ -2755,7 +2766,7 @@ bool TpmImpl::ReadPCR(uint32_t pcr_index, brillo::Blob* pcr_value) {
   return true;
 }
 
-bool TpmImpl::GetDataAttribute(TSS_HCONTEXT context,
+Tpm::TpmRetryAction TpmImpl::GetDataAttribute(TSS_HCONTEXT context,
                                TSS_HOBJECT object,
                                TSS_FLAG flag,
                                TSS_FLAG sub_flag,
@@ -2766,12 +2777,12 @@ bool TpmImpl::GetDataAttribute(TSS_HCONTEXT context,
                                          buf.ptr());
   if (TPM_ERROR(result)) {
     TPM_LOG(ERROR, result) << __func__ << "Failed to read object attribute.";
-    return false;
+    return ResultToRetryAction(result);
   }
   SecureBlob tmp(buf.value(), buf.value() + length);
   brillo::SecureMemset(buf.value(), 0, length);
   data->swap(tmp);
-  return true;
+  return Tpm::kTpmRetryNone;
 }
 
 bool TpmImpl::GetCapability(TSS_HCONTEXT context_handle,
@@ -2920,8 +2931,8 @@ bool TpmImpl::GetKeyBlob(TSS_HCONTEXT context_handle, TSS_HKEY key_handle,
                          SecureBlob* data_out, TSS_RESULT* result) const {
   *result = TSS_SUCCESS;
 
-  if (!GetDataAttribute(context_handle, key_handle, TSS_TSPATTRIB_KEY_BLOB,
-      TSS_TSPATTRIB_KEYBLOB_BLOB, data_out)) {
+  if (GetDataAttribute(context_handle, key_handle, TSS_TSPATTRIB_KEY_BLOB,
+      TSS_TSPATTRIB_KEYBLOB_BLOB, data_out) != Tpm::kTpmRetryNone) {
     LOG(ERROR) << __func__ << ": Failed to get key blob.";
     return false;
   }

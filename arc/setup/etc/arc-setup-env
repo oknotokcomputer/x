@@ -34,8 +34,6 @@ export DELETE_DATA_APP_EXECUTABLES=0
 # ------------------------------------------------------------------------------
 # ALL variables below are regexp-matched by ebuild.
 # Be careful when editing. Variables are lexicographically sorted.
-export ARC_LCD_DENSITY=-1
-export ARC_UI_SCALE=-1
 
 # Setting this value to 1 will delete /data/dalvik-cache before ARC container
 # starts.

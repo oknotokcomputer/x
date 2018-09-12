@@ -1102,9 +1102,6 @@ void ArcSetup::CreateAndroidCmdlineFile(bool is_dev_mode,
   const std::string arc_lcd_density =
       GetEnvOrDie(arc_paths_->env.get(), "ARC_LCD_DENSITY");
   LOG(INFO) << "lcd_density is " << arc_lcd_density;
-  const std::string arc_ui_scale =
-      GetEnvOrDie(arc_paths_->env.get(), "ARC_UI_SCALE");
-  LOG(INFO) << "ui_scale is " << arc_ui_scale;
 
   const std::string arc_container_ipv4_address =
       GetEnvOrDie(arc_paths_->env.get(), "ARC_CONTAINER_IPV4_ADDRESS");
@@ -1152,14 +1149,13 @@ void ArcSetup::CreateAndroidCmdlineFile(bool is_dev_mode,
       "androidboot.vm=%d "
       "androidboot.debuggable=%d "
       "androidboot.lcd_density=%s "
-      "androidboot.ui_scale=%s "
       "androidboot.container_ipv4_address=%s "
       "androidboot.gateway_ipv4_address=%s "
       "androidboot.native_bridge=%s "
       "androidboot.chromeos_channel=%s "
       "androidboot.boottime_offset=%" PRId64 "\n" /* in nanoseconds */,
       is_dev_mode, !is_dev_mode, is_inside_vm, is_debuggable,
-      arc_lcd_density.c_str(), arc_ui_scale.c_str(),
+      arc_lcd_density.c_str(),
       arc_container_ipv4_address.c_str(), arc_gateway_ipv4_address.c_str(),
       native_bridge.c_str(), chromeos_channel.c_str(),
       ts.tv_sec * base::Time::kNanosecondsPerSecond + ts.tv_nsec);

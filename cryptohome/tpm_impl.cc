@@ -34,6 +34,10 @@
 #include "cryptohome/cryptolib.h"
 #include "cryptohome/tpm_metrics.h"
 
+#define TPM_LOG(severity, result)                                      \
+  LOG(severity) << base::StringPrintf("TPM error 0x%x (%s): ", result, \
+                                      Trspi_Error_String(result))
+
 using base::PlatformThread;
 using brillo::Blob;
 using brillo::BlobFromString;
@@ -113,10 +117,6 @@ Tpm::TpmRetryAction ResultToRetryAction(TSS_RESULT result) {
 }
 
 }  // namespace
-
-#define TPM_LOG(severity, result)                                      \
-  LOG(severity) << base::StringPrintf("TPM error 0x%x (%s): ", result, \
-                                      Trspi_Error_String(result))
 
 const unsigned char kDefaultSrkAuth[] = { };
 const unsigned int kDefaultTpmRsaKeyBits = 2048;

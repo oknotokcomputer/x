@@ -28,7 +28,7 @@ namespace cicerone {
 namespace {
 
 // How long to wait before timing out on regular RPCs.
-constexpr int64_t kDefaultTimeoutSeconds = 2;
+constexpr int64_t kDefaultTimeoutSeconds = 60;
 
 }  // namespace
 

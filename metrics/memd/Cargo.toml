@@ -13,5 +13,6 @@ syslog = "4.0.0"
 time = "0.1.39"
 
 [profile.release]
+debug = true
 lto = true
 panic = 'abort'

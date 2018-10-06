@@ -109,6 +109,7 @@
         'proto_conversion.cc',
         'session_impl.cc',
         'slot_manager_impl.cc',
+        'system_shutdown_blocker.cc',
       ],
       'conditions': [
         ['USE_tpm2 == 1', {
@@ -227,6 +228,7 @@
           'sources': [
             'slot_manager_impl.cc',
             'slot_manager_test.cc',
+            'system_shutdown_blocker.cc',
           ],
         },
         {

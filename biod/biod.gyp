@@ -47,6 +47,14 @@
       ],
     },
     {
+      'target_name': 'bio_wash',
+      'type': 'executable',
+      'dependencies': ['libbiod'],
+      'sources': [
+        'bio_wash.cc',
+      ],
+    },
+    {
       'target_name': 'biod_client_tool',
       'type': 'executable',
       'sources': ['tools/biod_client_tool.cc'],

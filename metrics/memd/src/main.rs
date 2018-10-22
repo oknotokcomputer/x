@@ -1302,10 +1302,12 @@ fn main() {
     // facility, instead always goes to stderr, which can get lost.  Here we
     // provide our own panic hook to make sure that the panic message goes to
     // the syslog as well.
-    let default_panic = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |panic_info| {
         error!("memd: {}", panic_info);
-        default_panic(panic_info);
+        // Calling exit() is safe because nothing matters after that.
+        // Special change for R70: exit with status 0 to avoid generating
+        // crash reports.  (Just in case.)
+        unsafe { libc::exit(0); }
     }));
 
     warn!("memd started");

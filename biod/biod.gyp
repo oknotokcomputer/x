@@ -18,12 +18,10 @@
       'target_name': 'libbiod',
       'type': 'static_library',
       'sources': [
-        'bio_library.cc',
         'biod_metrics.cc',
         'biod_storage.cc',
         'biometrics_daemon.cc',
         'cros_fp_biometrics_manager.cc',
-        'fpc_biometrics_manager.cc',
         'scoped_umask.cc',
         'uinput_device.cc',
       ],
@@ -42,7 +40,6 @@
       },
       'dependencies': ['libbiod'],
       'sources': [
-        'fpc/fpc_platform_utils.cc',
         'main.cc',
       ],
     },

@@ -47,12 +47,9 @@ record id and label.
 FakeBiometric is the biometrics manager for a fake sensor which simulates a real
 biometric sensor and its interaction with biod. It is used to test biod.
 
-### FpcBiometric
+### CrosFpBiometric
 
-FpcBiometric is the biometrics manager for a real sensor and has its own
-algorithms library (called libfp.so) for building, serializing, updating and
-matching records. libfp.so is provided by the hardware vendor and dynamically
-loaded at runtime.
+TODO
 
 ## CHROME
 

@@ -47,6 +47,19 @@
       ],
     },
     {
+      'target_name': 'bio_crypto_init',
+      'type': 'executable',
+      'link_settings': {
+        'libraries': [
+          '-ldl',
+        ],
+      },
+      'dependencies': ['libbiod'],
+      'sources': [
+        'bio_crypto_init.cc',
+      ],
+    },
+    {
       'target_name': 'bio_wash',
       'type': 'executable',
       'dependencies': ['libbiod'],

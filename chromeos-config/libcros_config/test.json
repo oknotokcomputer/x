@@ -13,27 +13,10 @@
             "ucm-suffix": "some"
           }
         },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "has-base-accelerometer": true,
-          "has-base-gyroscope": true,
-          "has-lid-accelerometer": true,
-          "is-lid-convertible": true
-        },
         "identity": {
           "platform-name": "Some",
           "sku-id": 0,
           "smbios-name-match": "Some"
-        },
-        "modem": {
-          "firmware-variant": "some"
         },
         "name": "some",
         "oem-id": "0",
@@ -73,24 +56,10 @@
             "ucm-suffix": "some"
           }
         },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "is-lid-convertible": false
-        },
         "identity": {
           "platform-name": "Some",
           "sku-id": 1,
           "smbios-name-match": "Some"
-        },
-        "modem": {
-          "firmware-variant": "some"
         },
         "name": "some",
         "oem-id": "0",
@@ -122,9 +91,6 @@
             "ucm-suffix": "another"
           }
         },
-        "hardware-properties": {
-          "is-lid-convertible": true
-        },
         "identity": {
           "platform-name": "Another",
           "smbios-name-match": "Another"
@@ -150,18 +116,6 @@
           "build-properties": {
             "first-api-level": "27"
           }
-        },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "brand-code": "WLBA",
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",
@@ -197,18 +151,6 @@
           "build-properties": {
             "first-api-level": "27"
           }
-        },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "brand-code": "WLBA",
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",
@@ -244,18 +186,6 @@
             "first-api-level": "27"
           }
         },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "brand-code": "WLBB",
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "is-lid-convertible": false
-        },
         "identity": {
           "platform-name": "Some",
           "sku-id": 8,
@@ -290,18 +220,6 @@
           "build-properties": {
             "first-api-level": "27"
           }
-        },
-        "bluetooth": {
-          "config": {
-            "system-path": "/etc/bluetooth/some/main.conf"
-          }
-        },
-        "brand-code": "WLBB",
-        "camera": {
-          "count": 1
-        },
-        "hardware-properties": {
-          "is-lid-convertible": false
         },
         "identity": {
           "platform-name": "Some",

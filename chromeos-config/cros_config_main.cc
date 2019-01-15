@@ -15,7 +15,8 @@
 #include "chromeos-config/libcros_config/cros_config.h"
 
 int main(int argc, char* argv[]) {
-  DEFINE_string(test_file, "",
+  DEFINE_bool(abspath, false, "Show the property value as an absolute path.");
+  DEFINE_string(test_database, "",
                 "Override path to system config database for testing.");
   DEFINE_string(test_name, "", "Override platform name for testing.");
   DEFINE_int32(test_sku_id, brillo::kDefaultSkuId,
@@ -28,8 +29,8 @@ int main(int argc, char* argv[]) {
                       "debug logging messages.\n";
   brillo::FlagHelper::Init(argc, argv, usage);
 
-  CHECK_EQ(FLAGS_test_file.empty(), FLAGS_test_name.empty())
-      << "You must pass both --test_file and --test_name or neither.";
+  CHECK_EQ(FLAGS_test_database.empty(), FLAGS_test_name.empty())
+      << "You must pass both --test_database and --test_name or neither.";
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_FILE;
@@ -40,12 +41,12 @@ int main(int argc, char* argv[]) {
   logging::SetMinLogLevel(-3);
 
   brillo::CrosConfig cros_config;
-  if (FLAGS_test_file.empty()) {
+  if (FLAGS_test_database.empty()) {
     if (!cros_config.Init(FLAGS_test_sku_id)) {
       return 1;
     }
   } else {
-    if (!cros_config.InitForTestX86(base::FilePath(FLAGS_test_file),
+    if (!cros_config.InitForTestX86(base::FilePath(FLAGS_test_database),
                                  FLAGS_test_name, FLAGS_test_sku_id,
                                  FLAGS_whitelabel_tag)) {
       return 1;
@@ -62,7 +63,12 @@ int main(int argc, char* argv[]) {
   std::string property = args[1];
 
   std::string value;
-  bool result = cros_config.GetString(path, property, &value);
+  bool result;
+  if (FLAGS_abspath) {
+    result = cros_config.GetAbsPath(path, property, &value);
+  } else {
+    result = cros_config.GetString(path, property, &value);
+  }
   if (!result) {
     return 1;
   }

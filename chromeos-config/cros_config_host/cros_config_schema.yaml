@@ -6,14 +6,10 @@ typeDefs:
   bcs-file-name: &bcs_file_name
     type: string
     description: Name of the file located in BCS under the respective bcs-overlay.
-  deprecated_string: &deprecated_string
-    type: string
-    description: A deprecated string property to be removed after migration.
   firmware-build-target: &firmware_build_target
     type: string
     description: Build target that will be considered dirty when building/testing
       locally.
-  # TODO(shapiroc): Migrate to use system-file-v2 instead
   system-file: &system_file
     type: object
     properties:
@@ -24,22 +20,6 @@ typeDefs:
         description: Installation path for the file on the system image.
         type: string
     additionalProperties: false
-  # V2 exists because system-file targets were poorly named, so they couldn't
-  # be logically shared for build-time and run-time usage.
-  # E.g. bluetooth config we want to both install and get the path at runtime
-  system-file-v2: &system_file_v2
-    type: object
-    properties:
-      build-path:
-        description: Source of the file relative to the build system.
-        type: string
-      system-path:
-        description: Installation path for the file on the system image.
-        type: string
-    additionalProperties: false
-    required:
-      - build-path
-      - system-path
   firmware-file: &firmware_file
     type: object
     properties:
@@ -53,14 +33,11 @@ typeDefs:
         description: Symlink file that will be installed pointing to the destination.
         type: string
     additionalProperties: false
-  sku-id: &sku_id
-    description: "SKU/Board strapping pins configured during board manufacturing."
-    type: integer
   whitelabel-tag: &whitelabel_tag
-    description: "'whitelabel_tag' value set in the VPD, to add Whitelabel branding over an unbranded base model."
+    description: "'whitelabel-tag' value set in the VPD for Whitelabels."
     type: string
   customization-id: &customization_id
-    description: "'customization_id' value set in the VPD for non-unibuild Zergs and Whitelabels. Deprecated for use in new products since 2017/07/26."
+    description: "'customization-id' value set in the VPD for Zergs and older Whitelabels."
     type: string
   platform-name: &platform_name
     description: "Defines the name that is reported by 'mosys platform name'
@@ -144,23 +121,10 @@ properties:
               additionalProperties: false
               required:
               - main
-            bluetooth:
-              type: object
-              properties:
-                config: *system_file_v2
-              additionalProperties: false
-              required:
-              - config
             brand-code:
               description: Brand code of the model (also called RLZ code).
               type: string
-            camera:
-              type: object
-              properties:
-                count:
-                  type: integer
-                  description: Specified the number of cameras on the model.
-              additionalProperties: false
+              pattern: "^[A-Z]{4}$"
             firmware:
               type: object
               properties:
@@ -175,11 +139,6 @@ properties:
                       description: Build target of the base EC firmware for a detachable device,
                         that will be considered dirty when building/testing
                       type: string
-                    ec_extras:
-                      type: array
-                      items:
-                        type: string
-                        description: Extra EC build targets to build within chromeos-ec.
                     coreboot: *firmware_build_target
                     cr50: *firmware_build_target
                     depthcharge: *firmware_build_target
@@ -187,23 +146,14 @@ properties:
                     libpayload: *firmware_build_target
                     u-boot: *firmware_build_target
                   additionalProperties: false
-                ec-image: *deprecated_string
-                ec-ro-image: *bcs_file_name
-                pd-image: *deprecated_string
-                pd-ro-image: *bcs_file_name
+                ec-image: *bcs_file_name
+                pd-image: *bcs_file_name
                 key-id:
                   description: Key ID from the signer key set that is used to sign the
                     given firmware image.
                   type: string
-                main-image: *deprecated_string
-                main-ro-image: *bcs_file_name
+                main-image: *bcs_file_name
                 main-rw-image: *bcs_file_name
-                name:
-                  description: This is a human-recognizable name used to refer to the firmware.
-                    It will be used when generating the shellball via firmware packer.
-                    Mainly, this is only for compatibility testing with device tree (since DT
-                    allowed firmwares to be named).
-                  type: string
                 no-firmware:
                   description: If present this indicates that this model has no firmware at present.
                     This means that it will be omitted from the firmware updater
@@ -212,6 +162,28 @@ properties:
                     This option is often useful when a model is first added,
                     since it may not have firmware at that point.
                   type: boolean
+                extra:
+                  type: array
+                  items:
+                    type: string
+                    description: A list of extra files or directories needed
+                      to update firmware, each being a string filename. Any filename
+                      is supported. If it starts with `bcs://` then it is read from
+                      BCS as with main-image above. But normally it is a path. A
+                      typical example is `${FILESDIR}/extra` which means that the
+                      `extra` diectory is copied from the firmware ebuild's
+                      `files/extra` directory. Full paths can be provided, e.g.
+                      `${SYSROOT}/usr/bin/ectool`. If a directory is provided, its
+                      contents are copied (subdirectories are not supported). This
+                      mirrors the functionality of `CROS_FIRMWARE_EXTRA_LIST`.
+                tools:
+                  type: array
+                  items:
+                    type: string
+                    description: A list of additional tools which should be
+                      packed into the firmware update shellball. This is only needed
+                      if this model needs to run a special tool to do the firmware
+                      update.
               additionalProperties: false
             firmware-signing:
               type: object
@@ -251,11 +223,14 @@ properties:
                 This tuple must either contain x86 properties only or ARM properties only.
               oneOf:
                 - properties:
+                    sku-id:
+                      description: "[x86] SKU/Board strapping pins configured during board
+                        manufacturing."
+                      type: integer
                     smbios-name-match:
                       description: "[x86] Firmware name built into the firmware and reflected back
                         out in the SMBIOS tables."
                       type: string
-                    sku-id: *sku_id
                     platform-name: *platform_name
                     customization-id: *customization_id
                     whitelabel-tag: *whitelabel_tag
@@ -265,7 +240,6 @@ properties:
                       description: "[ARM] String pattern (partial) that is matched against the
                         contents of /proc/device-tree/compatible on ARM devices."
                       type: string
-                    sku-id: *sku_id
                     platform-name: *platform_name
                     customization-id: *customization_id
                     whitelabel-tag: *whitelabel_tag
@@ -366,47 +340,6 @@ properties:
                 prevent this device from being updated to another OEM's devices.
               type: string
               pattern: "[0-9]+"
-            modem:
-              type: object
-              properties:
-                firmware-variant:
-                  description: Variant of the modem firmware to be used. This
-                    value is read by modemfwd to match against the variant field
-                    of a firmware entry in a firmware manifest. In most cases,
-                    we simply use the model name as the value.
-                  type: string
-              additionalProperties: false
-            hardware-properties:
-              type: object
-              description: Contains boolean flags for hardware properties of
-                this board, for example if it's convertible, has a touchscreen,
-                has a camera, etc. This information is used to auto-generate C
-                code that is consumed by the EC build process in order to do
-                run-time configuration. If a value is defined within a config
-                file, but not for a specific model, that value will be assumed
-                to be false for that model.
-                All properties must be booleans. If non-boolean
-                properties are desired, the generation code in
-                cros_config_schema.py must be updated to support them.
-              properties:
-                is-lid-convertible:
-                  description: Can the lid be rotated 360 degrees.
-                  type: boolean
-                has-lid-accelerometer:
-                  description: Is there an accelerometer in the lid of the
-                    device.
-                  type: boolean
-                has-base-accelerometer:
-                  description: Is there an accelerometer in the base of the
-                    device.
-                  type: boolean
-                has-base-gyroscope:
-                  description: Is there a gyroscope in the base of the device.
-                  type: boolean
-                has-fingerprint-sensor:
-                  description: Is there a fingerprint sensor on the device.
-                  type: boolean
-              additionalProperties: false
           additionalProperties: false
           required:
           - firmware

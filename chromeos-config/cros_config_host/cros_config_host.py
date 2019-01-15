@@ -14,10 +14,11 @@ from __future__ import print_function
 
 import argparse
 import json
-import os
 import sys
 
 from libcros_config_host import CrosConfig
+from libcros_config_host_fdt import CrosConfigFdt
+from libcros_config_host import FORMAT_YAML
 
 def DumpConfig(config):
   """Dumps all of the config to stdout
@@ -103,21 +104,6 @@ def GetAudioFiles(config):
     print(files.source)
     print(files.dest)
 
-def GetBluetoothFiles(config):
-  """Print a list of bluetooth files across all devices
-
-  The output is one line for the source file and one line for the install file,
-  e.g.:
-     bluetooth/main.conf
-     /etc/bluetooth/main.conf
-
-  Args:
-    config: A CrosConfig instance
-  """
-  for files in config.GetBluetoothFiles():
-    print(files.source)
-    print(files.dest)
-
 def GetFirmwareBuildTargets(config, target_type):
   """Lists all firmware build-targets of the given type, for all models.
 
@@ -169,6 +155,47 @@ def GetFirmwareBuildCombinations(config, targets):
     for value in target_values:
       print(value)
 
+def WriteTargetDirectories():
+  """Writes out a file containing the directory target info"""
+  target_dirs = CrosConfigFdt.GetTargetDirectories()
+  print('''/*
+ * This is a generated file, DO NOT EDIT!'
+ *
+ * This provides a map from property name to target directory for all PropFile
+ * objects defined in the schema.
+ */
+
+/ {
+\tchromeos {
+\t\tschema {
+\t\t\ttarget-dirs {''')
+  for name in sorted(target_dirs.keys()):
+    print('\t\t\t\t%s = "%s";' % (name, target_dirs[name]))
+  print('''\t\t\t};
+\t\t};
+\t};
+};
+''')
+
+def WritePhandleProperties():
+  """Writes out a file containing the directory target info"""
+  phandle_props = CrosConfigFdt.GetPhandleProperties()
+  quoted = ['"%s"' % prop for prop in sorted(phandle_props)]
+  print('''/*
+ * This is a generated file, DO NOT EDIT!'
+ *
+ * This provides a list of property names which are used as phandles in the
+ * schema.
+ */
+
+/ {
+\tchromeos {
+\t\tschema {
+\t\t\tphandle-properties = %s;
+\t\t};
+\t};
+};
+''' % (', '.join(quoted)))
 
 def GetWallpaperFiles(config):
   """Get the wallpaper files needed for installation
@@ -197,8 +224,7 @@ def GetParser(description):
                       help='Override the master config file path. Use - for '
                            'stdin.')
   parser.add_argument('-m', '--model', type=str,
-                      help='Which model to run the subcommand on. Defaults to '
-                           'CROS_CONFIG_MODEL environment variable.')
+                      help='Which model to run the subcommand on.')
   subparsers = parser.add_subparsers(dest='subcommand')
   subparsers.add_parser(
       'dump-config',
@@ -237,11 +263,6 @@ def GetParser(description):
       'get-audio-files',
       help='Lists pairs of audio files in sequence: first line is ' +
       'the source file, second line is the full install pathname')
-  # Parser: get-bluetooth-files
-  subparsers.add_parser(
-      'get-bluetooth-files',
-      help='Lists pairs of bluetooth files in sequence: first line is ' +
-           'the source file, second line is the full install pathname')
   # Parser: get-firmware-build-targets
   build_target_parser = subparsers.add_parser(
       'get-firmware-build-targets',
@@ -298,28 +319,32 @@ def main(argv=None):
   if argv is None:
     argv = sys.argv[1:]
   opts = parser.parse_args(argv)
-
-  if not opts.model and 'CROS_CONFIG_MODEL' in os.environ:
-    opts.model = os.environ['CROS_CONFIG_MODEL']
-
-  config = CrosConfig(opts.config, model_filter_regex=opts.model)
-  # Get all models we are invoking on (if any).
-  if opts.model and not config.GetDeviceConfigs():
-    print("Unknown model '%s'" % opts.model, file=sys.stderr)
+  if opts.subcommand == 'write-target-dirs':
+    WriteTargetDirectories()
     return
+  elif opts.subcommand == 'write-phandle-properties':
+    WritePhandleProperties()
+    return
+  config = CrosConfig(opts.config)
+  # Get all models we are invoking on (if any).
+  model = None
+  if opts.model:
+    for device in config.GetDeviceConfigs():
+      if device.GetName() == opts.model:
+        model = device
+    if not model:
+      print("Unknown model '%s'" % opts.model, file=sys.stderr)
+      return
   # Main command branch
   if opts.subcommand == 'list-models':
     ListModels(config)
   elif opts.subcommand == 'dump-config':
     DumpConfig(config)
   elif opts.subcommand == 'get':
-    if not opts.model:
+    if not model:
       print('You must specify --model for this command. See --help for more '
             'info.', file=sys.stderr)
       return
-    # There are multiple configs per model. Not sure how correct it is to pick
-    # just the first one.
-    model = config.GetDeviceConfigs()[0]
     GetProperty(model, opts.path, opts.prop)
   elif opts.subcommand == 'get-touch-firmware-files':
     GetTouchFirmwareFiles(config)
@@ -329,8 +354,6 @@ def main(argv=None):
     GetArcFiles(config)
   elif opts.subcommand == 'get-audio-files':
     GetAudioFiles(config)
-  elif opts.subcommand == 'get-bluetooth-files':
-    GetBluetoothFiles(config)
   elif opts.subcommand == 'get-firmware-build-targets':
     GetFirmwareBuildTargets(config, opts.type)
   elif opts.subcommand == 'get-thermal-files':

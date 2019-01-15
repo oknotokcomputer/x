@@ -6,28 +6,7 @@
 from __future__ import print_function
 
 from collections import namedtuple, OrderedDict
-
 import os
-
-from cros_config_schema import GetValidSchemaProperties
-
-# Defines a list of undiffable properties between the device-tree impl and
-# the YAML based impl.  These properties are accounted for in other API level
-# diffs, but they changed between the schemas and therefore can't be diffed.
-INCOMPATIBLE_PROPERTIES = {
-  '/' : [
-    'brand-code',         # Moved due to Whitelabel/Product changes.
-    'name',               # Only in YAML
-  ],
-  '/firmware' : [
-    'key-id',             # Moved to firmware-signing in YAML,
-    'name',               # Doesn't exist in DT impl
-  ],
-  '/firmware-signing' : [
-    'key-id',             # Moved from firmware in DT
-    'signature-id',       # Only in YAML
-  ],
-}
 
 # Represents a single touch firmware file which needs to be installed:
 #   source: source filename of firmware file. This is installed in a
@@ -61,15 +40,17 @@ BaseFile = namedtuple('BaseFile', ['source', 'dest'])
 #       image
 #   pd_image_uri: URI to use to obtain the PD (Power Delivery controller)
 #       firmware image
+#   extra: List of extra files to include in the firmware update, each a string
+#   create_bios_rw_image: True to create a RW BIOS image
+#   tools: List of tools to include in the firmware update
 #   sig_id: Signature ID to put in the setvars.sh file. This is normally the
 #       same as the model, since that is what we use for signature ID. But for
 #       zero-touch whitelabel this is 'sig-id-in-customization-id' since we do
 #       not know the signature ID until we look up in VPD.
-#   brand-code: Uniquely identifies a given brand (see go/chromeos-rlz)
 FirmwareInfo = namedtuple('FirmwareInfo', [
     'model', 'shared_model', 'key_id', 'have_image', 'bios_build_target',
     'ec_build_target', 'main_image_uri', 'main_rw_image_uri', 'ec_image_uri',
-    'pd_image_uri', 'sig_id', 'brand_code'
+    'pd_image_uri', 'extra', 'create_bios_rw_image', 'tools', 'sig_id'
 ])
 
 class PathComponent(object):
@@ -221,15 +202,6 @@ class DeviceConfig(object):
     """
     pass
 
-  def GetBluetoothFiles(self):
-    """Get a list of bluetooth config files
-
-    Returns:
-      List of BaseFile objects representing the bluetooth files referenced
-      by this device.
-    """
-    pass
-
   def GetThermalFiles(self):
     """Get a list of thermal files
 
@@ -281,37 +253,13 @@ class CrosConfigBaseImpl(object):
       Dictionary that maps method call onto return config.
     """
     result = {}
-    result['ListModels'] = self.GetModelList()
     result['GetFirmwareUris'] = self.GetFirmwareUris()
     result['GetTouchFirmwareFiles'] = self.GetTouchFirmwareFiles()
     result['GetArcFiles'] = self.GetArcFiles()
     result['GetAudioFiles'] = self.GetAudioFiles()
-    bluetooth_files = self.GetBluetoothFiles()
-    if bluetooth_files:
-      result['GetBluetoothFiles'] = bluetooth_files
     result['GetThermalFiles'] = self.GetThermalFiles()
     result['GetFirmwareInfo'] = self.GetFirmwareInfo()
-    for target in ['coreboot', 'ec']:
-      result['GetFirmwareBuildTargets_%s' % target] = \
-        self.GetFirmwareBuildTargets(target)
-    result['GetFirmwareBuildCombinations'] = \
-      self.GetFirmwareBuildCombinations(['coreboot', 'ec'])
     result['GetWallpaperFiles'] = self.GetWallpaperFiles()
-
-    schema_properties = GetValidSchemaProperties()
-    for device in self.GetDeviceConfigs():
-      value_map = {}
-      for path in schema_properties:
-        for schema_property in schema_properties[path]:
-          # Exclude incompatible properties for now until the migration
-          # is done and we aren't trying to diff properties any longer.
-          if schema_property not in INCOMPATIBLE_PROPERTIES.get(path, []):
-            prop_value = device.GetProperty(path, schema_property)
-            # Only dump populated values; this makes it so the config dumps
-            # don't need to be updated when new schema attributes are added.
-            if prop_value:
-              value_map['%s::%s' % (path, schema_property)] = prop_value
-      result['GetProperty_%s' % device.GetName()] = value_map
     return result
 
 
@@ -394,20 +342,6 @@ class CrosConfigBaseImpl(object):
 
     return sorted(file_set, key=lambda files: files.source)
 
-  def GetBluetoothFiles(self):
-    """Get a list of unique bluetooth files for all devices
-
-    Returns:
-      List of BaseFile objects representing all the bluetooth files referenced
-      by all devices
-    """
-    file_set = set()
-    for device in self.GetDeviceConfigs():
-      for files in device.GetBluetoothFiles():
-        file_set.add(files)
-
-    return sorted(file_set, key=lambda files: files.source)
-
   def GetFirmwareBuildTargets(self, target_type):
     """Returns a list of all firmware build-targets of the given target type.
 
@@ -435,9 +369,6 @@ class CrosConfigBaseImpl(object):
         for ec_extra in ('base', 'cr50'):
           if ec_extra in device_targets:
             build_targets.append(device_targets[ec_extra])
-        if 'ec_extras' in device_targets:
-          for extra_target in device_targets['ec_extras']:
-            build_targets.append(extra_target)
     return sorted(set(build_targets))
 
   def GetFirmwareBuildCombinations(self, components):
@@ -462,7 +393,7 @@ class CrosConfigBaseImpl(object):
       # Skip device_targetss with no build targets
       if not device_targets:
         continue
-      targets = [device_targets[c] for c in components if c in device_targets]
+      targets = [device_targets[c] for c in components]
 
       # Always name firmware combinations after the 'coreboot' name.
       # TODO(teravest): Add a 'name' field.
@@ -523,6 +454,14 @@ class CrosConfigBaseImpl(object):
       List of model names, each a string
     """
     return sorted(set([device.GetName() for device in self.GetDeviceConfigs()]))
+
+  def GetFirmwareScript(self):
+    """Obtain the packer script to use. Always updater4.sh
+
+    Returns:
+      Filename of packer script to use (e.g. 'updater4.sh')
+    """
+    return 'updater4.sh'
 
   def GetFirmwareInfo(self):
     firmware_info = OrderedDict()

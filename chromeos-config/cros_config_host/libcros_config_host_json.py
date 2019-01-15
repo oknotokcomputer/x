@@ -11,7 +11,6 @@ for CLI access to this library.
 from __future__ import print_function
 
 from collections import OrderedDict
-import copy
 import json
 
 from cros_config_schema import TransformConfig
@@ -64,10 +63,7 @@ class DeviceConfigJson(DeviceConfig):
     file_region = self.GetProperties(path)
     if file_region and 'files' in file_region:
       for item in file_region['files']:
-        if 'build-path' in item:
-          result.append(BaseFile(item['build-path'], item['system-path']))
-        else:
-          result.append(BaseFile(item['source'], item['destination']))
+        result.append(BaseFile(item['source'], item['destination']))
     return result
 
   def GetFirmwareConfig(self):
@@ -95,13 +91,6 @@ class DeviceConfigJson(DeviceConfig):
   def GetAudioFiles(self):
     return self._GetFiles('/audio/main')
 
-  def GetBluetoothFiles(self):
-    result = []
-    config = self.GetProperties('/bluetooth/config')
-    if config:
-      result.append(BaseFile(config['build-path'], config['system-path']))
-    return result
-
   def GetThermalFiles(self):
     return self._GetFiles('/thermal')
 
@@ -118,16 +107,11 @@ class CrosConfigJson(CrosConfigBaseImpl):
 
   Properties:
     _json: Root json for the entire config.
-    _configs: List of DeviceConfigJson instances
+    _configs: List of DeviceConfigJson instances.
   """
 
-  def __init__(self, infile, model_filter_regex=None):
-    """
-    Args:
-      model_filter_regex: Only returns configs that match the filter.
-    """
-    self._json = json.loads(
-        TransformConfig(infile.read(), model_filter_regex=model_filter_regex))
+  def __init__(self, infile):
+    self._json = json.loads(TransformConfig(infile.read()))
     self._configs = []
     for config in self._json['chromeos']['configs']:
       self._configs.append(DeviceConfigJson(config))
@@ -141,20 +125,14 @@ class CrosConfigJson(CrosConfigBaseImpl):
     processed = set()
     for config in self._configs:
       fw = config.GetFirmwareConfig()
-      # For partial configs (public vs private), we need to support the name
-      # for cases where identity isn't specified.
-      identity = config.GetName() + str(config.GetProperties('/identity'))
-      brand_code = config.GetProperty('/', 'brand-code')
+      identity = str(config.GetProperties('/identity'))
       if fw and identity not in processed:
         fw_str = str(fw)
         shared_model = None
-        if fw_str not in fw_by_model:
-          # Use the explict name of the firmware, else use the device name
-          # This supports equivalence testing with DT since it allowed
-          # naming firmware images.
-          fw_by_model[fw_str] = fw.get('name', config.GetName())
-
-        shared_model = fw_by_model[fw_str]
+        if fw_str in fw_by_model:
+          shared_model = fw_by_model[fw_str]
+        else:
+          fw_by_model[fw_str] = config.GetName()
 
         build_config = config.GetProperties('/firmware/build-targets')
         if build_config:
@@ -162,14 +140,14 @@ class CrosConfigJson(CrosConfigBaseImpl):
           ec_build_target = config.GetValue(build_config, 'ec')
         else:
           bios_build_target, ec_build_target = None, None
+        create_bios_rw_image = False
 
-        main_image_uri = (config.GetValue(fw, 'main-ro-image') or
-                          config.GetValue(fw, 'main-image') or '')
+        main_image_uri = config.GetValue(fw, 'main-image') or ''
         main_rw_image_uri = config.GetValue(fw, 'main-rw-image') or ''
-        ec_image_uri = (config.GetValue(fw, 'ec-ro-image') or
-                        config.GetValue(fw, 'ec-image') or '')
-        pd_image_uri = (config.GetValue(fw, 'pd-ro-image') or
-                        config.GetValue(fw, 'pd-image') or '')
+        ec_image_uri = config.GetValue(fw, 'ec-image') or ''
+        pd_image_uri = config.GetValue(fw, 'pd-image') or ''
+        extra = config.GetValue(fw, 'extra') or []
+        tools = config.GetValue(fw, 'tools') or []
 
         fw_signer_config = config.GetProperties('/firmware-signing')
         key_id = config.GetValue(fw_signer_config, 'key-id')
@@ -180,8 +158,8 @@ class CrosConfigJson(CrosConfigBaseImpl):
         name = config.GetName()
 
         if sig_in_customization_id:
+          key_id = ''
           sig_id = 'sig-id-in-customization-id'
-          brand_code = ''
         else:
           sig_id = config.GetValue(fw_signer_config, 'signature-id')
           processed.add(identity)
@@ -189,26 +167,19 @@ class CrosConfigJson(CrosConfigBaseImpl):
         info = FirmwareInfo(name, shared_model, key_id, have_image,
                             bios_build_target, ec_build_target, main_image_uri,
                             main_rw_image_uri, ec_image_uri, pd_image_uri,
-                            sig_id, brand_code)
+                            extra, create_bios_rw_image, tools, sig_id)
         config.firmware_info[name] = info
 
         if sig_in_customization_id:
-          for wl_config in self._configs:
-            if wl_config.GetName() == name:
-              wl_brand_code = wl_config.GetProperty('/', 'brand-code')
-              wl_identity_str = str(wl_config.GetProperties('/identity'))
-              wl_identity = wl_config.GetName() + wl_identity_str
-              processed.add(wl_identity)
-              fw_signer_config = wl_config.GetProperties('/firmware-signing')
-              wl_key_id = wl_config.GetValue(fw_signer_config, 'key-id')
-              wl_sig_id = wl_config.GetValue(fw_signer_config, 'signature-id')
-              wl_fw_info = copy.deepcopy(info)
-              wl_config.firmware_info[wl_sig_id] = wl_fw_info._replace(
-                  model=wl_sig_id,
-                  key_id=wl_key_id,
-                  have_image=False,
-                  sig_id=wl_sig_id,
-                  brand_code=wl_brand_code)
+          for config in self._configs:
+            if config.GetName() == name:
+              identity = str(config.GetProperties('/identity'))
+              processed.add(identity)
+              fw_signer_config = config.GetProperties('/firmware-signing')
+              key_id = config.GetValue(fw_signer_config, 'key-id')
+              sig_id = config.GetValue(fw_signer_config, 'signature-id')
+              config.firmware_info[sig_id] = info._replace(
+                  model=sig_id, key_id=key_id, have_image=False, sig_id=sig_id)
 
   def GetDeviceConfigs(self):
     return self._configs

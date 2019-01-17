@@ -534,6 +534,9 @@ remove_report() {
 send_crashes() {
   local dir="$1"
 
+  # Make sure we don't have bad file names. https://crbug.com/922446
+  find "${dir}" -type f -name '*[^a-zA-Z0-9_.+=%-]*' -delete || :
+
   # Look through all metadata (*.meta) files, oldest first.  That way, the rate
   # limit does not stall old crashes if there's a high amount of new crashes
   # coming in.

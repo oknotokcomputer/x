@@ -790,16 +790,21 @@ bool Mount::MountEphemeralCryptohomeInner(const std::string& username) {
 bool Mount::SetUpEphemeralCryptohome(const FilePath& source_path) {
   CopySkeleton(source_path);
 
-  // Create the Downloads directory if it does not exist so that it can later be
-  // made group accessible when SetupGroupAccess() is called.
-  FilePath downloads_path =
-      FilePath(source_path).Append(kDownloadsDir);
-  if (!platform_->DirectoryExists(downloads_path)) {
-    if (!platform_->CreateDirectory(downloads_path) ||
-        !platform_->SetOwnership(
-            downloads_path, default_user_, default_group_, true)) {
-      LOG(ERROR) << "Couldn't create user Downloads directory: "
-                 << downloads_path.value();
+  // Create the Downloads, GCache and GCache/v2
+  // directories if they don't exist so they can be made group accessible when
+  // SetupGroupAccess() is called.
+  const FilePath user_files_paths[] = {
+      FilePath(source_path).Append(kDownloadsDir),
+      FilePath(source_path).Append(kGCacheDir),
+      FilePath(source_path).Append(kGCacheDir).Append(kGCacheVersion2Dir),
+  };
+  for (const auto& path : user_files_paths) {
+    if (platform_->DirectoryExists(path))
+        continue;
+
+    if (!platform_->CreateDirectory(path) ||
+        !platform_->SetOwnership(path, default_user_, default_group_, true)) {
+      LOG(ERROR) << "Couldn't create user path directory: " << path.value();
       return false;
     }
   }
@@ -1097,12 +1102,12 @@ bool Mount::SetupGroupAccess(const FilePath& home_dir) const {
   // Make the following directories group accessible by other system daemons:
   //   {home_dir}
   //   {home_dir}/Downloads
-  //   {home_dir}/GCache (only if it exists)
+  //   {home_dir}/GCache
   //   {home_dir}/GCache/v1 (only if it exists)
   //
   // Make the following directories group accessible and writable by other
   // system daemons:
-  //   {home_dir}/GCache/v2 (only if it exists)
+  //   {home_dir}/GCache/v2
   const struct {
     FilePath path;
     bool optional = false;
@@ -1110,9 +1115,9 @@ bool Mount::SetupGroupAccess(const FilePath& home_dir) const {
   } kGroupAccessiblePaths[] = {
       {home_dir},
       {home_dir.Append(kDownloadsDir)},
-      {home_dir.Append(kGCacheDir), true},
+      {home_dir.Append(kGCacheDir)},
       {home_dir.Append(kGCacheDir).Append(kGCacheVersion1Dir), true},
-      {home_dir.Append(kGCacheDir).Append(kGCacheVersion2Dir), true, true},
+      {home_dir.Append(kGCacheDir).Append(kGCacheVersion2Dir), false, true},
   };
 
   constexpr mode_t kDefaultMode = S_IXGRP;

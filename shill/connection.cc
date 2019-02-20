@@ -298,12 +298,10 @@ void Connection::UpdateFromIPConfig(const IPConfigRefPtr& config) {
   if (!blackholed_uids_.empty() || has_blackholed_addrs) {
     blackhole_table_id_ = routing_table_->AllocTableId();
     CHECK(blackhole_table_id_);
-    routing_table_->CreateBlackholeRoute(interface_index_,
-                                         IPAddress::kFamilyIPv4,
+    routing_table_->CreateBlackholeRoute(IPAddress::kFamilyIPv4,
                                          kDefaultMetric,
                                          blackhole_table_id_);
-    routing_table_->CreateBlackholeRoute(interface_index_,
-                                         IPAddress::kFamilyIPv6,
+    routing_table_->CreateBlackholeRoute(IPAddress::kFamilyIPv6,
                                          kDefaultMetric,
                                          blackhole_table_id_);
   }
@@ -315,8 +313,7 @@ void Connection::UpdateFromIPConfig(const IPConfigRefPtr& config) {
                                   table_id_);
 
   if (properties.blackhole_ipv6) {
-    routing_table_->CreateBlackholeRoute(interface_index_,
-                                         IPAddress::kFamilyIPv6,
+    routing_table_->CreateBlackholeRoute(IPAddress::kFamilyIPv6,
                                          kDefaultMetric,
                                          table_id_);
   }

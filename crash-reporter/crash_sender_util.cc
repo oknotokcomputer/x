@@ -582,6 +582,9 @@ bool Sender::RequestToSendCrash(const base::FilePath& meta_file) {
     char* meta_file_path = const_cast<char*>(meta_file.value().c_str());
     char* shell_argv[] = {shell_script_path, temp_dir_path, meta_file_path,
                           nullptr};
+
+    setenv("IS_CHROMELESS_TTY", USE_CHROMELESS_TTY ? "true" : "false",
+           1 /* overwrite */);
     execve(shell_script_path, shell_argv, environ);
     // execve() failed.
     exit(EXIT_FAILURE);

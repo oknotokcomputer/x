@@ -213,6 +213,7 @@ BT_MASK_WHITELIST="8087:*"
 in_bt_mask_whitelist() {
   local vendor="$1"
   local product="$2"
+  [ -n "${vendor}" -a -n "${product}" ] && \
   [ "${BT_MASK_WHITELIST#*${vendor}:\*}" != "${BT_MASK_WHITELIST}" -o \
     "${BT_MASK_WHITELIST#*${vendor}:${product}}" != "${BT_MASK_WHITELIST}" ]
 }

@@ -1321,6 +1321,7 @@ TEST_F(ManagerTest, HandleProfileEntryDeletion) {
                                 manager()));
 
   string entry_name("entry_name");
+  EXPECT_CALL(*ethernet_provider_, RefreshGenericEthernetService());
   EXPECT_CALL(*s_not_in_profile, GetStorageIdentifier()).Times(0);
   EXPECT_CALL(*s_not_in_group, GetStorageIdentifier())
       .WillRepeatedly(Return("not_entry_name"));

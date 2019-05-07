@@ -7,7 +7,7 @@
 #include <utility>
 
 #include <base/logging.h>
-#include <dbus/wilco_dtc_supportd/dbus-constants.h>
+#include <dbus/diagnosticsd/dbus-constants.h>
 #include <mojo/edk/embedder/embedder.h>
 #include <mojo/edk/embedder/platform_handle.h>
 #include <mojo/edk/embedder/scoped_platform_handle.h>
@@ -38,7 +38,7 @@ WilcoDtcSupportdCoreDelegateImpl::BindWilcoDtcSupportdMojoServiceFactory(
 
   mojo::ScopedMessagePipeHandle mojo_pipe_handle =
       mojo::edk::CreateChildMessagePipe(
-          kWilcoDtcSupportdMojoConnectionChannelToken);
+          kDiagnosticsdMojoConnectionChannelToken);
   if (!mojo_pipe_handle.is_valid()) {
     LOG(ERROR) << "Failed to create Mojo child message pipe";
     return nullptr;

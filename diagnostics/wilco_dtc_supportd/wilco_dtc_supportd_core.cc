@@ -14,7 +14,7 @@
 #include <base/optional.h>
 #include <base/strings/string_util.h>
 #include <base/threading/thread_task_runner_handle.h>
-#include <dbus/wilco_dtc_supportd/dbus-constants.h>
+#include <dbus/diagnosticsd/dbus-constants.h>
 #include <dbus/object_path.h>
 #include <mojo/public/cpp/system/message_pipe.h>
 
@@ -187,12 +187,12 @@ void WilcoDtcSupportdCore::RegisterDBusObjectsAsync(
   DCHECK(!dbus_object_);
   dbus_object_ = std::make_unique<brillo::dbus_utils::DBusObject>(
       nullptr /* object_manager */, bus,
-      dbus::ObjectPath(kWilcoDtcSupportdServicePath));
+      dbus::ObjectPath(kDiagnosticsdServicePath));
   brillo::dbus_utils::DBusInterface* dbus_interface =
-      dbus_object_->AddOrGetInterface(kWilcoDtcSupportdServiceInterface);
+      dbus_object_->AddOrGetInterface(kDiagnosticsdServiceInterface);
   DCHECK(dbus_interface);
   dbus_interface->AddSimpleMethodHandlerWithError(
-      kWilcoDtcSupportdBootstrapMojoConnectionMethod,
+      kDiagnosticsdBootstrapMojoConnectionMethod,
       base::Unretained(&dbus_service_),
       &WilcoDtcSupportdDBusService::BootstrapMojoConnection);
   dbus_object_->RegisterAsync(sequencer->GetHandler(

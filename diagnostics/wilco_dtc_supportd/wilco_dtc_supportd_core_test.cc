@@ -27,7 +27,7 @@
 #include <base/run_loop.h>
 #include <base/strings/stringprintf.h>
 #include <brillo/dbus/async_event_sequencer.h>
-#include <dbus/wilco_dtc_supportd/dbus-constants.h>
+#include <dbus/diagnosticsd/dbus-constants.h>
 #include <dbus/message.h>
 #include <dbus/mock_bus.h>
 #include <dbus/mock_exported_object.h>
@@ -230,7 +230,7 @@ class WilcoDtcSupportdCoreTest : public testing::Test {
 
   // Perform initialization of the D-Bus object exposed by the tested code.
   void SetUpDBus() {
-    const dbus::ObjectPath kDBusObjectPath(kWilcoDtcSupportdServicePath);
+    const dbus::ObjectPath kDBusObjectPath(kDiagnosticsdServicePath);
 
     // Expect that the /org/chromium/WilcoDtcSupportd object is exported.
     wilco_dtc_supportd_dbus_object_ = new StrictMock<dbus::MockExportedObject>(
@@ -252,10 +252,9 @@ class WilcoDtcSupportdCoreTest : public testing::Test {
 
     // Expect that methods on the org.chromium.WilcoDtcSupportdInterface
     // interface are exported.
-    EXPECT_CALL(
-        *wilco_dtc_supportd_dbus_object_,
-        ExportMethod(kWilcoDtcSupportdServiceInterface,
-                     kWilcoDtcSupportdBootstrapMojoConnectionMethod, _, _))
+    EXPECT_CALL(*wilco_dtc_supportd_dbus_object_,
+                ExportMethod(kDiagnosticsdServiceInterface,
+                             kDiagnosticsdBootstrapMojoConnectionMethod, _, _))
         .WillOnce(SaveArg<2 /* method_call_callback */>(
             &bootstrap_mojo_connection_dbus_method_));
 

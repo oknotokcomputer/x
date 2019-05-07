@@ -9,8 +9,8 @@
 
 #include <base/bind.h>
 #include <base/strings/string_piece.h>
+#include <dbus/diagnosticsd/dbus-constants.h>
 #include <dbus/message.h>
-#include <dbus/wilco_dtc_supportd/dbus-constants.h>
 #include <mojo/public/cpp/bindings/interface_request.h>
 #include <mojo/public/cpp/system/buffer.h>
 
@@ -66,8 +66,8 @@ bool FakeBrowser::CallBootstrapMojoConnectionDBusMethod(
     FakeMojoFdGenerator* fake_mojo_fd_generator) {
   // Prepare input data for the D-Bus call.
   const int kFakeMethodCallSerial = 1;
-  dbus::MethodCall method_call(kWilcoDtcSupportdServiceInterface,
-                               kWilcoDtcSupportdBootstrapMojoConnectionMethod);
+  dbus::MethodCall method_call(kDiagnosticsdServiceInterface,
+                               kDiagnosticsdBootstrapMojoConnectionMethod);
   method_call.SetSerial(kFakeMethodCallSerial);
   dbus::MessageWriter message_writer(&method_call);
   message_writer.AppendFileDescriptor(fake_mojo_fd_generator->MakeFd().get());

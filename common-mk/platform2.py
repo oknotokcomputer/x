@@ -28,6 +28,7 @@ _IUSE = [
     'asan',
     'attestation',
     'binder',
+    'bluetooth_suspend_management',
     'buffet',
     'cellular',
     'cert_provision',

@@ -177,7 +177,6 @@
       ],
       'libraries': [
         '-lSkyCamAICKBL',
-        '-lStatsConverter',
         '-lia_aiq',
         '-lia_cmc_parser',
         '-lia_coordinate',

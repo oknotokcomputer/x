@@ -172,6 +172,12 @@ properties:
                 count:
                   type: integer
                   description: Specified the number of cameras on the model.
+                clock:
+                  type: string
+                  description: Specified the camera clock on the model.
+                  enum:
+                  - monotonic
+                  - boottime
               additionalProperties: false
             firmware:
               type: object

@@ -386,8 +386,10 @@ void StateController::HandleLidStateChange(LidState state) {
     return;
 
   lid_state_ = state;
-  if (state == LidState::OPEN)
+
+  if (lid_state_ == LidState::OPEN) {
     UpdateLastUserActivityTime();
+  }
   UpdateState();
 }
 
@@ -428,9 +430,9 @@ void StateController::HandleDisplayModeChange(DisplayMode mode) {
   UpdateSettingsAndState();
 }
 
-void StateController::HandleResume() {
+void StateController::HandleResume(LidState state) {
   CHECK(initialized_);
-  switch (delegate_->QueryLidState()) {
+  switch (state) {
     case LidState::OPEN:  // fallthrough
     case LidState::NOT_PRESENT:
       // Undim the screen and turn it back on immediately after the user

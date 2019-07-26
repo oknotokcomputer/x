@@ -90,7 +90,7 @@ Device::~Device() {
   msg_sink_.Run(msg);
 }
 
-void Device::FillProto(DeviceConfig* msg) const {
+void Device::FillProto(DeviceConfig* msg) {
   msg->set_br_ifname(config_->host_ifname());
   msg->set_br_ipv4(IPv4AddressToString(config_->host_ipv4_addr()));
   msg->set_arc_ifname(config_->guest_ifname());
@@ -101,12 +101,9 @@ void Device::FillProto(DeviceConfig* msg) const {
   msg->set_find_ipv6_routes(options_.find_ipv6_routes);
 }
 
-Device::Config& Device::config() const {
-  CHECK(config_);
-  return *config_.get();
-}
-
 void Device::Enable(const std::string& ifname) {
+  LOG(INFO) << "Enabling device " << ifname_;
+
   // If operating in legacy single network mode, enable inbound traffic to ARC
   // from the interface.
   // TODO(b/77293260) Also enable inbound traffic rules specific to the input
@@ -124,20 +121,16 @@ void Device::Enable(const std::string& ifname) {
   }
 
   if (options_.fwd_multicast) {
-    if (!mdns_forwarder_) {
-      LOG(INFO) << "Enabling mDNS forwarding for device " << ifname_;
-      auto mdns_fwd = std::make_unique<MulticastForwarder>();
-      if (mdns_fwd->Start(config_->host_ifname(), ifname,
-                          config_->guest_ipv4_addr(), kMdnsMcastAddress,
-                          kMdnsPort,
-                          /* allow_stateless */ true)) {
-        mdns_forwarder_ = std::move(mdns_fwd);
-      } else {
-        LOG(WARNING) << "mDNS forwarder could not be started on " << ifname_;
-      }
+    auto mdns_fwd = std::make_unique<MulticastForwarder>();
+    if (mdns_fwd->Start(config_->host_ifname(), ifname,
+                        config_->guest_ipv4_addr(), kMdnsMcastAddress,
+                        kMdnsPort,
+                        /* allow_stateless */ true)) {
+      mdns_forwarder_ = std::move(mdns_fwd);
+    } else {
+      LOG(WARNING) << "mDNS forwarder could not be started on " << ifname_;
     }
 
-<<<<<<< HEAD   (3f26f1 arc: networkd: Handle race condition when setting IPv6 confi)
     auto ssdp_fwd = std::make_unique<MulticastForwarder>();
     if (ssdp_fwd->Start(config_->host_ifname(), ifname, INADDR_ANY,
                         kSsdpMcastAddress, kSsdpPort,
@@ -145,23 +138,10 @@ void Device::Enable(const std::string& ifname) {
       ssdp_forwarder_ = std::move(ssdp_fwd);
     } else {
       LOG(WARNING) << "SSDP forwarder could not be started on " << ifname_;
-=======
-    if (!ssdp_forwarder_) {
-      LOG(INFO) << "Enabling SSDP forwarding for device " << ifname_;
-      auto ssdp_fwd = std::make_unique<MulticastForwarder>();
-      if (ssdp_fwd->Start(config_->host_ifname(), ifname, htonl(INADDR_ANY),
-                          kSsdpMcastAddress, kSsdpPort,
-                          /* allow_stateless */ false)) {
-        ssdp_forwarder_ = std::move(ssdp_fwd);
-      } else {
-        LOG(WARNING) << "SSDP forwarder could not be started on " << ifname_;
-      }
->>>>>>> CHANGE (894abc arc: networkd: Enable/disable devices based on rt netlink me)
     }
   }
 
-  if (options_.find_ipv6_routes && !router_finder_) {
-    LOG(INFO) << "Enabling IPV6 route finding for device " << ifname_;
+  if (options_.find_ipv6_routes) {
     router_finder_.reset(new RouterFinder());
     router_finder_->Start(
         ifname, base::Bind(&Device::OnRouteFound, weak_factory_.GetWeakPtr()));
@@ -190,7 +170,7 @@ void Device::Disable() {
   // Disable inbound traffic.
   // TODO(b/77293260) Also disable inbound traffic rules in multinetworking
   // mode.
-  if (ifname_ == kAndroidLegacyDevice && !legacy_lan_ifname_.empty()) {
+  if (!legacy_lan_ifname_.empty()) {
     LOG(INFO) << "Unbinding interface " << legacy_lan_ifname_ << " from device "
               << ifname_;
     legacy_lan_ifname_.clear();

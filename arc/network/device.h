@@ -79,8 +79,7 @@ class Device {
          const MessageSink& msg_sink);
   ~Device();
 
-  void FillProto(DeviceConfig* msg) const;
-  Config& config() const;
+  void FillProto(DeviceConfig* msg);
 
   // |ifname| should always be empty for devices that represent physical host
   // interfaces. For others, like the ARC device 'android' that represents the

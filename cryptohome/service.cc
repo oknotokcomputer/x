@@ -1080,6 +1080,7 @@ void Service::DoCheckKeyEx(std::unique_ptr<AccountIdentifier> identifier,
     } else {
       // TODO(wad) Should this pass along KEY_NOT_FOUND too?
       reply.set_error(CRYPTOHOME_ERROR_AUTHORIZATION_KEY_FAILED);
+      ResetDictionaryAttackMitigation();
     }
   } else {
     reply.set_error(CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
@@ -2445,6 +2446,7 @@ void Service::ContinueMountExWithCredentials(
   ReportTimerStop(kMountExTimer);
   if (!status) {
     reply.set_error(MountErrorToCryptohomeError(code));
+    ResetDictionaryAttackMitigation();
   }
   if (code == MOUNT_ERROR_RECREATED) {
     mount_reply->set_recreated(true);
@@ -3362,6 +3364,10 @@ void Service::ResetDictionaryAttackMitigation() {
   }
   if (!has_reset_lock_permissions) {
     ReportDictionaryAttackResetStatus(kDelegateNotAllowed);
+    return;
+  }
+  if (!tpm_->CanResetDictionaryAttackWithCurrentPCR0()) {
+    ReportDictionaryAttackResetStatus(kInvalidPcr0State);
     return;
   }
   if (!tpm_->ResetDictionaryAttackMitigation(delegate_blob, delegate_secret)) {

@@ -24,8 +24,8 @@
 
 bool ShouldEnableMultinet() {
   static const char kLsbReleasePath[] = "/etc/lsb-release";
-  static int kMinAndroidSdkVersion = 28;  // P
-  static int kMinChromeMilestone = 76;
+  static int kMinAndroidSdkVersion = 28;     // P
+  static int kMinChromeMilestone = INT_MAX;  // TODO(garrick)
 
   brillo::KeyValueStore store;
   if (!store.Load(base::FilePath(kLsbReleasePath))) {

@@ -17,7 +17,7 @@
 
 namespace {
 
-const int kInitialRtrSolicitationIntervalMs = 4000;
+const int kInitialRtrSolicitationIntervalMs = 2000;
 const int kRtrSolicitationIntervalMs = 4000;
 const int kMaxRtrSolicitations = 3;
 

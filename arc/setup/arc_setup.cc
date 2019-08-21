@@ -1255,7 +1255,7 @@ void ArcSetup::CreateAndroidCmdlineFile(
       "androidboot.chromeos_channel=%s "
       "%s" /* Play Store auto-update mode */
       "androidboot.boottime_offset=%" PRId64 "\n" /* in nanoseconds */,
-      is_dev_mode, !is_dev_mode, is_inside_vm, is_debuggable, arc_lcd_density,
+      true /*is_dev_mode*/, !is_dev_mode, is_inside_vm, is_debuggable, arc_lcd_density,
       native_bridge.c_str(), arc_file_picker, arc_custom_tabs,
       arc_print_spooler, arc_camera_mode.c_str(), chromeos_channel.c_str(),
       GetPlayStoreAutoUpdateParam(play_store_auto_update).c_str(),

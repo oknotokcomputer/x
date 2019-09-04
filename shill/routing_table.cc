@@ -921,8 +921,9 @@ void RoutingTable::SetPerDeviceTable(int interface_index, uint8_t table_id) {
 
     RoutingTableEntry new_entry = nent;
     new_entry.table = table_id;
-    AddRoute(interface_index, new_entry);
-    RemoveRoute(interface_index, nent);
+    AddRouteToKernelTable(interface_index, new_entry);
+    RemoveRouteFromKernelTable(interface_index, nent);
+    nent.table = table_id;
   }
   FlushCache();
 }

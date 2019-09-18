@@ -82,6 +82,7 @@ BluezDeviceInterfaceHandler::BluezDeviceInterfaceHandler() {
   AddMethodForwarding(bluetooth_device::kPair);
   AddMethodForwarding(bluetooth_device::kCancelPairing);
   AddMethodForwarding(bluetooth_device::kGetServiceRecords);
+  AddMethodForwarding(bluetooth_device::kExecuteWrite);
 }
 
 BluezGattCharacteristicInterfaceHandler::

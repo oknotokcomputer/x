@@ -18,6 +18,7 @@
 #include "hal/usb/cached_frame.h"
 #include "hal/usb/camera_hal.h"
 #include "hal/usb/camera_hal_device_ops.h"
+#include "hal/usb/quirks.h"
 #include "hal/usb/stream_format.h"
 
 namespace cros {
@@ -654,10 +655,24 @@ void CameraClient::RequestHandler::HandleRequest(
   }
 
   int ret;
+  bool keep_trying;
   do {
     VLOGFID(2, device_id_) << "before DequeueV4L2Buffer";
     ret = DequeueV4L2Buffer(pattern_mode);
-  } while (ret == -EAGAIN);
+    keep_trying = false;
+    if (ret == -ETIMEDOUT && (device_info_.quirks & kQuirkRestartOnTimeout)) {
+      VLOGFID(1, device_id_) << "Restart stream";
+      if (StreamOffImpl() != 0) {
+        break;
+      }
+      if (StreamOnImpl(new_resolution, constant_frame_rate,
+                       use_native_sensor_ratio_) != 0) {
+        break;
+      }
+      keep_trying = true;
+    }
+    keep_trying = keep_trying || (ret == -EAGAIN);
+  } while (keep_trying);
 
   if (ret) {
     HandleAbortedRequest(&capture_result);
@@ -976,6 +991,9 @@ void CameraClient::RequestHandler::SkipFramesAfterStreamOn(int num_frames) {
       current_buffer_timestamp_in_v4l2_ = v4l2_ts;
       current_buffer_timestamp_in_user_ = user_ts;
       device_->ReuseFrameBuffer(buffer_id);
+    } else {
+      VLOGFID(1, device_id_)
+          << "GetNextFrameBuffer failed: " << base::safe_strerror(-ret);
     }
   }
 }

@@ -393,6 +393,9 @@ detect_system_config() {
 # This is used to prevent developer mode transitions from happening too
 # quickly.
 force_delay() {
+  if [ "${FACTORY_WIPE}" = "factory" ]; then
+    return
+  fi
   local delay=300
   ( stty -F "${TTY}" raw -echo -cread
     while [ "${delay}" -ge 0 ]; do

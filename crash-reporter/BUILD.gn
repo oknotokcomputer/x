@@ -32,6 +32,7 @@ pkg_config("libcrash_config") {
     "libchrome-${libbase_ver}",
     "libsession_manager-client",
     "vboot_host",
+    "zlib",
   ]
 }
 
@@ -50,7 +51,6 @@ pkg_config("libcrash_reporter_config") {
     "libdebugd-client",
     "libpcrecpp",
     "libsession_manager-client",
-    "zlib",
   ]
 }
 
@@ -114,7 +114,6 @@ pkg_config("libcrash_sender_config") {
     "libsession_manager-client",
     "libshill-client",
     "protobuf-lite",
-    "zlib",
   ]
 }
 
@@ -170,6 +169,9 @@ executable("anomaly_detector") {
   sources = [
     "anomaly_detector.cc",
     "anomaly_detector_main.cc",
+  ]
+  deps = [
+    ":libcrash",
   ]
   libs = [ "system_api-metrics_event-protos" ]
 }

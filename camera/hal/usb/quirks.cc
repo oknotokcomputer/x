@@ -22,6 +22,8 @@ const QuirksMap& GetQuirksMap() {
       {{"046d", "0809"}, kQuirkPreferMjpeg},
       // Huddly GO (crbug.com/1010557)
       {{"2bd9", "0011"}, kQuirkRestartOnTimeout},
+      // Logitech Tap HDMI Capture (b/146590270)
+      {{"046d", "0876"}, kQuirkRestartOnTimeout},
   };
   return kQuirksMap;
 }

@@ -34,6 +34,7 @@
 #include "crash-reporter/unclean_shutdown_collector.h"
 #include "crash-reporter/user_collector.h"
 #include "crash-reporter/util.h"
+#include "crash-reporter/vm_support.h"
 
 using base::FilePath;
 
@@ -52,6 +53,11 @@ MetricsLibrary s_metrics_lib;
 bool IsFeedbackAllowed() {
   if (always_allow_feedback)
     return true;
+
+  VmSupport* vm_support = VmSupport::Get();
+  if (vm_support)
+    return vm_support->GetMetricsConsent();
+
   return s_metrics_lib.AreMetricsEnabled();
 }
 

@@ -3516,12 +3516,12 @@ void Service::ResetDictionaryAttackMitigation() {
     ReportDictionaryAttackResetStatus(kDelegateNotAllowed);
     return;
   }
-  if (!tpm_->CanResetDictionaryAttackWithCurrentPCR0()) {
-    ReportDictionaryAttackResetStatus(kInvalidPcr0State);
-    return;
-  }
   if (!tpm_->ResetDictionaryAttackMitigation(delegate_blob, delegate_secret)) {
-    ReportDictionaryAttackResetStatus(kResetAttemptFailed);
+    if (!tpm_->CanResetDictionaryAttackWithCurrentPCR0()) {
+      ReportDictionaryAttackResetStatus(kInvalidPcr0State);
+    } else {
+      ReportDictionaryAttackResetStatus(kResetAttemptFailed);
+    }
     return;
   }
   ReportDictionaryAttackResetStatus(kResetAttemptSucceeded);

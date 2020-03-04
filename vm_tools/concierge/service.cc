@@ -772,6 +772,9 @@ bool Service::Init() {
   shill_client_ = std::make_unique<ShillClient>(bus_);
   shill_client_->RegisterResolvConfigChangedHandler(base::Bind(
       &Service::OnResolvConfigChanged, weak_ptr_factory_.GetWeakPtr()));
+  shill_client_->RegisterDefaultServiceChangedHandler(
+      base::Bind(&Service::OnDefaultNetworkServiceChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Set up the D-Bus client for powerd and register suspend/resume handlers.
   power_manager_client_ = std::make_unique<PowerManagerClient>(bus_);
@@ -3099,6 +3102,16 @@ void Service::OnResolvConfigChanged(std::vector<string> nameservers,
   dbus::MessageWriter writer(&signal);
   ComposeDnsResponse(&writer);
   exported_object_->SendSignal(&signal);
+}
+
+void Service::OnDefaultNetworkServiceChanged() {
+  for (auto& vm_entry : vms_) {
+    auto& vm = vm_entry.second;
+    if (vm->IsSuspended()) {
+      continue;
+    }
+    vm->HostNetworkChanged();
+  }
 }
 
 void Service::NotifyCiceroneOfVmStarted(const VmId& vm_id,

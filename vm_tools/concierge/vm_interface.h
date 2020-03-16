@@ -84,9 +84,6 @@ class VmInterface {
       const std::vector<std::string>& nameservers,
       const std::vector<std::string>& search_domains) = 0;
 
-  // Perform necessary cleanup when host network changes.
-  virtual void HostNetworkChanged() {}
-
   // Set the guest time to the current time as given by gettimeofday.
   virtual bool SetTime(std::string* failure_reason) = 0;
 

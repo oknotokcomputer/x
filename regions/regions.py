@@ -343,7 +343,7 @@ REGIONS_LIST = [
         'us', 'xkb:us::eng', 'America/Los_Angeles', 'en-US', KML.ANSI,
         'United States'),
     Region(
-        'jp', 'xkb:jp::jpn', 'Asia/Tokyo', 'ja', KML.JIS,
+        'jp', ['xkb:jp::jpn', 'ime:jp:mozc_jp'], 'Asia/Tokyo', 'ja', KML.JIS,
         'Japan'),
     Region(
         'za', 'xkb:gb:extd:eng', 'Africa/Johannesburg', 'en-ZA', KML.ISO,
@@ -464,11 +464,20 @@ REGIONS_LIST = [
             'bg', 'tr', 'en-US'], KML.ANSI,
         'Bulgaria'),
     Region(
-        'jp.us', 'xkb:us::eng', 'Asia/Tokyo', 'ja', KML.ANSI,
-        'Japan with US keyboard'),
+        'jp.us', ['xkb:us::eng', 'ime:jp:mozc_us'], 'Asia/Tokyo', 'ja',
+        KML.ANSI, 'Japan with US keyboard'),
     Region(
         'is', 'xkb:is::ice', 'Atlantic/Reykjavik', ['is', 'en-GB'], KML.ISO,
         'Iceland'),
+    Region(
+        'us.intl', 'xkb:us:intl:eng', 'America/Los_Angeles', 'en-US', KML.ANSI,
+        'US (English Intl)'),
+    Region(
+        'co', 'xkb:latam::spa', 'America/Bogota', 'es-CO', KML.ANSI,
+        'Colombia'),
+    Region(
+        'hr', 'xkb:hr::scr', 'Europe/Zagreb', ['hr', 'en-GB'], KML.ISO,
+        'Croatia'),
     ]
 
 """A list of :py:class:`regions.Region` objects for
@@ -630,9 +639,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'hn', 'xkb:latam::spa', 'America/Tegucigalpa', 'es-HN', KML.ANSI,
         'Honduras'),
-    Region(
-        'hr', 'xkb:hr::scr', 'Europe/Zagreb', ['hr', 'en-GB'], KML.ISO,
-        'Croatia'),
     Region(
         'ht', 'xkb:ht::hat', 'America/Port-au-Prince', ['ht'], KML.ANSI,
         'Haiti'),
@@ -850,9 +856,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'ci', 'xkb:ci::fra', 'Africa/Abidjan', 'fr-CI', KML.ANSI,
         'Ivory Coast'),
-    Region(
-        'co', 'xkb:latam::spa', 'America/Bogota', 'es-419', KML.ANSI,
-        'Colombia'),
     Region(
         'cn', 'xkb:us::eng', 'Asia/Shanghai', 'zh-CN', KML.ANSI,
         'China'),

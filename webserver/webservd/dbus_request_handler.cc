@@ -30,6 +30,10 @@ void OnError(Request* request,
   if (debug) {
     error_msg += "\r\n" + error->GetMessage();
   }
+  if (!request) {
+    LOG(ERROR) << "Invalid Request Instance";
+    return;
+  }
   request->Complete(brillo::http::status_code::InternalServerError, {},
                     brillo::mime::text::kPlain, error_msg);
 }

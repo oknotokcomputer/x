@@ -385,5 +385,14 @@ impl_backend! {
             vm_name: &str,
             user_id_hash: &str,
         ) -> Result<Vec<(u8, u16, u16, String)>, Box<dyn Error>>;
+
+        // Send technical report for Parallels VMs.
+        fn pvm_send_problem_report(
+            &mut self,
+            vm_name: Option<String>,
+            user_id_hash: &str,
+            email: Option<String>,
+            text: Option<String>,
+        ) -> Result<String, Box<dyn Error>>;
     }
 }

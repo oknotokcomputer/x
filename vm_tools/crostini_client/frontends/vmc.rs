@@ -17,6 +17,7 @@ use EnvMap;
 
 enum VmcError {
     Command(&'static str, u32, Box<dyn Error>),
+    BadProblemReportArguments(getopts::Fail),
     ExpectedCrosUserIdHash,
     ExpectedName,
     ExpectedNoArgs,
@@ -42,6 +43,10 @@ use self::VmcError::*;
 
 // Optional flag used with "vmc container" command. Use this with the getopts crate API.
 static PRIVILEGED_FLAG: &str = "privileged";
+
+// Option names for pvm.send-porblem-report command. Use this with the getopts crate API.
+static EMAIL_OPTION: &str = "email";
+static VM_NAME_OPTION: &str = "vm-name";
 
 // Remove useless expression items that the `try_command!()` macro captures and stringifies when
 // generating a `VmcError::Command`.
@@ -73,6 +78,7 @@ fn get_user_hash(environ: &EnvMap) -> Result<String, VmcError> {
 impl fmt::Display for VmcError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            BadProblemReportArguments(e) => write!(f, "failed to parse arguments: {:?}", e),
             Command(routine, line_num, e) => write!(
                 f,
                 "routine at {}:{} `{}` failed: {}",
@@ -596,6 +602,42 @@ impl<'a, 'b, 'c> Command<'a, 'b, 'c> {
 
         Ok(())
     }
+
+    fn pvm_send_problem_report(&mut self) -> VmcResult {
+        let mut opts = Options::new();
+        opts.optopt(
+            "e",
+            EMAIL_OPTION,
+            "email to associate with the problem report",
+            "EMAIL",
+        );
+        opts.optopt(
+            "n",
+            VM_NAME_OPTION,
+            "name of the VM for which problem report is generated",
+            "NAME",
+        );
+        let matches = opts
+            .parse(self.args)
+            .map_err(|e| BadProblemReportArguments(e))?;
+
+        let vm_name = matches.opt_str(VM_NAME_OPTION);
+        let user_id_hash = get_user_hash(self.environ)?;
+        let email = matches.opt_str(EMAIL_OPTION);
+        let text = if matches.free.is_empty() {
+            None
+        } else {
+            Some(matches.free.join(" "))
+        };
+
+        let report_id =
+            try_command!(self
+                .backend
+                .pvm_send_problem_report(vm_name, &user_id_hash, email, text));
+
+        println!("Problem report has been sent. Report ID: {}", report_id);
+        Ok(())
+    }
 }
 
 const USAGE: &str = r#"
@@ -672,6 +714,7 @@ impl Frontend for Vmc {
             "usb-attach" => command.usb_attach(),
             "usb-detach" => command.usb_detach(),
             "usb-list" => command.usb_list(),
+            "pvm.send-problem-report" => command.pvm_send_problem_report(),
             _ => Err(UnknownSubcommand(command_name.to_owned()).into()),
         }
     }
@@ -751,6 +794,35 @@ mod tests {
             &["vmc", "usb-detach", "termina", "5"],
             &["vmc", "usb-detach", "termina", "5"],
             &["vmc", "usb-list", "termina"],
+            &["vmc", "pvm.send-problem-report"],
+            &["vmc", "pvm.send-problem-report", "text"],
+            &["vmc", "pvm.send-problem-report", "text", "text2"],
+            &[
+                "vmc",
+                "pvm.send-problem-report",
+                "-n",
+                "termina",
+                "text",
+                "text2",
+            ],
+            &[
+                "vmc",
+                "pvm.send-problem-report",
+                "-e",
+                "someone@somewhere.com",
+                "text",
+                "text2",
+            ],
+            &[
+                "vmc",
+                "pvm.send-problem-report",
+                "-n",
+                "termina",
+                "-e",
+                "someone@somewhere.com",
+                "text",
+                "text2",
+            ],
             &["vmc", "--help"],
             &["vmc", "-h"],
         ];
@@ -799,6 +871,8 @@ mod tests {
             &["vmc", "usb-detach", "not-a-number"],
             &["vmc", "usb-list"],
             &["vmc", "usb-list", "termina", "args"],
+            &["vmc", "pvm.send-problem-report", "-e"],
+            &["vmc", "pvm.send-problem-report", "-n"],
         ];
 
         let environ = vec![("CROS_USER_ID_HASH", "fake_hash")]

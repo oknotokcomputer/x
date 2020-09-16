@@ -252,6 +252,85 @@ class ValidateConfigSchemaTests(cros_test_lib.TestCase):
       self.assertIn('is not valid', str(ctx.exception))
 
 
+class ValidateFingerprintSchema(cros_test_lib.TestCase):
+
+  def setUp(self):
+    self._schema = cros_config_schema.ReadSchema()
+
+  def testROVersion(self):
+    config = {
+        'chromeos': {
+            'configs': [
+                {'identity': {'platform-name': 'foo',
+                              'sku-id': 1},
+                 'name': 'foo',
+                 'fingerprint': {
+                     'board': 'dartmonkey',
+                     'ro-version': '123'}
+                 },
+            ],
+        },
+    }
+    libcros_schema.ValidateConfigSchema(self._schema,
+                                        libcros_schema.FormatJson(config))
+
+  def testROVersionMissingBoardName(self):
+    config = {
+        'chromeos': {
+            'configs': [
+                {'identity': {'platform-name': 'foo',
+                              'sku-id': 1},
+                 'name': 'foo',
+                 'fingerprint': {
+                     # "ro-version" only allowed if "board" is also specified.
+                     'ro-version': '123'}
+                 },
+            ],
+        },
+    }
+    with self.assertRaises(jsonschema.exceptions.ValidationError) as ctx:
+      libcros_schema.ValidateConfigSchema(self._schema,
+                                          libcros_schema.FormatJson(config))
+
+    self.assertEqual(ctx.exception.message,
+                     "'board' is a dependency of 'ro-version'")
+
+
+class ValidateCameraSchema(cros_test_lib.TestCase):
+
+  def setUp(self):
+    self._schema = cros_config_schema.ReadSchema()
+
+  def testDevices(self):
+    config = {
+        'chromeos': {
+            'configs': [
+                {
+                    'identity': {'platform-name': 'foo', 'sku-id': 1},
+                    'name': 'foo',
+                    'camera': {
+                        'count': 2,
+                        'devices': [
+                            {
+                                'interface': 'usb',
+                                'facing': 'front',
+                                'orientation': 180,
+                            },
+                            {
+                                'interface': 'mipi',
+                                'facing': 'back',
+                                'orientation': 0,
+                            },
+                        ],
+                    }
+                },
+            ],
+        },
+    }
+    libcros_schema.ValidateConfigSchema(self._schema,
+                                        libcros_schema.FormatJson(config))
+
+
 WHITELABEL_CONFIG = """
 chromeos:
   devices:

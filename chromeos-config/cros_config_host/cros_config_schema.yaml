@@ -358,12 +358,6 @@ properties:
                   items:
                     type: object
                     properties:
-                      id:
-                        type: string
-                        description: A string to identify the camera device. For
-                          USB cameras this must be 4-digit hexadecimal VID and
-                          PID separated by a colon, e.g. 0123:abcd. For MIPI
-                          cameras it depends on vendor software usage.
                       interface:
                         type: string
                         description: The interface type of the camera device.
@@ -388,7 +382,6 @@ properties:
                         - 180
                         - 270
                     required:
-                    - id
                     - interface
                     - facing
                     - orientation

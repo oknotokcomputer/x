@@ -296,6 +296,41 @@ class ValidateFingerprintSchema(cros_test_lib.TestCase):
                      "'board' is a dependency of 'ro-version'")
 
 
+class ValidateCameraSchema(cros_test_lib.TestCase):
+
+  def setUp(self):
+    self._schema = cros_config_schema.ReadSchema()
+
+  def testDevices(self):
+    config = {
+        'chromeos': {
+            'configs': [
+                {
+                    'identity': {'platform-name': 'foo', 'sku-id': 1},
+                    'name': 'foo',
+                    'camera': {
+                        'count': 2,
+                        'devices': [
+                            {
+                                'interface': 'usb',
+                                'facing': 'front',
+                                'orientation': 180,
+                            },
+                            {
+                                'interface': 'mipi',
+                                'facing': 'back',
+                                'orientation': 0,
+                            },
+                        ],
+                    }
+                },
+            ],
+        },
+    }
+    libcros_schema.ValidateConfigSchema(self._schema,
+                                        libcros_schema.FormatJson(config))
+
+
 WHITELABEL_CONFIG = """
 chromeos:
   devices:

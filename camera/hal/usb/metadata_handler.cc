@@ -148,6 +148,14 @@ MetadataHandler::MetadataHandler(const camera_metadata_t& static_metadata,
 
   sensor_handler_ = SensorHandler::Create(device_info, supported_formats);
 
+  ControlRange range;
+  is_pan_control_supported_ = V4L2CameraDevice::GetControlRange(
+      device_info.device_path, kControlPan, &range);
+  is_tilt_control_supported_ = V4L2CameraDevice::GetControlRange(
+      device_info.device_path, kControlTilt, &range);
+  is_zoom_control_supported_ = V4L2CameraDevice::GetControlRange(
+      device_info.device_path, kControlZoom, &range);
+
   thread_checker_.DetachFromThread();
 }
 
@@ -835,7 +843,6 @@ int MetadataHandler::FillMetadataFromDeviceInfo(
     update_static(
         kVendorTagControlPanRange,
         std::vector<int32_t>{range.minimum, range.maximum, range.step});
-    update_request(kVendorTagControlPan, range.default_value);
   }
 
   if (V4L2CameraDevice::GetControlRange(device_info.device_path,
@@ -859,7 +866,6 @@ int MetadataHandler::FillMetadataFromDeviceInfo(
     update_static(
         kVendorTagControlTiltRange,
         std::vector<int32_t>{range.minimum, range.maximum, range.step});
-    update_request(kVendorTagControlTilt, range.default_value);
   }
 
   if (V4L2CameraDevice::GetControlRange(device_info.device_path, kControlZoom,
@@ -867,7 +873,6 @@ int MetadataHandler::FillMetadataFromDeviceInfo(
     update_static(
         kVendorTagControlZoomRange,
         std::vector<int32_t>{range.minimum, range.maximum, range.step});
-    update_request(kVendorTagControlZoom, range.default_value);
   }
 
   return update_static.ok() && update_request.ok() ? 0 : -EINVAL;
@@ -1119,7 +1124,7 @@ int MetadataHandler::PostHandleRequest(int frame_number,
       device_->GetControlValue(kControlContrast, &value))
     update_request(kVendorTagControlContrast, value);
 
-  if (metadata->exists(kVendorTagControlPan) &&
+  if (is_pan_control_supported_ &&
       device_->GetControlValue(kControlPan, &value))
     update_request(kVendorTagControlPan, value);
 
@@ -1131,11 +1136,11 @@ int MetadataHandler::PostHandleRequest(int frame_number,
       device_->GetControlValue(kControlSharpness, &value))
     update_request(kVendorTagControlSharpness, value);
 
-  if (metadata->exists(kVendorTagControlTilt) &&
+  if (is_tilt_control_supported_ &&
       device_->GetControlValue(kControlTilt, &value))
     update_request(kVendorTagControlTilt, value);
 
-  if (metadata->exists(kVendorTagControlZoom) &&
+  if (is_zoom_control_supported_ &&
       device_->GetControlValue(kControlZoom, &value))
     update_request(kVendorTagControlZoom, value);
 

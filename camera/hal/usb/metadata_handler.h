@@ -117,6 +117,10 @@ class MetadataHandler {
 
   int max_supported_fps_;
 
+  bool is_pan_control_supported_;
+  bool is_tilt_control_supported_;
+  bool is_zoom_control_supported_;
+
   // Sensor handler to get sensor related metadata.
   std::unique_ptr<SensorHandler> sensor_handler_;
 };

@@ -19,6 +19,7 @@
 #include <base/strings/string_split.h>
 #include <base/strings/string_util.h>
 #include <base/strings/stringprintf.h>
+#include <base/system/sys_info.h>
 #include <base/threading/platform_thread.h>
 #include <chromeos/dbus/service_constants.h>
 #include <dbus/message.h>
@@ -255,7 +256,12 @@ Daemon::Daemon(DaemonDelegate* delegate, const base::FilePath& run_dir)
       shutdown_from_suspend_(std::make_unique<policy::ShutdownFromSuspend>()),
       suspender_(new policy::Suspender),
       wifi_controller_(std::make_unique<policy::WifiController>()),
+#if USE_TROGDOR_SAR_HACK
+      cellular_controller_(
+          std::make_unique<policy::CellularControllerTrogdor>()),
+#else   // USE_TROGDOR_SAR_HACK
       cellular_controller_(std::make_unique<policy::CellularController>()),
+#endif  // USE_TROGDOR_SAR_HACK
       metrics_collector_(new metrics::MetricsCollector),
       arc_timer_manager_(std::make_unique<system::ArcTimerManager>()),
       retry_shutdown_for_lockfile_timer_(),
@@ -281,7 +287,8 @@ Daemon::Daemon(DaemonDelegate* delegate, const base::FilePath& run_dir)
           "Hovering",
           base::TimeDelta::FromSeconds(kLogHoveringStoppedDelaySec),
           base::TimeDelta())),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 Daemon::~Daemon() {
   if (dbus_wrapper_)
@@ -788,6 +795,13 @@ void Daemon::SetWifiTransmitPower(RadioTransmitPower power,
   RunSetuidHelper("set_wifi_transmit_power", args, false);
 }
 
+#if USE_TROGDOR_SAR_HACK
+void Daemon::SetCellularTransmitPower(RadioTransmitPower power) {
+  const std::string args =
+      base::StringPrintf("--cellular_transmit_power_trogdor_level=%d", power);
+  RunSetuidHelper("set_cellular_transmit_power_trogdor", args, false);
+}
+#else   // USE_TROGDOR_SAR_HACK
 void Daemon::SetCellularTransmitPower(RadioTransmitPower power,
                                       int64_t dpr_gpio_number) {
   const bool is_power_low = (power == RadioTransmitPower::LOW);
@@ -799,6 +813,7 @@ void Daemon::SetCellularTransmitPower(RadioTransmitPower power,
             << (is_power_low ? "low" : "high");
   RunSetuidHelper("set_cellular_transmit_power", args, false);
 }
+#endif  // USE_TROGDOR_SAR_HACK
 
 void Daemon::OnAudioStateChange(bool active) {
   if (active)

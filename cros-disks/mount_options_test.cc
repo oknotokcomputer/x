@@ -68,8 +68,8 @@ TEST_F(MountOptionsTest, ToString) {
   mount_options_.Initialize(options, false, "", "");
   EXPECT_EQ(expected_string, mount_options_.ToString());
 
-  // options: ro, bind
-  expected_string = "bind,ro,nodev,noexec,nosuid";
+  // options: ro (bind ignored)
+  expected_string = "ro,nodev,noexec,nosuid";
   options.push_back("bind");
   mount_options_.Initialize(options, false, "", "");
   EXPECT_EQ(expected_string, mount_options_.ToString());
@@ -148,8 +148,8 @@ TEST_F(MountOptionsTest, ToString) {
   EXPECT_EQ(expected_string, mount_options_.ToString());
 
   // Whitelist more options.
-  expected_string = "bind,foo=mississippi,bar,ro,nodev,noexec,nosuid";
-  options = {"bind", "bang", "foo=mississippi", "bar", "baz"};
+  expected_string = "dirsync,foo=mississippi,bar,ro,nodev,noexec,nosuid";
+  options = {"dirsync", "bang", "foo=mississippi", "bar", "baz"};
   mount_options_.WhitelistOption("bar");
   mount_options_.WhitelistOptionPrefix("foo=");
   mount_options_.Initialize(options, false, "", "");
@@ -157,8 +157,8 @@ TEST_F(MountOptionsTest, ToString) {
 
   // Force additional options.
   expected_string =
-      "bind,foo=mississippi,bar,ro,nodev,noexec,nosuid,sheep=baa,zoo";
-  options = {"bind", "bang", "foo=mississippi", "bar", "baz", "sheep=moo"};
+      "dirsync,foo=mississippi,bar,ro,nodev,noexec,nosuid,sheep=baa,zoo";
+  options = {"dirsync", "bang", "foo=mississippi", "bar", "baz", "sheep=moo"};
   mount_options_.EnforceOption("sheep=baa");
   mount_options_.EnforceOption("zoo");
   mount_options_.Initialize(options, false, "", "");
@@ -186,9 +186,9 @@ TEST_F(MountOptionsTest, ToMountFlagsAndData) {
   EXPECT_EQ(expected_flags, flags_and_data.first);
   EXPECT_EQ(expected_data, flags_and_data.second);
 
-  // options: ro, bind
+  // options: ro (bind ignored)
   options.push_back("bind");
-  expected_flags = security_flags | MS_RDONLY | MS_BIND;
+  expected_flags = security_flags | MS_RDONLY;
   mount_options_.Initialize(options, false, "", "");
   flags_and_data = mount_options_.ToMountFlagsAndData();
   EXPECT_EQ(expected_flags, flags_and_data.first);

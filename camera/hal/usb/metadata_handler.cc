@@ -61,7 +61,7 @@ class MetadataUpdater {
     if (metadata_->update(tag, data) != 0) {
       ok_ = false;
       LOGF(ERROR) << "Update metadata with tag " << std::hex << std::showbase
-                  << tag << " failed";
+                  << tag << " failed" << std::dec;
     }
   }
 

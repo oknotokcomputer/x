@@ -410,6 +410,7 @@ int main(int argc, char** argv) {
       "fsname=passthrough", "-o", fuse_uid_opt.c_str(), "-o",
       fuse_gid_opt.c_str(), "-o", "modules=subdir", "-o",
       fuse_subdir_opt.c_str(), "-o", "direct_io", "-o", fuse_umask_opt.c_str(),
+      "-o", "noexec",
   };
   int fuse_argc = sizeof(fuse_argv) / sizeof(fuse_argv[0]);
 

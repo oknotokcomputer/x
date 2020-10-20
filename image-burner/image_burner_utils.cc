@@ -4,8 +4,11 @@
 
 #include "image-burner/image_burner_utils.h"
 
+#include <sys/stat.h>
+
 #include <memory>
 
+#include <base/bind.h>
 #include <base/files/file_path.h>
 #include <base/logging.h>
 #include <base/memory/free_deleter.h>
@@ -27,9 +30,13 @@ bool RealPath(const char* path, std::string* real_path) {
   return true;
 }
 
+int Fstat(int fd, struct stat* st) {
+  return fstat(fd, st);
+}
+
 }  // namespace
 
-BurnWriter::BurnWriter() {}
+BurnWriter::BurnWriter() : fstat_callback_(base::BindRepeating(&Fstat)) {}
 
 bool BurnWriter::Open(const char* path) {
   if (file_.IsValid())
@@ -40,10 +47,23 @@ bool BurnWriter::Open(const char* path) {
   if (!file_.IsValid()) {
     PLOG(ERROR) << "Couldn't open target path " << path;
     return false;
-  } else {
-    LOG(INFO) << path << " opened";
-    return true;
   }
+
+  struct stat st = {};
+  if (fstat_callback_.Run(file_.GetPlatformFile(), &st) != 0) {
+    PLOG(ERROR) << "Unable to stat file for path " << path;
+    Close();
+    return false;
+  }
+
+  if (!S_ISBLK(st.st_mode)) {
+    PLOG(ERROR) << "Attempt to write to non-block device " << path;
+    Close();
+    return false;
+  }
+
+  LOG(INFO) << path << " opened";
+  return true;
 }
 
 bool BurnWriter::Close() {
@@ -138,11 +158,6 @@ bool BurnPathGetter::GetRootPath(std::string* path) {
   }
   *path = root_path;
   return true;
-}
-
-bool BurnPathGetter::IsBlockDevice(const char* path) {
-  struct stat st = {};
-  return lstat(path, &st) == 0 && S_ISBLK(st.st_mode);
 }
 
 }  // namespace imageburn

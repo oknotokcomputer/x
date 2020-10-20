@@ -417,6 +417,10 @@ class MockPlatform : public Platform {
               RestoreSELinuxContexts,
               (const base::FilePath&, bool),
               (override));
+  MOCK_METHOD(bool,
+              SafeCreateDirAndSetOwnership,
+              (const base::FilePath&, uid_t, gid_t),
+              (override));
 
   MockFileEnumerator* mock_enumerator() { return mock_enumerator_.get(); }
   brillo::ProcessMock* mock_process() { return mock_process_.get(); }

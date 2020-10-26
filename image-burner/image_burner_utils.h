@@ -10,7 +10,6 @@
 #include <string>
 
 #include <base/files/file.h>
-#include <base/callback.h>
 #include <base/macros.h>
 
 #include "image-burner/image_burner_utils_interfaces.h"
@@ -19,9 +18,6 @@ namespace imageburn {
 
 class BurnWriter : public FileSystemWriter {
  public:
-  using FstatCallback =
-      base::RepeatingCallback<int(int, base::stat_wrapper_t*)>;
-
   BurnWriter();
   ~BurnWriter() override = default;
 
@@ -29,16 +25,9 @@ class BurnWriter : public FileSystemWriter {
   bool Close() override;
   int Write(const char* data_block, int data_size) override;
 
-  const base::File& file() const { return file_; }
-  void set_fstat_for_test(const FstatCallback& fstat_callback) {
-    fstat_callback_ = fstat_callback;
-  }
-
  private:
   base::File file_;
   int writes_count_{0};
-
-  FstatCallback fstat_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BurnWriter);
 };
@@ -66,6 +55,7 @@ class BurnPathGetter : public PathGetter {
 
   bool GetRealPath(const char* path, std::string* real_path) override;
   bool GetRootPath(std::string* path) override;
+  bool IsBlockDevice(const char* path) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BurnPathGetter);

@@ -13,18 +13,19 @@
 
 namespace mri {
 
-video_capture::mojom::ProducerPtr ProducerImpl::CreateInterfacePtr() {
-  video_capture::mojom::ProducerPtr server_ptr;
-  binding_.Bind(mojo::MakeRequest(&server_ptr));
-  return server_ptr;
+mojo::PendingRemote<video_capture::mojom::Producer>
+ProducerImpl::CreateInterfacePendingRemote() {
+  mojo::PendingRemote<video_capture::mojom::Producer> producer;
+  receiver_.Bind(producer.InitWithNewPipeAndPassReceiver());
+  return producer;
 }
 
 void ProducerImpl::RegisterVirtualDevice(
     video_capture::mojom::VideoSourceProviderPtr* provider,
     media::mojom::VideoCaptureDeviceInfoPtr info) {
-  (*provider)->AddSharedMemoryVirtualDevice(std::move(info),
-                                           CreateInterfacePtr(), true,
-                                           mojo::MakeRequest(&virtual_device_));
+  (*provider)->AddSharedMemoryVirtualDevice(
+      std::move(info), CreateInterfacePendingRemote(), true,
+      mojo::MakeRequest(&virtual_device_));
 }
 
 void ProducerImpl::OnNewBuffer(int32_t buffer_id,
@@ -87,7 +88,7 @@ void ProducerImpl::OnFrameBufferReceived(
   rect->width = width;
   rect->height = height;
   info->visible_rect = std::move(rect);
-  info->metadata = mojo_base::mojom::DictionaryValue::New();
+  info->metadata = media::mojom::VideoFrameMetadata::New();
 
   SharedMemoryProvider* outgoing_buffer =
       outgoing_buffer_id_to_buffer_map_.at(buffer_id).get();

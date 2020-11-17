@@ -2943,7 +2943,7 @@ void AttestationService::SignEnterpriseChallengeTask(
     return;
   }
 
-  bool is_user_specific = request.has_username();
+  const bool is_user_specific = !request.username().empty();
   KeyInfo key_info;
   // EUK -> Enterprise User Key
   // EMK -> Enterprise Machine Key

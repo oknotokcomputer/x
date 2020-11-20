@@ -129,8 +129,8 @@ CameraHal& CameraHal::GetInstance() {
   return camera_hal;
 }
 
-CameraMojoChannelManager* CameraHal::GetMojoManagerInstance() {
-  return mojo_manager_;
+CameraMojoChannelManagerToken* CameraHal::GetMojoManagerToken() {
+  return mojo_manager_token_;
 }
 
 int CameraHal::OpenDevice(int id,
@@ -289,12 +289,12 @@ int CameraHal::Init() {
   return 0;
 }
 
-void CameraHal::SetUp(CameraMojoChannelManager* mojo_manager) {
-  mojo_manager_ = mojo_manager;
+void CameraHal::SetUp(CameraMojoChannelManagerToken* token) {
+  mojo_manager_token_ = token;
 }
 
 void CameraHal::TearDown() {
-  mojo_manager_ = nullptr;
+  mojo_manager_token_ = nullptr;
 }
 
 void CameraHal::CloseDeviceOnOpsThread(int id) {
@@ -573,8 +573,8 @@ static int init() {
   return CameraHal::GetInstance().Init();
 }
 
-static void set_up(CameraMojoChannelManager* mojo_manager) {
-  CameraHal::GetInstance().SetUp(mojo_manager);
+static void set_up(CameraMojoChannelManagerToken* token) {
+  CameraHal::GetInstance().SetUp(token);
 }
 
 static void tear_down() {

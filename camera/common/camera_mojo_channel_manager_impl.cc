@@ -102,10 +102,8 @@ CameraMojoChannelManagerImpl::~CameraMojoChannelManagerImpl() {
 }
 
 // static
-std::unique_ptr<CameraMojoChannelManager>
-CameraMojoChannelManager::CreateInstance() {
-  return base::WrapUnique<CameraMojoChannelManager>(
-      new CameraMojoChannelManagerImpl());
+CameraMojoChannelManagerToken* CameraMojoChannelManagerToken::CreateInstance() {
+  return new CameraMojoChannelManagerImpl();
 }
 
 // static

@@ -25,7 +25,7 @@
 #include "camera3_test/camera3_perf_log.h"
 #include "camera3_test/camera3_test_data_forwarder.h"
 #include "common/utils/camera_hal_enumerator.h"
-#include "cros-camera/camera_mojo_channel_manager.h"
+#include "cros-camera/camera_mojo_channel_manager_token.h"
 #include "cros-camera/cros_camera_hal.h"
 
 namespace camera3_test {
@@ -293,7 +293,7 @@ static void InitCameraModuleOnThread(camera_module_t* cam_module) {
 // On successfully Initialized, |cam_module_| will pointed to valid
 // camera_module_t.
 static void InitCameraModule(const base::FilePath& camera_hal_path,
-                             cros::CameraMojoChannelManager* mojo_manager,
+                             cros::CameraMojoChannelManagerToken* token,
                              void** cam_hal_handle,
                              camera_module_t** cam_module,
                              cros::cros_camera_hal_t** cros_camera_hal) {
@@ -306,7 +306,7 @@ static void InitCameraModule(const base::FilePath& camera_hal_path,
   // TODO(b/151270948): We should report error here if it fails to find the
   // symbol once all camera HALs have implemented the interface.
   if (*cros_camera_hal != nullptr) {
-    (*cros_camera_hal)->set_up(mojo_manager);
+    (*cros_camera_hal)->set_up(token);
   }
 
   camera_module_t* module = static_cast<camera_module_t*>(
@@ -328,19 +328,18 @@ static void InitCameraModule(const base::FilePath& camera_hal_path,
 
 static void InitCameraModuleByHalPath(
     const base::FilePath& camera_hal_path,
-    cros::CameraMojoChannelManager* mojo_manager,
+    cros::CameraMojoChannelManagerToken* token,
     void** cam_hal_handle,
     cros::cros_camera_hal_t** cros_camera_hal) {
-  InitCameraModule(camera_hal_path, mojo_manager, cam_hal_handle, &g_cam_module,
+  InitCameraModule(camera_hal_path, token, cam_hal_handle, &g_cam_module,
                    cros_camera_hal);
 }
 
-static void InitCameraModuleByFacing(
-    int facing,
-    cros::CameraMojoChannelManager* mojo_manager,
-    void** cam_hal_handle,
-    cros::cros_camera_hal_t** cros_camera_hal,
-    base::FilePath* camera_hal_path) {
+static void InitCameraModuleByFacing(int facing,
+                                     cros::CameraMojoChannelManagerToken* token,
+                                     void** cam_hal_handle,
+                                     cros::cros_camera_hal_t** cros_camera_hal,
+                                     base::FilePath* camera_hal_path) {
   // Do cleanup when exit from ASSERT_XX
   struct CleanupModule {
     void operator()(void** cam_hal_handle) {
@@ -354,7 +353,7 @@ static void InitCameraModuleByFacing(
     }
   };
   for (const auto& hal_path : cros::GetCameraHalPaths()) {
-    InitCameraModule(hal_path, mojo_manager, cam_hal_handle, &g_cam_module,
+    InitCameraModule(hal_path, token, cam_hal_handle, &g_cam_module,
                      cros_camera_hal);
     std::unique_ptr<void*, CleanupModule> cleanup_ptr(cam_hal_handle);
     if (g_cam_module != NULL) {
@@ -1278,7 +1277,7 @@ static int GetCmdLineTestCameraFacing(const base::CommandLine& cmd_line) {
 
 bool InitializeTest(int* argc,
                     char*** argv,
-                    cros::CameraMojoChannelManager* mojo_manager,
+                    cros::CameraMojoChannelManagerToken* token,
                     void** cam_hal_handle,
                     cros::cros_camera_hal_t** cros_camera_hal) {
   // Set up logging so we can enable VLOGs with -v / --vmodule.
@@ -1323,11 +1322,11 @@ bool InitializeTest(int* argc,
   // Open camera HAL and get module
   if (facing != -ENOENT) {
     camera3_test::GetModuleThread().Start();
-    camera3_test::InitCameraModuleByFacing(facing, mojo_manager, cam_hal_handle,
+    camera3_test::InitCameraModuleByFacing(facing, token, cam_hal_handle,
                                            cros_camera_hal, &camera_hal_path);
   } else if (!camera_hal_path.empty()) {
     camera3_test::GetModuleThread().Start();
-    camera3_test::InitCameraModuleByHalPath(camera_hal_path, mojo_manager,
+    camera3_test::InitCameraModuleByHalPath(camera_hal_path, token,
                                             cam_hal_handle, cros_camera_hal);
   } else {
     if (camera3_test::CameraHalClient::GetInstance()->Start(
@@ -1366,10 +1365,10 @@ bool InitializeTest(int* argc,
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   void* cam_hal_handle = NULL;
-  std::unique_ptr<cros::CameraMojoChannelManager> mojo_manager =
-      cros::CameraMojoChannelManager::CreateInstance();
+  std::unique_ptr<cros::CameraMojoChannelManagerToken> mojo_manager_token(
+      cros::CameraMojoChannelManagerToken::CreateInstance());
   cros::cros_camera_hal_t* cros_camera_hal;
-  if (!InitializeTest(argc, argv, mojo_manager.get(), &cam_hal_handle,
+  if (!InitializeTest(argc, argv, mojo_manager_token.get(), &cam_hal_handle,
                       &cros_camera_hal)) {
     exit(EXIT_FAILURE);
   }
@@ -1398,9 +1397,9 @@ int main(int argc, char** argv) {
   message_loop.SetAsCurrent();
 
   cros::cros_camera_hal_t* cros_camera_hal = nullptr;
-  std::unique_ptr<cros::CameraMojoChannelManager> mojo_manager =
-      cros::CameraMojoChannelManager::CreateInstance();
-  if (InitializeTest(&argc, &argv, mojo_manager.get(), &cam_hal_handle,
+  std::unique_ptr<cros::CameraMojoChannelManagerToken> mojo_manager_token(
+      cros::CameraMojoChannelManagerToken::CreateInstance());
+  if (InitializeTest(&argc, &argv, mojo_manager_token.get(), &cam_hal_handle,
                      &cros_camera_hal)) {
     result = RUN_ALL_TESTS();
   }
@@ -1412,7 +1411,7 @@ int main(int argc, char** argv) {
   if (cros_camera_hal != nullptr) {
     cros_camera_hal->tear_down();
   }
-  mojo_manager.reset();
+  mojo_manager_token.reset();
 
   // Close Camera HAL
   if (cam_hal_handle && dlclose(cam_hal_handle) != 0) {

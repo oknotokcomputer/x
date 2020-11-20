@@ -10,16 +10,18 @@
 #define CROS_CAMERA_HAL_INFO_SYM CCHI
 #define CROS_CAMERA_HAL_INFO_SYM_AS_STR "CCHI"
 
-#include "cros-camera/camera_mojo_channel_manager.h"
+#include <base/callback.h>
+
+#include "cros-camera/camera_mojo_channel_manager_token.h"
 
 namespace cros {
 
 typedef struct cros_camera_hal {
   /**
-   * Sets up the camera HAL. The |mojo_manager| can be used for communication
-   * through Mojo.
+   * Sets up the camera HAL. The |token| can be used for communication through
+   * Mojo.
    */
-  void (*set_up)(CameraMojoChannelManager* mojo_manager);
+  void (*set_up)(CameraMojoChannelManagerToken* token);
 
   /**
    * Tears down the camera HAL.

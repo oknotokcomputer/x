@@ -295,13 +295,6 @@ public:
     static void releaseInstance();
 
     /**
-     * Check if avaibleSensors is empty
-     *
-     * \return true if has sensor ,otherwise return false.
-     */
-    static bool isSensorAvailable();
-
-    /**
      * init PlatformData
      *
      * \return OK if init PlatformData successfully, otherwise return ERROR.

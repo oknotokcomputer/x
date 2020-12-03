@@ -49,6 +49,7 @@ class DrivefsMounter : public FUSEMounterLegacy {
                            .mount_program = std::move(mount_program),
                            .mount_user = std::move(mount_user),
                            .network_access = true,
+                           .nosymfollow = false,
                            .platform = platform,
                            .process_reaper = process_reaper,
                            .seccomp_policy = seccomp_policy}) {}

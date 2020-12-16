@@ -532,7 +532,8 @@ CryptohomeErrorCode HomeDirs::UpdateKeyset(
   return CRYPTOHOME_ERROR_NOT_SET;
 }
 
-bool HomeDirs::AddInitialKeyset(const Credentials& credentials) {
+bool HomeDirs::AddInitialKeyset(const Credentials& credentials,
+                                bool dircrypto_v2) {
   const brillo::SecureBlob passkey = credentials.passkey();
   std::string obfuscated_username =
       credentials.GetObfuscatedUsername(system_salt_);
@@ -550,6 +551,11 @@ bool HomeDirs::AddInitialKeyset(const Credentials& credentials) {
     *vk->mutable_serialized()->mutable_signature_challenge_info() =
         credentials.challenge_credentials_keyset_info();
   }
+
+  if (dircrypto_v2) {
+    vk->mutable_serialized()->set_fscrypt_policy_version(FSCRYPT_POLICY_V2);
+  }
+
   // Merge in the key data from credentials using the label() as
   // the existence test. (All new-format calls must populate the
   // label on creation.)

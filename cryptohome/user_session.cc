@@ -28,6 +28,9 @@ MountError UserSession::MountVault(const Credentials& credentials,
       credentials.GetObfuscatedUsername(system_salt_);
   bool created = false;
 
+  bool dircrypto_v2 = !mount_args.create_as_ecryptfs &&
+                      dircrypto::CheckFscryptKeyIoctlSupport();
+
   // TODO(chromium:1140868, dlunev): once re-recreation logic is removed, this
   // can be moved to the service level.
   if (!homedirs_->CryptohomeExists(obfuscated_username)) {
@@ -39,7 +42,7 @@ MountError UserSession::MountVault(const Credentials& credentials,
     if (!homedirs_->Create(credentials.username()) ||
         !mount_->PrepareCryptohome(obfuscated_username,
                                    mount_args.create_as_ecryptfs) ||
-        !homedirs_->AddInitialKeyset(credentials)) {
+        !homedirs_->AddInitialKeyset(credentials, dircrypto_v2)) {
       LOG(ERROR) << "Error creating cryptohome.";
       return MOUNT_ERROR_CREATE_CRYPTOHOME_FAILED;
     }

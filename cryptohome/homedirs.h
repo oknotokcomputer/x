@@ -190,7 +190,8 @@ class HomeDirs {
                                             int index) const;
 
   // Adds initial keyset for the credentials.
-  virtual bool AddInitialKeyset(const Credentials& credentials);
+  virtual bool AddInitialKeyset(const Credentials& credentials,
+                                bool dircrypto_v2);
 
   // Check if the vault keyset needs re-encryption.
   virtual bool ShouldReSaveKeyset(VaultKeyset* vault_keyset) const;

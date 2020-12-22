@@ -116,6 +116,8 @@ public:
         // Initialized during buffer allocation
         std::map<ia_uid, std::shared_ptr<CameraBuffer>> inputBuffers;
         std::map<ia_uid, std::shared_ptr<CameraBuffer>> outputBuffers;
+
+        ExecutorUnit() { pgId = -1; stageId = 0; }
     };
 
  protected:

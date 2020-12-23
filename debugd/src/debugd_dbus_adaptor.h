@@ -218,6 +218,10 @@ class DebugdDBusAdaptor : public org::chromium::debugdAdaptor,
                                  const std::string& metric_name,
                                  std::string* output) override;
   std::string EcGetInventory() override;
+  bool EcTypeCEnterMode(brillo::ErrorPtr* error,
+                        uint32_t port_num,
+                        uint32_t mode,
+                        std::string* output) override;
 
  private:
   brillo::dbus_utils::DBusObject dbus_object_;

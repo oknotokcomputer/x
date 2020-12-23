@@ -612,4 +612,11 @@ std::string DebugdDBusAdaptor::EcGetInventory() {
   return ec_typec_tool_->GetInventory();
 }
 
+bool DebugdDBusAdaptor::EcTypeCEnterMode(brillo::ErrorPtr* error,
+                                         uint32_t port_num,
+                                         uint32_t mode,
+                                         std::string* output) {
+  return ec_typec_tool_->EnterMode(error, port_num, mode, output);
+}
+
 }  // namespace debugd

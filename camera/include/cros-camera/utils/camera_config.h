@@ -10,6 +10,7 @@
 #include <string>
 
 #include "cros-camera/constants.h"
+#include "cros-camera/export.h"
 
 namespace cros {
 
@@ -29,7 +30,7 @@ namespace cros {
 // bool bool_val = camera_config->GetBoolean(BooleanKey, false);
 // int int_val = camera_config->GetInteger(IntegerKey, 999);
 // std::string string_val = camera_config->GetString(StringKey, "default");
-class CameraConfig {
+class CROS_CAMERA_EXPORT CameraConfig {
  public:
   static std::unique_ptr<CameraConfig> Create(
       const std::string& config_path_string);

@@ -32,8 +32,8 @@ executable("arc_camera_service") {
   configs += [ "//camera/build:cros_camera_common" ]
   pkg_deps = [
     "libbrillo",
-    "libcamera_timezone",
     "libchrome-${libbase_ver}",
+    "libcros_camera",
     "libmojo-${libbase_ver}",
   ]
   deps = [

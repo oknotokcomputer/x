@@ -30,7 +30,7 @@ const char* GetAlgorithmLibraryName(const std::string& pipe_name) {
     return "libcam_algo.so";
   }
   if (pipe_name == "google_gpu") {
-    return "libcam_gpu_algo.so";
+    return "libcros_camera.so";
   }
   if (pipe_name == "test") {
     return "libcam_algo_test.so";

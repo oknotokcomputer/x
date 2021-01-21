@@ -396,6 +396,10 @@ class MockPlatform : public Platform {
               (const base::FilePath&, bool),
               (override));
   MOCK_METHOD(bool,
+              SafeCreateDirAndSetOwnershipAndPermissions,
+              (const base::FilePath&, mode_t, uid_t, gid_t),
+              (override));
+  MOCK_METHOD(bool,
               SafeCreateDirAndSetOwnership,
               (const base::FilePath&, uid_t, gid_t),
               (override));

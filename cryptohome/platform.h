@@ -860,6 +860,9 @@ class Platform {
   virtual bool RestoreSELinuxContexts(const base::FilePath& path,
                                       bool recursive);
 
+  virtual bool SafeCreateDirAndSetOwnershipAndPermissions(
+      const base::FilePath& path, mode_t mode, uid_t user_id, gid_t gid);
+
   // This safely creates a directory and sets the permissions, looking for
   // symlinks and race conditions underneath.
   virtual bool SafeCreateDirAndSetOwnership(const base::FilePath& path,

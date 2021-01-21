@@ -16,7 +16,6 @@
 #include <base/logging.h>
 #include <base/strings/stringprintf.h>
 #include <brillo/cryptohome.h>
-#include <brillo/scoped_umask.h>
 #include <brillo/secure_blob.h>
 
 #include "cryptohome/cryptohome_common.h"
@@ -64,32 +63,66 @@ FilePath VaultPathToRootPath(const FilePath& vault) {
   return vault.Append(cryptohome::kRootHomeSuffix);
 }
 
+constexpr mode_t kSkeletonSubDirMode = S_IRWXU | S_IRGRP | S_IXGRP;
+constexpr mode_t kTrackedDirMode = S_IRWXU;
+constexpr mode_t kPathComponentDirMode = S_IRWXU;
+constexpr mode_t kGroupExecAccess = S_IXGRP;
+constexpr mode_t kGroupWriteAccess = S_IWGRP;
+
 }  // namespace
 
 namespace cryptohome {
 
 const char kDefaultHomeDir[] = "/home/chronos/user";
 
-std::vector<FilePath> MountHelper::GetTrackedSubdirectories() {
-  return std::vector<FilePath>{
-      FilePath(kRootHomeSuffix),
-      FilePath(kUserHomeSuffix),
-      FilePath(kUserHomeSuffix).Append(kCacheDir),
-      FilePath(kUserHomeSuffix).Append(kDownloadsDir),
-      FilePath(kUserHomeSuffix).Append(kMyFilesDir),
-      FilePath(kUserHomeSuffix).Append(kMyFilesDir).Append(kDownloadsDir),
-      FilePath(kUserHomeSuffix).Append(kGCacheDir),
-      FilePath(kUserHomeSuffix).Append(kGCacheDir).Append(kGCacheVersion1Dir),
-      FilePath(kUserHomeSuffix).Append(kGCacheDir).Append(kGCacheVersion2Dir),
-      FilePath(kUserHomeSuffix)
-          .Append(kGCacheDir)
-          .Append(kGCacheVersion1Dir)
-          .Append(kGCacheBlobsDir),
-      FilePath(kUserHomeSuffix)
-          .Append(kGCacheDir)
-          .Append(kGCacheVersion1Dir)
-          .Append(kGCacheTmpDir),
+std::vector<DirectoryACL> MountHelper::GetCommonSubdirectories(
+    uid_t uid, gid_t gid, gid_t access_gid) {
+  return std::vector<DirectoryACL>{
+      {FilePath(kDownloadsDir), kTrackedDirMode | kGroupExecAccess, uid,
+       access_gid},
+      {FilePath(kMyFilesDir), kTrackedDirMode | kGroupExecAccess, uid,
+       access_gid},
+      {FilePath(kMyFilesDir).Append(kDownloadsDir),
+       kTrackedDirMode | kGroupExecAccess, uid, access_gid},
+      {FilePath(kGCacheDir), kTrackedDirMode | kGroupExecAccess, uid,
+       access_gid},
+      {FilePath(kGCacheDir).Append(kGCacheVersion2Dir),
+       kTrackedDirMode | kGroupExecAccess | kGroupWriteAccess, uid, access_gid},
   };
+}
+
+std::vector<DirectoryACL> MountHelper::GetTrackedSubdirectories(
+    uid_t uid, gid_t gid, gid_t access_gid) {
+  std::vector<DirectoryACL> durable_only_subdirs{
+      {FilePath(kRootHomeSuffix), kTrackedDirMode, uid, gid},
+      {FilePath(kUserHomeSuffix), kTrackedDirMode | kGroupExecAccess, uid,
+       access_gid},
+      {FilePath(kUserHomeSuffix).Append(kCacheDir), kTrackedDirMode, uid, gid},
+  };
+  std::vector<DirectoryACL> common_subdirs =
+      GetCommonSubdirectories(uid, gid, access_gid);
+  for (auto& subdir : common_subdirs) {
+    subdir.path = FilePath(kUserHomeSuffix).Append(subdir.path);
+  }
+  std::vector<DirectoryACL> cache_subdirs{
+      {FilePath(kUserHomeSuffix).Append(kGCacheDir).Append(kGCacheVersion1Dir),
+       kTrackedDirMode | kGroupExecAccess, uid, access_gid},
+      {FilePath(kUserHomeSuffix)
+           .Append(kGCacheDir)
+           .Append(kGCacheVersion1Dir)
+           .Append(kGCacheBlobsDir),
+       kTrackedDirMode, uid, gid},
+      {FilePath(kUserHomeSuffix)
+           .Append(kGCacheDir)
+           .Append(kGCacheVersion1Dir)
+           .Append(kGCacheTmpDir),
+       kTrackedDirMode, uid, gid},
+  };
+
+  auto result = durable_only_subdirs;
+  result.insert(result.end(), common_subdirs.begin(), common_subdirs.end());
+  result.insert(result.end(), cache_subdirs.begin(), cache_subdirs.end());
+  return result;
 }
 
 // static
@@ -139,13 +172,9 @@ bool MountHelper::EnsurePathComponent(const FilePath& path,
   struct stat st;
   if (!platform_->Stat(check_path, &st)) {
     // Dirent not there, so create and set ownership.
-    if (!platform_->CreateDirectory(check_path)) {
+    if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+            check_path, kPathComponentDirMode, uid, gid)) {
       PLOG(ERROR) << "Can't create: " << check_path.value();
-      return false;
-    }
-    if (!platform_->SetOwnership(check_path, uid, gid, true)) {
-      PLOG(ERROR) << "Can't chown/chgrp: " << check_path.value() << " uid "
-                  << uid << " gid " << gid;
       return false;
     }
   } else {
@@ -242,13 +271,11 @@ void MountHelper::MigrateToUserHome(const FilePath& vault_path) const {
   // inside dir.
   platform_->EnumerateDirectoryEntries(vault_path, false, &ent_list);
 
-  if (!platform_->CreateDirectory(user_path)) {
-    PLOG(ERROR) << "CreateDirectory() failed: " << user_path.value();
-    return;
-  }
-
-  if (!platform_->SetOwnership(user_path, default_uid_, default_gid_, true)) {
-    PLOG(ERROR) << "SetOwnership() failed: " << user_path.value();
+  if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+          user_path, kTrackedDirMode | kGroupExecAccess, default_uid_,
+          default_access_gid_)) {
+    PLOG(ERROR) << "SafeCreateDirAndSetOwnershipAndPermissions() failed: "
+                << user_path.value();
     return;
   }
 
@@ -272,17 +299,11 @@ void MountHelper::MigrateToUserHome(const FilePath& vault_path) const {
     }
   }
   // Create root_path at the end as a sentinel for migration.
-  if (!platform_->CreateDirectory(root_path)) {
-    PLOG(ERROR) << "CreateDirectory() failed: " << root_path.value();
-    return;
-  }
-  if (!platform_->SetOwnership(root_path, kMountOwnerUid, kDaemonStoreGid,
-                               true)) {
-    PLOG(ERROR) << "SetOwnership() failed: " << root_path.value();
-    return;
-  }
-  if (!platform_->SetPermissions(root_path, S_IRWXU | S_IRWXG | S_ISVTX)) {
-    PLOG(ERROR) << "SetPermissions() failed: " << root_path.value();
+  if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+          root_path, S_IRWXU | S_IRWXG | S_ISVTX, kMountOwnerUid,
+          kDaemonStoreGid)) {
+    PLOG(ERROR) << "SafeCreateDirAndSetOwnershipAndPermissions() failed: "
+                << root_path.value();
     return;
   }
   LOG(INFO) << "Migrated (or created) user directory: " << vault_path.value();
@@ -306,51 +327,6 @@ bool MountHelper::EnsureUserMountPoints(const std::string& username) const {
   return true;
 }
 
-bool MountHelper::SetUpGroupAccess(const FilePath& home_dir) const {
-  // Make the following directories group accessible by other system daemons:
-  //   {home_dir}
-  //   {home_dir}/Downloads
-  //   {home_dir}/MyFiles
-  //   {home_dir}/MyFiles/Downloads
-  //   {home_dir}/GCache
-  //   {home_dir}/GCache/v1 (only if it exists)
-  //
-  // Make the following directories group accessible and writable by other
-  // system daemons:
-  //   {home_dir}/GCache/v2
-  const struct {
-    FilePath path;
-    bool optional = false;
-    bool group_writable = false;
-  } kGroupAccessiblePaths[] = {
-      {home_dir},
-      {home_dir.Append(kDownloadsDir)},
-      {home_dir.Append(kMyFilesDir)},
-      {home_dir.Append(kMyFilesDir).Append(kDownloadsDir)},
-      {home_dir.Append(kGCacheDir)},
-      {home_dir.Append(kGCacheDir).Append(kGCacheVersion1Dir), true},
-      {home_dir.Append(kGCacheDir).Append(kGCacheVersion2Dir), false, true},
-  };
-
-  constexpr mode_t kDefaultMode = S_IXGRP;
-  constexpr mode_t kWritableMode = kDefaultMode | S_IWGRP;
-  for (const auto& accessible : kGroupAccessiblePaths) {
-    if (!platform_->DirectoryExists(accessible.path)) {
-      if (accessible.optional)
-        continue;
-      else
-        return false;
-    }
-
-    if (!platform_->SetGroupAccessible(
-            accessible.path, default_access_gid_,
-            accessible.group_writable ? kWritableMode : kDefaultMode)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 void MountHelper::RecursiveCopy(const FilePath& source,
                                 const FilePath& destination) const {
   std::unique_ptr<cryptohome::FileEnumerator> file_enumerator(
@@ -361,7 +337,7 @@ void MountHelper::RecursiveCopy(const FilePath& source,
     FilePath destination_file = destination.Append(file_name);
     if (!platform_->Copy(next_path, destination_file) ||
         !platform_->SetOwnership(destination_file, default_uid_, default_gid_,
-                                 true)) {
+                                 false)) {
       LOG(ERROR) << "Couldn't change owner (" << default_uid_ << ":"
                  << default_gid_
                  << ") of destination path: " << destination_file.value();
@@ -374,11 +350,10 @@ void MountHelper::RecursiveCopy(const FilePath& source,
     FilePath dir_name = FilePath(next_path).BaseName();
     FilePath destination_dir = destination.Append(dir_name);
     VLOG(1) << "RecursiveCopy: " << destination_dir.value();
-    if (!platform_->SafeCreateDirAndSetOwnership(destination_dir, default_uid_,
-                                                 default_gid_)) {
-      LOG(ERROR) << "Couldn't change owner (" << default_uid_ << ":"
-                 << default_gid_
-                 << ") of destination path: " << destination_dir.value();
+    if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+            destination_dir, kSkeletonSubDirMode, default_uid_, default_gid_)) {
+      LOG(ERROR) << "SafeCreateDirAndSetOwnership() failed: "
+                 << destination_dir.value();
     }
     RecursiveCopy(FilePath(next_path), destination_dir);
   }
@@ -391,36 +366,18 @@ void MountHelper::CopySkeleton(const FilePath& destination) const {
 bool MountHelper::SetUpEphemeralCryptohome(const FilePath& source_path) {
   CopySkeleton(source_path);
 
-  // Create the Downloads, MyFiles, MyFiles/Downloads, GCache and GCache/v2
-  // directories if they don't exist so they can be made group accessible when
-  // SetUpGroupAccess() is called.
-  const FilePath user_files_paths[] = {
-      FilePath(source_path).Append(kDownloadsDir),
-      FilePath(source_path).Append(kMyFilesDir),
-      FilePath(source_path).Append(kMyFilesDir).Append(kDownloadsDir),
-      FilePath(source_path).Append(kGCacheDir),
-      FilePath(source_path).Append(kGCacheDir).Append(kGCacheVersion2Dir),
-  };
-  for (const auto& path : user_files_paths) {
+  const auto subdirs =
+      GetCommonSubdirectories(default_uid_, default_gid_, default_access_gid_);
+  for (const auto& subdir : subdirs) {
+    FilePath path = FilePath(source_path).Append(subdir.path);
     if (platform_->DirectoryExists(path))
       continue;
 
-    if (!platform_->CreateDirectory(path) ||
-        !platform_->SetOwnership(path, default_uid_, default_gid_, true)) {
+    if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+            path, subdir.mode, subdir.uid, subdir.gid)) {
       LOG(ERROR) << "Couldn't create user path directory: " << path.value();
       return false;
     }
-  }
-
-  if (!platform_->SetOwnership(source_path, default_uid_, default_access_gid_,
-                               true)) {
-    LOG(ERROR) << "Couldn't change owner (" << default_uid_ << ":"
-               << default_access_gid_ << ") of path: " << source_path.value();
-    return false;
-  }
-
-  if (!SetUpGroupAccess(source_path)) {
-    return false;
   }
 
   return true;
@@ -524,9 +481,28 @@ bool MountHelper::MountDaemonStoreDirectories(
     const FilePath mount_target =
         run_daemon_store_path.Append(obfuscated_username);
 
-    if (!platform_->CreateDirectory(mount_source)) {
+    // Copy ownership from |etc_daemon_store_path| to |mount_source|. After the
+    // bind operation, this guarantees that ownership for |mount_target| is the
+    // same as for |etc_daemon_store_path| (usually
+    // <daemon_user>:<daemon_group>), which is what the daemon intended.
+    // Otherwise, it would end up being root-owned.
+    struct stat etc_daemon_path_stat = file_enumerator->GetInfo().stat();
+    if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+            mount_source, etc_daemon_path_stat.st_mode,
+            etc_daemon_path_stat.st_uid, etc_daemon_path_stat.st_gid)) {
       LOG(ERROR) << "Failed to create directory " << mount_source.value();
       return false;
+    }
+    // TODO(dlunev): Find a way to remove this case. The only reason it is
+    // present here is because makedir ignores SetGid permissions, which causes
+    // crash-reporter to try to change permissions on a mounted crash directory,
+    // which causes SIGSYS.
+    if (etc_daemon_path_stat.st_mode & S_ISGID) {
+      if (!platform_->SetPermissions(mount_source,
+                                     etc_daemon_path_stat.st_mode)) {
+        LOG(ERROR) << "Failed to set permissions for " << mount_source.value();
+        return false;
+      }
     }
 
     // The target directory's parent exists in the root mount namespace so the
@@ -534,27 +510,6 @@ bool MountHelper::MountDaemonStoreDirectories(
     // be visible in all namespaces.
     if (!platform_->CreateDirectory(mount_target)) {
       PLOG(ERROR) << "Failed to create directory " << mount_target.value();
-      return false;
-    }
-
-    // Copy ownership from |etc_daemon_store_path| to |mount_source|. After the
-    // bind operation, this guarantees that ownership for |mount_target| is the
-    // same as for |etc_daemon_store_path| (usually
-    // <daemon_user>:<daemon_group>), which is what the daemon intended.
-    // Otherwise, it would end up being root-owned.
-    struct stat etc_daemon_path_stat = file_enumerator->GetInfo().stat();
-    if (!platform_->SetOwnership(mount_source, etc_daemon_path_stat.st_uid,
-                                 etc_daemon_path_stat.st_gid,
-                                 false /*follow_links*/)) {
-      LOG(ERROR) << "Failed to set ownership for " << mount_source.value();
-      return false;
-    }
-
-    // Similarly, transfer directory permissions. Should usually be 0700, so
-    // that only the daemon has full access.
-    if (!platform_->SetPermissions(mount_source,
-                                   etc_daemon_path_stat.st_mode)) {
-      LOG(ERROR) << "Failed to set permissions for " << mount_source.value();
       return false;
     }
 
@@ -624,8 +579,6 @@ bool MountHelper::CreateTrackedSubdirectories(
     const std::string& obfuscated_username,
     const MountType& mount_type,
     bool is_pristine) const {
-  brillo::ScopedUmask scoped_umask(kDefaultUmask);
-
   // Add the subdirectories if they do not exist.
   const FilePath dest_dir(
       mount_type == MountType::ECRYPTFS
@@ -644,10 +597,11 @@ bool MountHelper::CreateTrackedSubdirectories(
   // want to have as many of the specified tracked directories created as
   // possible.
   bool result = true;
-  for (const auto& tracked_dir : GetTrackedSubdirectories()) {
-    const FilePath tracked_dir_path = dest_dir.Append(tracked_dir);
+  for (const auto& tracked_dir : GetTrackedSubdirectories(
+           default_uid_, default_gid_, default_access_gid_)) {
+    const FilePath tracked_dir_path = dest_dir.Append(tracked_dir.path);
     if (mount_type == MountType::ECRYPTFS) {
-      const FilePath userside_dir = mount_dir.Append(tracked_dir);
+      const FilePath userside_dir = mount_dir.Append(tracked_dir.path);
       // If non-pass-through dir with the same name existed - delete it
       // to prevent duplication.
       if (!is_pristine && platform_->DirectoryExists(userside_dir) &&
@@ -661,11 +615,10 @@ bool MountHelper::CreateTrackedSubdirectories(
       // Delete the existing file or symbolic link if any.
       platform_->DeleteFile(tracked_dir_path, false /* recursive */);
       VLOG(1) << "Creating pass-through directory " << tracked_dir_path.value();
-      platform_->CreateDirectory(tracked_dir_path);
-      if (!platform_->SetOwnership(tracked_dir_path, default_uid_, default_gid_,
-                                   true /*follow_links*/)) {
-        PLOG(ERROR) << "Couldn't change owner (" << default_uid_ << ":"
-                    << default_gid_ << ") of tracked directory path: "
+      if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+              tracked_dir_path, tracked_dir.mode, tracked_dir.uid,
+              tracked_dir.gid)) {
+        PLOG(ERROR) << "Couldn't create directory: "
                     << tracked_dir_path.value();
         platform_->DeleteFile(tracked_dir_path, true);
         result = false;
@@ -747,11 +700,6 @@ bool MountHelper::PerformMount(const Options& mount_opts,
 
   if (is_pristine)
     CopySkeleton(user_home);
-
-  if (!SetUpGroupAccess(FilePath(user_home))) {
-    *error = MOUNT_ERROR_SETUP_GROUP_ACCESS_FAILED;
-    return false;
-  }
 
   // When migrating, it's better to avoid exposing the new ext4 crypto dir.
   // Also don't expose the home directory if a shadow-only mount was requested.

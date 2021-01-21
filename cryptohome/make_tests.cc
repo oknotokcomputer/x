@@ -277,6 +277,10 @@ void TestUser::GenerateCredentials(bool force_ecryptfs) {
     .WillOnce(Return(false));
   EXPECT_CALL(platform, CreateDirectory(_))
     .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+      .WillRepeatedly(Return(true));
   // Grab the generated credential
   EXPECT_CALL(platform, WriteFileAtomicDurable(keyset_path, _, _))
     .WillOnce(DoAll(SaveArg<1>(&credentials), Return(true)));

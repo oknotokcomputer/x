@@ -497,13 +497,15 @@ class MountTest
         .WillRepeatedly(Return(true));
     EXPECT_CALL(platform_, CreateDirectory(user.vault_path))
         .Times(0);
-    EXPECT_CALL(platform_, CreateDirectory(_))
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(platform_, FileExists(_))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(platform_, SetOwnership(_, _, _, _))
+    EXPECT_CALL(platform_, CreateDirectory(_))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(platform_, SetPermissions(_, _)).WillRepeatedly(Return(true));
+    EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(platform_,
+                SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+        .WillRepeatedly(Return(true));
     ExpectDaemonStoreMounts(user, true /* ephemeral_mount */);
   }
 
@@ -542,16 +544,12 @@ class MountTest
     const FilePath mount_target =
         run_daemon_store_path.Append(user.obfuscated_username);
 
-    EXPECT_CALL(platform_, CreateDirectory(mount_source))
+    EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                               mount_source, stat_data.st_mode,
+                               stat_data.st_uid, stat_data.st_gid))
         .WillOnce(Return(true));
+
     EXPECT_CALL(platform_, CreateDirectory(mount_target))
-        .WillOnce(Return(true));
-
-    EXPECT_CALL(platform_, SetOwnership(mount_source, stat_data.st_uid,
-                                        stat_data.st_gid, false))
-        .WillOnce(Return(true));
-
-    EXPECT_CALL(platform_, SetPermissions(mount_source, stat_data.st_mode))
         .WillOnce(Return(true));
 
     EXPECT_CALL(platform_, Bind(mount_source, mount_target))
@@ -1109,29 +1107,25 @@ TEST_P(MountTest, CreateCryptohomeTest) {
   EXPECT_CALL(platform_, FileExists(user->keyset_path))
     .WillOnce(Return(false));
   EXPECT_CALL(platform_,
-      CreateDirectory(
+      SafeCreateDirAndSetOwnershipAndPermissions(
         AnyOf(user->mount_prefix,
               user->user_mount_prefix,
               user->user_mount_path,
               user->root_mount_prefix,
-              user->root_mount_path)))
+              user->root_mount_path), _, _, _))
     .Times(7)
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_,
-      CreateDirectory(
+      SafeCreateDirAndSetOwnershipAndPermissions(
         AnyOf(FilePath("/home/chronos"),
-              MountHelper::GetNewUserPath(user->username))))
+              MountHelper::GetNewUserPath(user->username)), _, _, _))
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, DirectoryExists(user->vault_path))
     .WillRepeatedly(Return(false));
   EXPECT_CALL(platform_, DirectoryExists(user->vault_mount_path))
     .WillRepeatedly(Return(false));
-  if (ShouldTestEcryptfs()) {
-    EXPECT_CALL(platform_, CreateDirectory(user->vault_path))
-      .WillOnce(Return(true));
-  }
-  EXPECT_CALL(platform_, CreateDirectory(user->base_path))
-    .WillOnce(Return(true));
+  EXPECT_CALL(platform_, CreateDirectory(_))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, FileExists(base::FilePath(kLockedToSingleUserFile)))
     .WillRepeatedly(Return(false));
   brillo::Blob creds;
@@ -1722,8 +1716,10 @@ TEST_P(MountTest, MountCryptohomeNoCreate) {
     .WillOnce(DoAll(SaveArg<1>(&creds), Return(true)))
     .WillRepeatedly(Return(true));
 
-  EXPECT_CALL(platform_, SetOwnership(_, _, _, _)).WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(_, _)).WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+      .WillRepeatedly(Return(true));
 
   ExpectCryptohomeMount(*user);
 
@@ -2107,48 +2103,6 @@ TEST_P(MountTest, BothFlagsMigrationTest) {
             (flags & SerializedVaultKeyset::SCRYPT_DERIVED));
 }
 
-TEST_P(MountTest, CreateTrackedSubdirectories) {
-  EXPECT_TRUE(DoMountInit());
-  InsertTestUsers(&kDefaultUsers[0], 1);
-  TestUser *user = &helper_.users[0];
-  Credentials credentials(user->username, user->passkey);
-
-  FilePath dest_dir;
-  if (ShouldTestEcryptfs()) {
-    dest_dir = user->vault_path;
-    mount_->mount_type_ = ::cryptohome::MountType::ECRYPTFS;
-  } else {
-    dest_dir = user->vault_mount_path;
-    mount_->mount_type_ = ::cryptohome::MountType::DIR_CRYPTO;
-  }
-  EXPECT_CALL(platform_, DirectoryExists(dest_dir))
-    .WillOnce(Return(true));
-
-  // Expectations for each tracked subdirectory.
-  for (const auto& tracked_dir : MountHelper::GetTrackedSubdirectories()) {
-    const FilePath tracked_dir_path = dest_dir.Append(tracked_dir);
-    EXPECT_CALL(platform_, DirectoryExists(tracked_dir_path))
-      .WillOnce(Return(false));
-    EXPECT_CALL(platform_, CreateDirectory(tracked_dir_path))
-      .WillOnce(Return(true));
-    EXPECT_CALL(
-        platform_,
-        SetOwnership(tracked_dir_path, chronos_uid_, chronos_gid_, true))
-        .WillOnce(Return(true));
-    if (!ShouldTestEcryptfs()) {
-      // For dircrypto, xattr should be set.
-      EXPECT_CALL(platform_, SetExtendedFileAttribute(
-          tracked_dir_path,
-          kTrackedDirectoryNameAttribute,
-          StrEq(tracked_dir_path.BaseName().value()),
-          tracked_dir_path.BaseName().value().size())).WillOnce(Return(true));
-    }
-  }
-  // Run the method.
-  EXPECT_TRUE(
-      mount_->CreateTrackedSubdirectories(credentials, true /* is_new */));
-}
-
 TEST_P(MountTest, CreateTrackedSubdirectoriesReplaceExistingDir) {
   EXPECT_TRUE(DoMountInit());
   InsertTestUsers(&kDefaultUsers[0], 1);
@@ -2167,9 +2121,12 @@ TEST_P(MountTest, CreateTrackedSubdirectoriesReplaceExistingDir) {
     .WillOnce(Return(true));
 
   // Expectations for each tracked subdirectory.
-  for (const auto& tracked_dir : MountHelper::GetTrackedSubdirectories()) {
-    const FilePath tracked_dir_path = dest_dir.Append(tracked_dir);
-    const FilePath userside_dir = user->vault_mount_path.Append(tracked_dir);
+  for (const auto& tracked_dir : MountHelper::GetTrackedSubdirectories(
+           chronos_uid_, chronos_gid_,
+           shared_gid_)) {
+    const FilePath tracked_dir_path = dest_dir.Append(tracked_dir.path);
+    const FilePath userside_dir =
+        user->vault_mount_path.Append(tracked_dir.path);
     // Simulate the case there already exists a non-passthrough-dir
     if (ShouldTestEcryptfs()) {
       // For ecryptfs, delete and replace the existing directory.
@@ -2182,12 +2139,10 @@ TEST_P(MountTest, CreateTrackedSubdirectoriesReplaceExistingDir) {
       EXPECT_CALL(platform_, DirectoryExists(tracked_dir_path))
         .WillOnce(Return(false))
         .WillOnce(Return(false));
-      EXPECT_CALL(platform_, CreateDirectory(tracked_dir_path))
-        .WillOnce(Return(true));
-      EXPECT_CALL(
-          platform_,
-          SetOwnership(tracked_dir_path, chronos_uid_, chronos_gid_, true))
-        .WillOnce(Return(true));
+      EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                                 tracked_dir_path, tracked_dir.mode,
+                                 tracked_dir.uid, tracked_dir.gid))
+          .WillOnce(Return(true));
     } else {
       // For dircrypto, just skip the directory creation.
       EXPECT_CALL(platform_, DirectoryExists(tracked_dir_path))
@@ -2222,6 +2177,10 @@ TEST_P(MountTest, MountCryptohomePreviousMigrationIncomplete) {
     .WillRepeatedly(Return(false));
   EXPECT_CALL(platform_, CreateDirectory(_))
     .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, FileExists(base::FilePath(kLockedToSingleUserFile)))
     .WillRepeatedly(Return(false));
 
@@ -2524,59 +2483,43 @@ TEST_P(EphemeralNoUserSystemTest, CreateMyFilesDownloads) {
   EXPECT_CALL(platform_, DirectoryExists(downloads_path))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, CreateDirectory(downloads_path))
-      .WillOnce(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(downloads_path, chronos_uid_, chronos_gid_, _))
-      .WillOnce(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                             downloads_path, 0710, chronos_uid_,
+                             shared_gid_))
+      .WillRepeatedly(Return(true));
   // Expecting MyFiles to not exist and then be created.
   EXPECT_CALL(platform_, DirectoryExists(myfiles_path))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, CreateDirectory(myfiles_path)).WillOnce(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(myfiles_path, chronos_uid_, chronos_gid_, _))
-      .WillOnce(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                             myfiles_path, 0710, chronos_uid_,
+                             shared_gid_))
+      .WillRepeatedly(Return(true));
   // Expecting MyFiles/Downloads to not exist and then be created, with right
   // user and group.
   EXPECT_CALL(platform_, DirectoryExists(myfiles_downloads_path))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, CreateDirectory(myfiles_downloads_path))
-      .WillOnce(Return(true));
-  EXPECT_CALL(platform_, SetOwnership(myfiles_downloads_path, chronos_uid_,
-                                      chronos_gid_, _))
-      .WillOnce(Return(true));
+  EXPECT_CALL(platform_,
+              SafeCreateDirAndSetOwnershipAndPermissions(
+                  myfiles_downloads_path, 0710, chronos_uid_,
+                  shared_gid_))
+      .WillRepeatedly(Return(true));
 
   // Expect GCache and Gcache/v2 to be created with the right user and group.
   EXPECT_CALL(platform_, DirectoryExists(gcache_path))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, CreateDirectory(gcache_path)).WillOnce(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(gcache_path, chronos_uid_, chronos_gid_, _))
-      .WillOnce(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                             gcache_path, 0710, chronos_uid_,
+                             shared_gid_))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, DirectoryExists(gcache_v2_path))
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, CreateDirectory(gcache_v2_path))
-      .WillOnce(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(gcache_v2_path, chronos_uid_, chronos_gid_, _))
-      .WillOnce(Return(true));
-
-  EXPECT_CALL(platform_, SetOwnership(base_path, chronos_uid_, shared_gid_, _))
-      .WillOnce(Return(true));
-
-  // Expectaction for Mount::SetupGroupAccess
-  // These files should exist. Then get group accessible called on them.
-  EXPECT_CALL(platform_, DirectoryExists(AnyOf(base_path, gcache_v1_path)))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_,
-              SetGroupAccessible(AnyOf(base_path, myfiles_path, downloads_path,
-                                       myfiles_downloads_path, gcache_path,
-                                       gcache_v1_path, gcache_v2_path),
-                                 shared_gid_, _))
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                             gcache_v2_path, 0730, chronos_uid_,
+                             shared_gid_))
       .WillRepeatedly(Return(true));
 
   MountHelper mnt_helper(chronos_uid_, chronos_gid_, shared_gid_, kImageDir,
@@ -2595,9 +2538,6 @@ TEST_P(EphemeralNoUserSystemTest, CreateMyFilesDownloadsAlreadyExists) {
   const FilePath myfiles_downloads_path = myfiles_path.Append("Downloads");
   const auto gcache_dirs = Property(
       &FilePath::value, StartsWith(base_path.Append("GCache").value()));
-
-  EXPECT_CALL(platform_, SetOwnership(base_path, chronos_uid_, shared_gid_, _))
-      .WillOnce(Return(true));
 
   // Expecting Downloads and MyFiles/Downloads to exist thus CreateDirectory
   // isn't called.
@@ -2637,8 +2577,10 @@ TEST_P(EphemeralNoUserSystemTest, OwnerUnknownMountCreateTest) {
   ExpectCryptohomeKeySetup(*user);
   EXPECT_CALL(platform_, CreateDirectory(_))
     .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetOwnership(_, _, _, _)).WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(_, _)).WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, WriteFileAtomicDurable(user->keyset_path, _, _))
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, ReadFile(user->keyset_path, _))
@@ -2725,6 +2667,8 @@ TEST_P(EphemeralNoUserSystemTest, MountSetUserTypeFailTest) {
   }
 
   EXPECT_CALL(platform_, CreateDirectory(_))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, WriteFileAtomicDurable(user->keyset_path, _, _))
     .WillRepeatedly(Return(true));
@@ -3247,11 +3191,17 @@ TEST_P(EphemeralExistingUserSystemTest, OwnerUnknownMountNoRemoveTest) {
     .WillRepeatedly(Return(false));
   EXPECT_CALL(platform_, CreateDirectory(user->vault_path))
     .Times(0);
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(user->vault_path, _, _))
+      .Times(0);
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
+                             user->vault_path, _, _, _))
+      .Times(0);
   EXPECT_CALL(platform_, CreateDirectory(_))
     .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetOwnership(_, _, _, _)).WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(_, _))
-    .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
+      .WillRepeatedly(Return(true));
 
   ExpectCryptohomeMount(*user);
   EXPECT_CALL(platform_, ClearUserKeyring()).WillOnce(Return(true));
@@ -3819,8 +3769,9 @@ TEST_P(EphemeralNoUserSystemTest, MountGuestUserDir) {
                     Return(true)));
   EXPECT_CALL(platform_, CreateDirectory(_))
     .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetOwnership(_, _, _, _)).WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetGroupAccessible(_, _, _))
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnership(_, _, _))
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, IsDirectoryMounted(_))
     .WillOnce(Return(false));
@@ -3940,6 +3891,8 @@ TEST_P(EphemeralNoUserSystemTest, MountGuestUserFailSetUserType) {
     .WillOnce(DoAll(SetArgPointee<1>(fake_user_st),
                     Return(true)));
   EXPECT_CALL(platform_, CreateDirectory(_))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(_, _, _, _))
     .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, SetOwnership(_, _, _, _))
     .WillRepeatedly(Return(true));

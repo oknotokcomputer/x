@@ -121,7 +121,6 @@ class LogTool {
   // Returns the output of arc-bugreport program in ARC.
   // Returns cached output if it is available for this user.
   std::string GetArcBugReport(const std::string& username, bool* is_backup);
-  base::FilePath GetArcBugReportBackupFilePath(const std::string& userhash);
 
   scoped_refptr<dbus::Bus> bus_;
   std::unique_ptr<org::chromium::CryptohomeInterfaceProxyInterface>

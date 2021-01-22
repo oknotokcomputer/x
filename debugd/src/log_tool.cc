@@ -35,6 +35,8 @@
 #include "debugd/src/perf_tool.h"
 #include "debugd/src/process_with_output.h"
 
+#include <brillo/files/safe_fd.h>
+#include <brillo/files/file_util.h>
 #include "brillo/key_value_store.h"
 #include <brillo/osrelease_reader.h>
 #include <brillo/cryptohome.h>
@@ -677,16 +679,6 @@ LogTool::LogTool(scoped_refptr<dbus::Bus> bus)
               std::make_unique<ArcBugReportLog>(),
               base::FilePath(kDaemonStoreBaseDir)) {}
 
-base::FilePath LogTool::GetArcBugReportBackupFilePath
-  (const std::string& userhash) {
-  CHECK(brillo::cryptohome::home::IsSanitizedUserName(userhash))
-      << "Invalid userhash '" << userhash << "'";
-
-  return daemon_store_base_dir_
-    .Append(userhash)
-    .Append(kArcBugReportBackupFileName);
-}
-
 void LogTool::CreateConnectivityReport(bool wait_for_results) {
   // Perform ConnectivityTrial to report connection state in feedback log.
   auto shill = std::make_unique<org::chromium::flimflam::ManagerProxy>(bus_);
@@ -777,7 +769,8 @@ std::string LogTool::GetArcBugReport(const std::string& username,
   std::string contents;
   if (userhash.empty() ||
       arc_bug_report_backups_.find(userhash) == arc_bug_report_backups_.end() ||
-      !base::ReadFileToString(GetArcBugReportBackupFilePath(userhash),
+      !base::ReadFileToString(daemon_store_base_dir_.Append(userhash).Append(
+                                  kArcBugReportBackupFileName),
                               &contents)) {
     // If |userhash| was not empty, but was not found in the backup set
     // or the file did not exist, attempt to delete the file.
@@ -796,9 +789,30 @@ std::string LogTool::GetArcBugReport(const std::string& username,
 void LogTool::BackupArcBugReport(const std::string& userhash) {
   DLOG(INFO) << "Backing up ARC bug report";
 
-  const base::FilePath reportPath = GetArcBugReportBackupFilePath(userhash);
+  brillo::SafeFD backupDir(
+      brillo::SafeFD::Root()
+          .first.OpenExistingDir(daemon_store_base_dir_.Append(userhash))
+          .first);
+  if (!backupDir.is_valid()) {
+    LOG(ERROR) << "Failed to open ARC bug report backup dir at "
+               << daemon_store_base_dir_.Append(userhash).value();
+    return;
+  }
+
+  brillo::SafeFD backupFile(
+      brillo::OpenOrRemakeFile(&backupDir, kArcBugReportBackupFileName).first);
+  if (!backupFile.is_valid()) {
+    LOG(ERROR) << "Failed to open ARC bug report file at "
+               << daemon_store_base_dir_.Append(userhash)
+                      .Append(kArcBugReportBackupFileName)
+                      .value();
+    return;
+  }
+
   const std::string logData = arc_bug_report_log_->GetLogData();
-  if (base::WriteFile(reportPath, logData.c_str(), logData.length())) {
+
+  if (backupFile.Write(logData.c_str(), logData.length()) ==
+      brillo::SafeFD::Error::kNoError) {
     arc_bug_report_backups_.insert(userhash);
   } else {
     PLOG(ERROR) << "Failed to backup ARC bug report";
@@ -808,10 +822,24 @@ void LogTool::BackupArcBugReport(const std::string& userhash) {
 void LogTool::DeleteArcBugReportBackup(const std::string& userhash) {
   DLOG(INFO) << "Deleting the ARC bug report backup";
 
-  const base::FilePath reportPath = GetArcBugReportBackupFilePath(userhash);
+  brillo::SafeFD backupDir(
+      brillo::SafeFD::Root()
+          .first.OpenExistingDir(daemon_store_base_dir_.Append(userhash))
+          .first);
+  if (!backupDir.is_valid()) {
+    LOG(ERROR) << "Failed to open ARC bug report backup dir at "
+               << daemon_store_base_dir_.Append(userhash).value();
+    return;
+  }
+
   arc_bug_report_backups_.erase(userhash);
-  if (!base::DeleteFile(reportPath, false)) {
-    PLOG(ERROR) << "Failed to delete ARC bug report backup";
+
+  if (backupDir.Unlink(kArcBugReportBackupFileName) !=
+      brillo::SafeFD::Error::kNoError) {
+    PLOG(ERROR) << "Failed to delete ARC bug report backup at "
+                << daemon_store_base_dir_.Append(userhash)
+                       .Append(kArcBugReportBackupFileName)
+                       .value();
   }
 }
 

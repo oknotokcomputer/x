@@ -23,7 +23,7 @@ group("all") {
 pkg_config("target_defaults") {
   configs = [ "//camera/build:cros_camera_common" ]
   pkg_deps = [
-    "cros-camera-android-headers",
+    "libcros_camera_android_deps",
     "libdrm",
   ]
 }
@@ -81,10 +81,10 @@ shared_library("libcros_camera") {
   pkg_deps = [
     "gbm",
     "libbrillo",
-    "libcamera_metadata",
     "libexif",
     "libmetrics",
-    "libmojo",
+    "libchrome-${libbase_ver}",
+    "libmojo-${libbase_ver}",
     "libsync",
     "libudev",
     "libyuv",
@@ -101,8 +101,8 @@ generate_pkg_config("libcros_camera_pkg_config") {
   name = "libcros_camera"
   description = "cros-camera common libraries"
   version = getenv("PV")
-  requires_private = [ "libchrome" ]
-  requires = [ "libmojo" ]
+  requires_private = [ "libchrome-${libbase_ver}" ]
+  requires = [ "libmojo-${libbase_ver}" ]
   cflags = [ "-I/usr/include/cros-camera" ]
   libs = [
     "-lcros_camera",
@@ -121,7 +121,7 @@ executable("cros_camera_algo") {
   libs = [ "dl" ]
   pkg_deps = [
     "libbrillo",
-    "libmojo",
+    "libmojo-${libbase_ver}",
   ]
   deps = [
     ":libcros_camera",

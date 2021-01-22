@@ -130,12 +130,10 @@ shared_library("libcamera_hal") {
     "MACRO_KBL_AIC",
   ]
   pkg_deps = [
-    "cros-camera-android-headers",
     "expat",
-    "libcamera_client",
-    "libcamera_metadata",
-    "libchrome",
+    "libchrome-${libbase_ver}",
     "libcros_camera",
+    "libcros_camera_android_deps",
     "libmojo-${libbase_ver}",
     "libsync",
     "libyuv",
@@ -190,9 +188,9 @@ shared_library("libcam_algo") {
     "pvl_mouth_detection",
   ]
   pkg_deps = [
-    "cros-camera-android-headers",
     "libchrome-${libbase_ver}",
     "libcros_camera",
+    "libcros_camera_android_deps",
     "libmojo-${libbase_ver}",
   ]
 }

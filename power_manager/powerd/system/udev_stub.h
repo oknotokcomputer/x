@@ -40,6 +40,10 @@ class UdevStub : public UdevInterface {
                            const std::string& tags);
   void TaggedDeviceRemoved(const std::string& syspath);
 
+  // Makes SetSysattr() fail unless attribute is created with SetSysattr()
+  // previously.
+  void stop_accepting_sysattr_for_testing();
+
   // Removes a |sysattr| to test the scenarios where the file is deleted.
   void RemoveSysattr(const std::string& syspath, const std::string& sysattr);
 
@@ -58,6 +62,8 @@ class UdevStub : public UdevInterface {
   std::vector<TaggedDevice> GetTaggedDevices() override;
   bool GetSubsystemDevices(const std::string& subsystem,
                            std::vector<UdevDeviceInfo>* devices_out) override;
+  bool HasSysattr(const std::string& syspath,
+                  const std::string& sysattr) override;
   bool GetSysattr(const std::string& syspath,
                   const std::string& sysattr,
                   std::string* value) override;
@@ -90,6 +96,9 @@ class UdevStub : public UdevInterface {
   // value.
   typedef std::map<std::pair<std::string, std::string>, std::string> SysattrMap;
   SysattrMap map_;
+  // Make SetSysattr() fail under test if this is true and SetSysattr() hasn't
+  // created the attribute already.
+  bool stop_accepting_sysattr_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(UdevStub);
 };

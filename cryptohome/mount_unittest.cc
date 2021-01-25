@@ -859,8 +859,6 @@ class ChapsDirectoryTest : public ::testing::Test {
  public:
   ChapsDirectoryTest()
       : kBaseDir("/base_chaps_dir"),
-        kDatabaseDir("/base_chaps_dir/database"),
-        kDatabaseFile("/base_chaps_dir/database/file"),
         kLegacyDir("/legacy"),
         kRootUID(0), kRootGID(0), kChapsUID(1), kSharedGID(2),
         mount_(new Mount()),
@@ -872,9 +870,6 @@ class ChapsDirectoryTest : public ::testing::Test {
     mount_->default_access_group_ = kSharedGID;
     // By default, set stats to the expected values.
     InitStat(&base_stat_, 040750, kChapsUID, kSharedGID);
-    InitStat(&salt_stat_, 0600, kRootUID, kRootGID);
-    InitStat(&database_dir_stat_, 040750, kChapsUID, kSharedGID);
-    InitStat(&database_file_stat_, 0640, kChapsUID, kSharedGID);
   }
 
   virtual ~ChapsDirectoryTest() {}
@@ -885,17 +880,6 @@ class ChapsDirectoryTest : public ::testing::Test {
         .WillRepeatedly(Return(true));
     EXPECT_CALL(platform_, Stat(kBaseDir, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(base_stat_), Return(true)));
-
-    // Configure a fake enumerator.
-    MockFileEnumerator* enumerator = platform_.mock_enumerator();
-    enumerator->entries_.push_back(
-        FileEnumerator::FileInfo(kBaseDir, base_stat_));
-    enumerator->entries_.push_back(
-        FileEnumerator::FileInfo(kSaltFile, salt_stat_));
-    enumerator->entries_.push_back(
-        FileEnumerator::FileInfo(kDatabaseDir, database_dir_stat_));
-    enumerator->entries_.push_back(
-        FileEnumerator::FileInfo(kDatabaseFile, database_file_stat_));
   }
 
   bool RunCheck() {
@@ -904,9 +888,6 @@ class ChapsDirectoryTest : public ::testing::Test {
 
  protected:
   const FilePath kBaseDir;
-  const FilePath kSaltFile;
-  const FilePath kDatabaseDir;
-  const FilePath kDatabaseFile;
   const FilePath kLegacyDir;
   const uid_t kRootUID;
   const gid_t kRootGID;
@@ -914,9 +895,6 @@ class ChapsDirectoryTest : public ::testing::Test {
   const gid_t kSharedGID;
 
   struct stat base_stat_;
-  struct stat salt_stat_;
-  struct stat database_dir_stat_;
-  struct stat database_file_stat_;
 
   scoped_refptr<Mount> mount_;
   NiceMock<MockPlatform> platform_;
@@ -963,64 +941,6 @@ TEST_F(ChapsDirectoryTest, CreateFailure) {
   EXPECT_CALL(platform_, SafeCreateDirAndSetOwnershipAndPermissions(
                              kBaseDir, 0750, kChapsUID,
                              kSharedGID))
-      .WillRepeatedly(Return(false));
-  ASSERT_FALSE(RunCheck());
-}
-
-TEST_F(ChapsDirectoryTest, FixBadPerms) {
-  // Specify some bad perms.
-  base_stat_.st_mode = 040700;
-  salt_stat_.st_mode = 0640;
-  database_dir_stat_.st_mode = 040755;
-  database_file_stat_.st_mode = 0666;
-  SetupFakeChapsDirectory();
-  // Expect corrections.
-  EXPECT_CALL(platform_, SetPermissions(kBaseDir, 0750))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(kSaltFile, 0600))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(kDatabaseDir, 0750))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetPermissions(kDatabaseFile, 0640))
-      .WillRepeatedly(Return(true));
-  ASSERT_TRUE(RunCheck());
-}
-
-TEST_F(ChapsDirectoryTest, FixBadOwnership) {
-  // Specify bad ownership.
-  base_stat_.st_uid = kRootUID;
-  salt_stat_.st_gid = kChapsUID;
-  database_dir_stat_.st_gid = kChapsUID;
-  database_file_stat_.st_uid = kSharedGID;
-  SetupFakeChapsDirectory();
-  // Expect corrections.
-  EXPECT_CALL(platform_, SetOwnership(kBaseDir, kChapsUID, kSharedGID, true))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(kDatabaseDir, kChapsUID, kSharedGID, true))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_,
-              SetOwnership(kDatabaseFile, kChapsUID, kSharedGID, true))
-      .WillRepeatedly(Return(true));
-  ASSERT_TRUE(RunCheck());
-}
-
-TEST_F(ChapsDirectoryTest, FixBadPermsFailure) {
-  // Specify some bad perms.
-  base_stat_.st_mode = 040700;
-  SetupFakeChapsDirectory();
-  // Expect corrections but fail to apply.
-  EXPECT_CALL(platform_, SetPermissions(_, _))
-      .WillRepeatedly(Return(false));
-  ASSERT_FALSE(RunCheck());
-}
-
-TEST_F(ChapsDirectoryTest, FixBadOwnershipFailure) {
-  // Specify bad ownership.
-  base_stat_.st_uid = kRootUID;
-  SetupFakeChapsDirectory();
-  // Expect corrections but fail to apply.
-  EXPECT_CALL(platform_, SetOwnership(_, _, _, _))
       .WillRepeatedly(Return(false));
   ASSERT_FALSE(RunCheck());
 }

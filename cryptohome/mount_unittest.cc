@@ -859,7 +859,6 @@ class ChapsDirectoryTest : public ::testing::Test {
  public:
   ChapsDirectoryTest()
       : kBaseDir("/base_chaps_dir"),
-        kSaltFile("/base_chaps_dir/auth_data_salt"),
         kDatabaseDir("/base_chaps_dir/database"),
         kDatabaseFile("/base_chaps_dir/database/file"),
         kLegacyDir("/legacy"),
@@ -996,8 +995,6 @@ TEST_F(ChapsDirectoryTest, FixBadOwnership) {
   SetupFakeChapsDirectory();
   // Expect corrections.
   EXPECT_CALL(platform_, SetOwnership(kBaseDir, kChapsUID, kSharedGID, true))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(platform_, SetOwnership(kSaltFile, kRootUID, kRootGID, true))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_,
               SetOwnership(kDatabaseDir, kChapsUID, kSharedGID, true))

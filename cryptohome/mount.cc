@@ -1241,11 +1241,6 @@ bool Mount::CheckChapsDirectory(const FilePath& dir,
     default_access_group_,       // chronos-access
     S_IRUSR | S_IWUSR | S_IRGRP  // 0640
   };
-  const Platform::Permissions kChapsSaltPermissions = {
-    0,                 // root
-    0,                 // root
-    S_IRUSR | S_IWUSR  // 0600
-  };
 
   // If the Chaps database directory does not exist, create it.
   if (!platform_->DirectoryExists(dir)) {
@@ -1280,12 +1275,8 @@ bool Mount::CheckChapsDirectory(const FilePath& dir,
   }
   // Directory already exists so check permissions and log a warning
   // if not as expected then attempt to apply correct permissions.
-  std::map<FilePath, Platform::Permissions> special_cases;
-  special_cases[dir.Append("auth_data_salt")] = kChapsSaltPermissions;
-  if (!platform_->ApplyPermissionsRecursive(dir,
-                                            kChapsFilePermissions,
-                                            kChapsDirPermissions,
-                                            special_cases)) {
+  if (!platform_->ApplyPermissionsRecursive(dir, kChapsFilePermissions,
+                                            kChapsDirPermissions, {})) {
     LOG(ERROR) << "Chaps permissions failure.";
     return false;
   }
@@ -1301,27 +1292,8 @@ bool Mount::InsertPkcs11Token() {
   // We may create a salt file and, if so, we want to restrict access to it.
   brillo::ScopedUmask scoped_umask(kDefaultUmask);
 
-  // Derive authorization data for the token from the passkey.
-  FilePath salt_file = homedirs_->GetChapsTokenSaltPath(username);
-
   std::unique_ptr<chaps::TokenManagerClient> chaps_client(
       chaps_client_factory_->New());
-
-  // If migration is required, send it before the login event.
-  if (is_pkcs11_passkey_migration_required_) {
-    LOG(INFO) << "Migrating authorization data.";
-    SecureBlob old_auth_data;
-    if (!crypto_->PasskeyToTokenAuthData(legacy_pkcs11_passkey_,
-                                         salt_file,
-                                         &old_auth_data))
-      return false;
-    chaps_client->ChangeTokenAuthData(
-        token_dir,
-        old_auth_data,
-        pkcs11_token_auth_data_);
-    is_pkcs11_passkey_migration_required_ = false;
-    legacy_pkcs11_passkey_.clear();
-  }
 
   Pkcs11Init pkcs11init;
   int slot_id = 0;

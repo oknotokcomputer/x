@@ -1255,19 +1255,10 @@ bool Mount::CheckChapsDirectory(const FilePath& dir,
         return false;
       }
     } else {
-      if (!platform_->CreateDirectory(dir)) {
+      if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+            dir, kChapsDirPermissions.mode, kChapsDirPermissions.user,
+            kChapsDirPermissions.group)) {
         LOG(ERROR) << "Failed to create " << dir.value();
-        return false;
-      }
-      if (!platform_->SetOwnership(dir,
-                                   kChapsDirPermissions.user,
-                                   kChapsDirPermissions.group,
-                                   true)) {
-        LOG(ERROR) << "Couldn't set file ownership for " << dir.value();
-        return false;
-      }
-      if (!platform_->SetPermissions(dir, kChapsDirPermissions.mode)) {
-        LOG(ERROR) << "Couldn't set permissions for " << dir.value();
         return false;
       }
     }

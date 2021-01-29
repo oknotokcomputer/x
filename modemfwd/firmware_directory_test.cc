@@ -24,6 +24,12 @@ constexpr char kMainFirmwareVersion1[] = "10.20.30.40";
 constexpr char kMainFirmwareFile2[] = "NAND_10.20.30.45.fls";
 constexpr char kMainFirmwareVersion2[] = "10.20.30.45";
 
+constexpr char kOemFirmwareFile1[] = "OEM_cust.11.22.33.44.fls";
+constexpr char kOemFirmwareVersion1[] = "11.22.33.44";
+
+constexpr char kOemFirmwareFile2[] = "OEM_cust.11.22.33.45.fls";
+constexpr char kOemFirmwareVersion2[] = "11.22.33.45";
+
 constexpr char kCarrierA[] = "CarrierA";
 constexpr char kCarrierFirmwareFile1[] = "CarrierA_40.30.20.10.fls";
 constexpr char kCarrierFirmwareVersion1[] = "40.30.20.10";
@@ -229,6 +235,35 @@ TEST_F(FirmwareDirectoryTest, FindFirmwareV2) {
   EXPECT_EQ(kCarrierFirmwareFile1,
             carrier_info.firmware_path.BaseName().value());
   EXPECT_EQ(kCarrierFirmwareVersion1, carrier_info.version);
+
+  EXPECT_FALSE(res.oem_firmware.has_value());
+}
+
+TEST_F(FirmwareDirectoryTest, FindFirmwareWithOemV2) {
+  const base::FilePath kManifest(
+      "test_protos/find_firmware_with_oem_v2.prototxt");
+  SetUpDirectory(kManifest);
+
+  std::string carrier_a(kCarrierA);
+  FirmwareDirectory::Files res =
+      firmware_directory_->FindFirmware(kDeviceId, &carrier_a);
+
+  EXPECT_TRUE(res.main_firmware.has_value());
+  const FirmwareFileInfo& main_info = res.main_firmware.value();
+  EXPECT_EQ(kMainFirmwareFile1, main_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kMainFirmwareVersion1, main_info.version);
+
+  EXPECT_TRUE(res.carrier_firmware.has_value());
+  const FirmwareFileInfo& carrier_info = res.carrier_firmware.value();
+  EXPECT_EQ(kCarrierA, carrier_a);
+  EXPECT_EQ(kCarrierFirmwareFile1,
+            carrier_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kCarrierFirmwareVersion1, carrier_info.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
 }
 
 TEST_F(FirmwareDirectoryTest, FirmwareForDifferentCarrierV2) {
@@ -286,6 +321,11 @@ TEST_F(FirmwareDirectoryTest, GenericFirmwareV2) {
   EXPECT_EQ(FirmwareDirectory::kGenericCarrierId, carrier_a);
   EXPECT_EQ(kGenericCarrierFirmwareFile, info.firmware_path.BaseName().value());
   EXPECT_EQ(kGenericCarrierFirmwareVersion, info.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
 }
 
 TEST_F(FirmwareDirectoryTest, FirmwareSupportsTwoCarriersV2) {
@@ -348,6 +388,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareDefault) {
   EXPECT_EQ(kCarrierA, carrier_a);
   EXPECT_EQ(kCarrierFirmwareFile1, info_a.firmware_path.BaseName().value());
   EXPECT_EQ(kCarrierFirmwareVersion1, info_a.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
 }
 
 TEST_F(FirmwareDirectoryTest, MainFirmwareDefaultForGeneric) {
@@ -363,6 +408,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareDefaultForGeneric) {
   const FirmwareFileInfo& main_info_2 = res.main_firmware.value();
   EXPECT_EQ(kMainFirmwareFile1, main_info_2.firmware_path.BaseName().value());
   EXPECT_EQ(kMainFirmwareVersion1, main_info_2.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
 }
 
 TEST_F(FirmwareDirectoryTest, MainFirmwareSwitching) {
@@ -385,6 +435,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareSwitching) {
   EXPECT_EQ(kCarrierFirmwareFile1, info_a.firmware_path.BaseName().value());
   EXPECT_EQ(kCarrierFirmwareVersion1, info_a.version);
 
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
+
   // Carrier B calls for different main firmware. This can only be encoded
   // in manifest v2.
   std::string carrier_b(kCarrierB);
@@ -400,6 +455,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareSwitching) {
   EXPECT_EQ(kCarrierB, carrier_b);
   EXPECT_EQ(kCarrierFirmwareFile2, info_b.firmware_path.BaseName().value());
   EXPECT_EQ(kCarrierFirmwareVersion2, info_b.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info_2 = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile2, oem_info_2.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion2, oem_info_2.version);
 }
 
 TEST_F(FirmwareDirectoryTest, MainFirmwareFullySpecified) {
@@ -422,6 +482,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareFullySpecified) {
   EXPECT_EQ(kCarrierFirmwareFile1, info_a.firmware_path.BaseName().value());
   EXPECT_EQ(kCarrierFirmwareVersion1, info_a.version);
 
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile1, oem_info.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion1, oem_info.version);
+
   // Carrier B uses the generic firmware, which specifies its own main firmware.
   std::string carrier_b(kCarrierB);
   res = firmware_directory_->FindFirmware(kDeviceId, &carrier_b);
@@ -437,6 +502,11 @@ TEST_F(FirmwareDirectoryTest, MainFirmwareFullySpecified) {
   EXPECT_EQ(kGenericCarrierFirmwareFile,
             info_b.firmware_path.BaseName().value());
   EXPECT_EQ(kGenericCarrierFirmwareVersion, info_b.version);
+
+  EXPECT_TRUE(res.oem_firmware.has_value());
+  const FirmwareFileInfo& oem_info_2 = res.oem_firmware.value();
+  EXPECT_EQ(kOemFirmwareFile2, oem_info_2.firmware_path.BaseName().value());
+  EXPECT_EQ(kOemFirmwareVersion2, oem_info_2.version);
 }
 
 TEST_F(FirmwareDirectoryTest, MainFirmwareFullySpecifiedNoGeneric) {
@@ -461,6 +531,12 @@ TEST_F(FirmwareDirectoryTest, MalformedDeviceEntry) {
 TEST_F(FirmwareDirectoryTest, MalformedMainEntryV2) {
   const base::FilePath kManifest(
       "test_protos/malformed_main_firmware_v2.prototxt");
+  SetUpDirectory(kManifest, false);
+}
+
+TEST_F(FirmwareDirectoryTest, MalformedOemEntryV2) {
+  const base::FilePath kManifest(
+      "test_protos/malformed_oem_firmware_v2.prototxt");
   SetUpDirectory(kManifest, false);
 }
 

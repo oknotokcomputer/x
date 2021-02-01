@@ -72,7 +72,6 @@ class Region(object):
   See :ref:`regions-values` for detailed information on how to set these values.
   """
   # pylint gets confused by some of the docstrings.
-  # pylint: disable=C0322
 
   # ANSI = US-like
   # ISO = UK-like
@@ -478,6 +477,9 @@ REGIONS_LIST = [
     Region(
         'hr', 'xkb:hr::scr', 'Europe/Zagreb', ['hr', 'en-GB'], KML.ISO,
         'Croatia'),
+    Region(
+        'ee', 'xkb:ee::est', 'Europe/Tallinn', ['et', 'ru', 'en-GB'], KML.ISO,
+        'Estonia'),
     ]
 
 """A list of :py:class:`regions.Region` objects for
@@ -697,9 +699,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'eh', 'xkb:eh::ara', 'Africa/El_Aaiun', ['ar', 'mey'], KML.ANSI,
         'Western Sahara'),
-    Region(
-        'ee', 'xkb:ee::est', 'Europe/Tallinn', ['et', 'ru', 'en-GB'], KML.ISO,
-        'Estonia'),
     Region(
         'eg', 'xkb:eg::ara', 'Africa/Cairo', ['ar', 'en', 'fr'],
         KML.ANSI, 'Egypt'),

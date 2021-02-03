@@ -26,7 +26,7 @@
 namespace {
 
 // Use a two minute timeout because TPM operations can take a long time.
-const int kDBusTimeoutMS = 2 * 60 * 1000;
+const int kDBusTimeoutMS = 5 * 60 * 1000;
 
 }  // namespace
 

@@ -142,6 +142,7 @@ executable("chapsd") {
     "session_impl.cc",
     "slot_manager_impl.cc",
     "slot_policy_default.cc",
+    "slot_policy_shared_slot.cc",
     "system_shutdown_blocker.cc",
   ]
   configs += [
@@ -284,6 +285,7 @@ if (use.test) {
       "session_impl.cc",
       "session_test.cc",
       "slot_policy_default.cc",
+      "slot_policy_shared_slot.cc",
     ]
     configs += [
       "//common-mk:test",
@@ -359,6 +361,8 @@ if (use.test) {
     sources = [
       "slot_policy_default.cc",
       "slot_policy_default_test.cc",
+      "slot_policy_shared_slot.cc",
+      "slot_policy_shared_slot_test.cc",
     ]
     configs += [
       "//common-mk:test",

@@ -487,7 +487,9 @@ bool MountHelper::MountDaemonStoreDirectories(
     // <daemon_user>:<daemon_group>), which is what the daemon intended.
     // Otherwise, it would end up being root-owned.
     struct stat etc_daemon_path_stat = file_enumerator->GetInfo().stat();
-    if (!platform_->SafeCreateDirAndSetOwnershipAndPermissions(
+    // TODO(dlunev): add some reporting when we see ACL mismatch.
+    if (!platform_->DirectoryExists(mount_source) &&
+        !platform_->SafeCreateDirAndSetOwnershipAndPermissions(
             mount_source, etc_daemon_path_stat.st_mode,
             etc_daemon_path_stat.st_uid, etc_daemon_path_stat.st_gid)) {
       LOG(ERROR) << "Failed to create directory " << mount_source.value();

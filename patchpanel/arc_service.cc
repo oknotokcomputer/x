@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <linux/rtnetlink.h>
 #include <net/if.h>
-#include <sys/ioctl.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
@@ -49,6 +48,8 @@ bool IsAdbAllowed(ShillClient::Device::Type type) {
   return adb_allowed_types.find(type) != adb_allowed_types.end();
 }
 
+// TODO(b/174538233): Remove once TrafficForwarder and Device::Option have been
+// removed.
 bool IsIPv6NDProxyEnabled(ShillClient::Device::Type type) {
   static const std::set<ShillClient::Device::Type> ndproxy_allowed_types{
       ShillClient::Device::Type::kCellular,
@@ -166,34 +167,6 @@ void SetContainerSysfsMtuOwner(uint32_t pid,
 
   if (setns(current_ns_fd.get(), CLONE_NEWNS) == -1)
     PLOG(ERROR) << "Could not re-enter " << current_mnt_ns;
-}
-
-bool IsMulticastInterface(const std::string& ifname) {
-  if (ifname.empty()) {
-    return false;
-  }
-
-  int fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if (fd < 0) {
-    // If IPv4 fails, try to open a socket using IPv6.
-    fd = socket(AF_INET6, SOCK_DGRAM, 0);
-    if (fd < 0) {
-      LOG(ERROR) << "Unable to create socket";
-      return false;
-    }
-  }
-
-  struct ifreq ifr;
-  memset(&ifr, 0, sizeof(ifr));
-  strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ);
-  if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
-    PLOG(ERROR) << "SIOCGIFFLAGS failed for " << ifname;
-    close(fd);
-    return false;
-  }
-
-  close(fd);
-  return (ifr.ifr_flags & IFF_MULTICAST);
 }
 
 // Returns the ARC management device used for VPN forwarding, ADB-over-TCP.

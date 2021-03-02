@@ -43,6 +43,7 @@ enum VideoCapturePixelFormat {
   XR30,
   XB30,
   BGRA,
+  RGBAF16,
 };
 
 enum ResolutionChangePolicy {
@@ -222,6 +223,12 @@ enum VideoCaptureError {
   kFuchsiaSysmemInvalidBufferSize,
   kFuchsiaUnsupportedPixelFormat,
   kFuchsiaFailedToMapSysmemBuffer,
+<<<<<<< HEAD   (2781a1 arc: Stop touching /dev/.arc_sensor_ready for container)
+=======
+  kCrosHalV3DeviceContextDuplicatedClient,
+  kDesktopCaptureDeviceMacFailedStreamCreate,
+  kDesktopCaptureDeviceMacFailedStreamStart,
+>>>>>>> CHANGE (d330f3 media_perception: MPS compatibility for M90.)
 };
 
 enum VideoCaptureFrameDropReason {
@@ -291,6 +298,13 @@ struct VideoFrameInfo{
   // Optionally, stride information can be provided.
   // If not provided, it is assumed that frame data is tightly packed.
   PlaneStrides? strides;
+};
+
+// Represents a buffer that is ready for consumption. |buffer_id| has video
+// capture data and |info| contains the associated VideoFrame constituent parts.
+struct ReadyBuffer {
+  int32 buffer_id;
+  VideoFrameInfo info;
 };
 
 // Represents information about a capture device.

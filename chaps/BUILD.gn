@@ -141,6 +141,7 @@ executable("chapsd") {
     "proto_conversion.cc",
     "session_impl.cc",
     "slot_manager_impl.cc",
+    "slot_policy_common.cc",
     "slot_policy_default.cc",
     "slot_policy_shared_slot.cc",
     "system_shutdown_blocker.cc",
@@ -284,6 +285,7 @@ if (use.test) {
       "opencryptoki_importer.cc",
       "session_impl.cc",
       "session_test.cc",
+      "slot_policy_common.cc",
       "slot_policy_default.cc",
       "slot_policy_shared_slot.cc",
     ]
@@ -359,6 +361,7 @@ if (use.test) {
 
   executable("slot_policy_test") {
     sources = [
+      "slot_policy_common.cc",
       "slot_policy_default.cc",
       "slot_policy_default_test.cc",
       "slot_policy_shared_slot.cc",

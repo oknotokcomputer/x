@@ -107,6 +107,8 @@ const std::vector<Log> kCommandLogs {
   // in our own mount namespace (by design).  https://crbug.com/884249
   {kCommand, "CLIENT_ID", "/usr/bin/nsenter -t1 -m /usr/bin/metrics_client -i",
     kRoot, kDebugfsGroup},
+  // The device type / form factor e.g. CHROMEBOOK, CHROMEBOX, etc.
+  {kCommand, "DEVICETYPE", "cros_config /hardware-properties form-factor"},
   {kCommand, "LOGDATE", "/bin/date"},
   // We need to enter init's mount namespace to access /home/root. Also, we use
   // neither ARC container's mount namespace (with android-sh) nor
@@ -479,9 +481,15 @@ void GetLsbReleaseInfo(LogTool::LogMap* map) {
     DLOG(INFO) << "Could not load fields from " << lsb_release.value();
   } else {
     for (const auto& key : store.GetKeys()) {
-      std::string value;
-      store.GetString(key, &value);
-      (*map)[key] = value;
+      // The DEVICETYPE from /etc/lsb-release may not be correct on some
+      // unibuild devices, so filter it out. The correct DEVICETYPE is
+      // logged separately using an entry in kCommandLogs that invokes
+      // `cros_config /hardware-properties form-factor`
+      if (key != "DEVICETYPE") {
+        std::string value;
+        store.GetString(key, &value);
+        (*map)[key] = value;
+      }
     }
   }
 }

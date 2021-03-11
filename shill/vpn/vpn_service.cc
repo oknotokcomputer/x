@@ -115,6 +115,10 @@ void VPNService::OnDriverFailure(ConnectFailure failure,
 void VPNService::OnDriverReconnecting(base::TimeDelta timeout) {
   StartDriverConnectTimeout(timeout);
   SetState(Service::kStateAssociating);
+  // If physical network changes before driver connection finished, this could
+  // be called before device_ was initialized.
+  if (!device_)
+    return;
   device_->ResetConnection();
 }
 

@@ -462,6 +462,10 @@ REGIONS_LIST = [
     Region(
         'jp.us', 'xkb:us::eng', 'Asia/Tokyo', 'ja', KML.ANSI,
         'Japan with US keyboard'),
+    Region(
+        'bg', ['xkb:bg::bul', 'xkb:bg:phonetic:bul'], 'Europe/Sofia', [
+            'bg', 'tr', 'en-US'], KML.ANSI,
+        'Bulgaria'),
     ]
 
 """A list of :py:class:`regions.Region` objects for
@@ -477,10 +481,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'bf', 'xkb:bf::fra', 'Africa/Ouagadougou', 'fr-BF', KML.ANSI,
         'Burkina Faso'),
-    Region(
-        'bg', ['xkb:bg::bul', 'xkb:bg:phonetic:bul'], 'Europe/Sofia', [
-            'bg', 'tr', 'en-GB'], KML.ANSI,
-        'Bulgaria'),
     Region(
         'ba', 'xkb:ba::bos', 'Europe/Sarajevo', 'bs', KML.ANSI,
         'Bosnia and Herzegovina'),

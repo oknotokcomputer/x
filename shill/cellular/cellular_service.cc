@@ -337,6 +337,8 @@ void CellularService::SetOLP(const string& url,
   if (olp_ == olp) {
     return;
   }
+
+  SLOG(this, 2) << __func__ << ": " << url;
   olp_ = olp;
   adaptor()->EmitStringmapChanged(kPaymentPortalProperty, olp);
 }

@@ -38,6 +38,7 @@ const char* kAllowlist[] = {
     "xhci_hcd",  // XHCI host controller driver.
     "nvme",      // PCI Express NVME host controller driver.
     "ahci",      // AHCI driver
+    "igb",       // Intel Gigabit Ethernet driver
 };
 
 int SetAuthorizedAttribute(base::FilePath devpath, bool enable) {

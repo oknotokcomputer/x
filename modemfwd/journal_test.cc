@@ -9,6 +9,7 @@
 
 #include <base/files/file_path.h>
 #include <base/files/file_util.h>
+#include <chromeos/switches/modemfwd_switches.h>
 #include <gtest/gtest.h>
 
 #include "modemfwd/firmware_directory_stub.h"
@@ -79,8 +80,8 @@ class JournalTest : public ::testing::Test {
 };
 
 TEST_F(JournalTest, EmptyJournal) {
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   GetJournal();
 }
 
@@ -89,8 +90,8 @@ TEST_F(JournalTest, PriorRunWasNotInterrupted_Main) {
   journal->MarkStartOfFlashingMainFirmware(kDeviceId, kCarrierId);
   journal->MarkEndOfFlashingMainFirmware(kDeviceId, kCarrierId);
 
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   // Getting a new journal simulates a crash or shutdown.
   journal = GetJournal();
 }
@@ -103,15 +104,15 @@ TEST_F(JournalTest, PriorRunWasInterrupted_Main) {
   journal->MarkStartOfFlashingMainFirmware(kDeviceId, kCarrierId);
 
   EXPECT_CALL(modem_helper_,
-              FlashMainFirmware(main_fw_path, kMainFirmwareVersion))
+              FlashFirmware(kFwMain, main_fw_path, kMainFirmwareVersion))
       .WillOnce(Return(true));
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   journal = GetJournal();
 
   // Test that the journal is cleared afterwards, so we don't try to
   // flash a second time if we crash again.
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   journal = GetJournal();
 }
 
@@ -120,8 +121,8 @@ TEST_F(JournalTest, PriorRunWasNotInterrupted_Carrier) {
   journal->MarkStartOfFlashingCarrierFirmware(kDeviceId, kCarrierId);
   journal->MarkEndOfFlashingCarrierFirmware(kDeviceId, kCarrierId);
 
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   // Getting a new journal simulates a crash or shutdown.
   journal = GetJournal();
 }
@@ -133,23 +134,23 @@ TEST_F(JournalTest, PriorRunWasInterrupted_Carrier) {
   auto journal = GetJournal();
   journal->MarkStartOfFlashingCarrierFirmware(kDeviceId, kCarrierId);
 
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_,
-              FlashCarrierFirmware(carrier_fw_path, kCarrierFirmwareVersion))
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, carrier_fw_path,
+                                           kCarrierFirmwareVersion))
       .WillOnce(Return(true));
   journal = GetJournal();
 
   // Test that the journal is cleared afterwards, so we don't try to
   // flash a second time if we crash again.
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   journal = GetJournal();
 }
 
 TEST_F(JournalTest, IgnoreMalformedJournalEntries) {
   SetUpJournal("blahblah");
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   GetJournal();
 }
 
@@ -160,8 +161,8 @@ TEST_F(JournalTest, MultipleEntries) {
   journal->MarkStartOfFlashingCarrierFirmware(kDeviceId, kCarrierId);
   journal->MarkEndOfFlashingCarrierFirmware(kDeviceId, kCarrierId);
 
-  EXPECT_CALL(modem_helper_, FlashMainFirmware(_, _)).Times(0);
-  EXPECT_CALL(modem_helper_, FlashCarrierFirmware(_, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwMain, _, _)).Times(0);
+  EXPECT_CALL(modem_helper_, FlashFirmware(kFwCarrier, _, _)).Times(0);
   journal = GetJournal();
 }
 

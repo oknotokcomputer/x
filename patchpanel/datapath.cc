@@ -932,10 +932,9 @@ void Datapath::StartConnectionPinning(const std::string& ext_ifname) {
           IpFamily::Dual, "mangle",
           {"-A", kCheckRoutingMarkChain, "-o", ext_ifname, "-m", "mark", "!",
            "--mark",
-           routing_mark.ToString() + "/" + kFwmarkRoutingMask.ToString(), "-j",
-           "DROP", "-w"}))
+           routing_mark.ToString() + "/" + kFwmarkRoutingMask.ToString(),
+           "-w"}))
     LOG(ERROR) << "Could not set fwmark routing filter rule for " << ext_ifname;
-
   // Set in CONNMARK the routing tag associated with |ext_ifname|.
   if (!ModifyConnmarkSetPostrouting(IpFamily::Dual, "-A", ext_ifname,
                                     routing_mark))
@@ -963,8 +962,8 @@ void Datapath::StopConnectionPinning(const std::string& ext_ifname) {
           IpFamily::Dual, "mangle",
           {"-D", kCheckRoutingMarkChain, "-o", ext_ifname, "-m", "mark", "!",
            "--mark",
-           routing_mark.ToString() + "/" + kFwmarkRoutingMask.ToString(), "-j",
-           "DROP", "-w"}))
+           routing_mark.ToString() + "/" + kFwmarkRoutingMask.ToString(),
+           "-w"}))
     LOG(ERROR) << "Could not remove fwmark routing filter rule for "
                << ext_ifname;
   if (!ModifyConnmarkSetPostrouting(IpFamily::Dual, "-D", ext_ifname,

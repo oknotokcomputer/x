@@ -15,6 +15,7 @@
 
 #include <base/callback.h>
 #include <base/location.h>
+#include <base/optional.h>
 #include <base/values.h>
 #include <brillo/http/http_transport.h>
 #include <brillo/http/http_utils.h>
@@ -113,6 +114,9 @@ class Transport : public http::Transport {
   void ResolveHostToIp(const std::string& host,
                        uint16_t port,
                        const std::string& ip_address) override {}
+
+  void SetBufferSize(base::Optional<int> buffer_size) override{};
+  void SetUploadBufferSize(base::Optional<int> buffer_size) override{};
 
  protected:
   void ClearHost() override {}

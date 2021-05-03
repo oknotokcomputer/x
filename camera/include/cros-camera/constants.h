@@ -35,17 +35,17 @@ const char kCrosEnableExternalCameraOption[] = "enable_external_camera";
 // ------Configuration for |kCrosCameraConfigPathString|-------
 // Restrict max resolutions for android hal formats.
 // HAL_PIXEL_FORMAT_BLOB
-const char kCrosMaxBlobWidth[] = "max_blob_width";
-const char kCrosMaxBlobHeight[] = "max_blob_height";
+const char kCrosMaxBlobWidth[] = "usb_max_stream_width";
+const char kCrosMaxBlobHeight[] = "usb_max_stream_height";
 // HAL_PIXEL_FORMAT_YCbCr_420_888
-const char kCrosMaxYuvWidth[] = "max_yuv_width";
-const char kCrosMaxYuvHeight[] = "max_yuv_height";
+const char kCrosMaxYuvWidth[] = "usb_max_stream_width";
+const char kCrosMaxYuvHeight[] = "usb_max_stream_height";
 // HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED
-const char kCrosMaxPrivateWidth[] = "max_private_width";
-const char kCrosMaxPrivateHeight[] = "max_private_height";
+const char kCrosMaxPrivateWidth[] = "usb_max_stream_width";
+const char kCrosMaxPrivateHeight[] = "usb_max_stream_height";
 // Restrict max resolutions for native ratio.
-const char kCrosMaxNativeWidth[] = "max_native_width";
-const char kCrosMaxNativeHeight[] = "max_native_height";
+const char kCrosMaxNativeWidth[] = "usb_max_stream_width";
+const char kCrosMaxNativeHeight[] = "usb_max_stream_height";
 // ------End configuration for |kCrosCameraConfigPathString|-------
 
 }  // namespace constants

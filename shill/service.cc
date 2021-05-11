@@ -5,7 +5,6 @@
 #include "shill/service.h"
 
 #include <stdio.h>
-#include <time.h>
 
 #include <algorithm>
 #include <map>
@@ -181,7 +180,6 @@ Service::Service(Manager* manager, Technology technology)
       save_credentials_(true),
       dhcp_properties_(new DhcpProperties(/*manager=*/nullptr)),
       technology_(technology),
-      failed_time_(0),
       has_ever_connected_(false),
       disconnects_(kMaxDisconnectEventHistory),
       misconnects_(kMaxMisconnectEventHistory),
@@ -502,7 +500,7 @@ bool Service::IsFailed() const {
   // We sometimes lie about the failure state, to keep Chrome happy
   // (see comment in WiFi::HandleDisconnect). Hence, we check both
   // state and |failed_time_|.
-  return state() == kStateFailure || failed_time_ > 0;
+  return state() == kStateFailure || !failed_time_.is_null();
 }
 
 bool Service::IsInFailState() const {
@@ -547,7 +545,7 @@ void Service::SetState(ConnectState state) {
     SetErrorDetails(kErrorDetailsNone);
   }
   if (state == kStateConnected) {
-    failed_time_ = 0;
+    failed_time_ = base::Time();
     has_ever_connected_ = true;
     SaveToProfile();
     // When we succeed in connecting, forget that connects failed in the past.
@@ -625,8 +623,8 @@ void Service::SaveFailure() {
 void Service::SetFailure(ConnectFailure failure) {
   SLOG(this, 1) << __func__ << ": " << failure;
   failure_ = failure;
+  failed_time_ = base::Time::Now();
   SaveFailure();
-  failed_time_ = time(nullptr);
   UpdateErrorProperty();
   SetState(kStateFailure);
 }
@@ -638,9 +636,15 @@ void Service::SetFailureSilent(ConnectFailure failure) {
   // |failed_time_|.
   SetState(kStateIdle);
   failure_ = failure;
+  failed_time_ = base::Time::Now();
   SaveFailure();
   UpdateErrorProperty();
-  failed_time_ = time(nullptr);
+}
+
+base::Optional<base::TimeDelta> Service::GetTimeSinceFailed() const {
+  if (failed_time_.is_null())
+    return base::nullopt;
+  return base::Time::Now() - failed_time_;
 }
 
 std::string Service::GetDBusObjectPathIdentifer() const {

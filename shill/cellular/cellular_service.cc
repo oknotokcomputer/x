@@ -11,8 +11,9 @@
 #include <base/notreached.h>
 #include <base/stl_util.h>
 #include <base/strings/string_number_conversions.h>
-#include <base/strings/stringprintf.h>
 #include <base/strings/string_util.h>
+#include <base/strings/stringprintf.h>
+#include <base/time/time.h>
 #include <chromeos/dbus/service_constants.h>
 
 #include "shill/adaptor_interfaces.h"
@@ -61,6 +62,9 @@ const char kStorageLastGoodAPN[] = "Cellular.LastGoodAPN";
 
 const char kApnVersionProperty[] = "version";
 const int kCurrentApnCacheVersion = 2;
+
+constexpr base::TimeDelta kAutoConnectFailedTime =
+    base::TimeDelta::FromSeconds(20);
 
 bool GetNonEmptyField(const Stringmap& stringmap,
                       const string& fieldname,
@@ -496,9 +500,12 @@ bool CellularService::IsAutoConnectable(const char** reason) const {
     return false;
   }
   if (failure() == kFailureConnect) {
-    // For Cellular, do not repeatedly auto connect after a failure.
-    *reason = kAutoConnConnectFailed;
-    return false;
+    base::Optional<base::TimeDelta> failed_time = GetTimeSinceFailed();
+    if (failed_time && *failed_time < kAutoConnectFailedTime) {
+      // For Cellular, do not immediately auto connect after a failure.
+      *reason = kAutoConnConnectFailed;
+      return false;
+    }
   }
   if (out_of_credits_) {
     *reason = kAutoConnOutOfCredits;

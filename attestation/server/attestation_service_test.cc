@@ -215,7 +215,8 @@ class AttestationServiceBaseTest : public testing::Test {
 #if USE_GENERIC_TPM2
     (*identity_data->mutable_nvram_quotes())[RMA_BYTES].set_quote("rma_bytes");
 #endif
-    if (service_->GetEndorsementKeyType() != KEY_TYPE_RSA) {
+    if (service_->GetEndorsementKeyType() !=
+        kEndorsementKeyTypeForEnrollmentID) {
       (*identity_data->mutable_nvram_quotes())[RSA_PUB_EK_CERT].set_quote(
           "rsa_pub_ek_cert");
     }
@@ -2004,8 +2005,11 @@ TEST_P(AttestationServiceTest, PrepareForEnrollment) {
 #if USE_GENERIC_TPM2
   EXPECT_EQ(1, identity_data.nvram_quotes().count(RMA_BYTES));
 #endif
-  EXPECT_EQ(service_->GetEndorsementKeyType() != KEY_TYPE_RSA ? 1 : 0,
-            identity_data.nvram_quotes().count(RSA_PUB_EK_CERT));
+  EXPECT_EQ(
+      service_->GetEndorsementKeyType() != kEndorsementKeyTypeForEnrollmentID
+          ? 1
+          : 0,
+      identity_data.nvram_quotes().count(RSA_PUB_EK_CERT));
 #else
   EXPECT_TRUE(identity_data.nvram_quotes().empty());
 #endif
@@ -2026,6 +2030,10 @@ TEST_P(AttestationServiceTest, PrepareForEnrollment) {
 }
 
 #if USE_TPM2
+
+// For generic TPM2, we only support ECC EK type, so the testing is not
+// applicable.
+#if !USE_GENERIC_TPM2
 
 TEST_P(AttestationServiceTest,
        PrepareForEnrollmentCannotQuoteOptionalNvramForRsaEK) {
@@ -2057,6 +2065,8 @@ TEST_P(AttestationServiceTest,
   EXPECT_EQ(IDENTITY_FEATURE_ENTERPRISE_ENROLLMENT_ID,
             identity_data.features());
 }
+
+#endif
 
 TEST_P(AttestationServiceTest,
        PrepareForEnrollmentCannotQuoteOptionalNvramForEccEK) {
@@ -2092,8 +2102,11 @@ TEST_P(AttestationServiceTest,
   EXPECT_TRUE(identity_data.has_identity_key());
   EXPECT_EQ(1, identity_data.pcr_quotes().count(0));
   EXPECT_EQ(1, identity_data.pcr_quotes().count(1));
-  EXPECT_EQ(1, identity_data.nvram_quotes().size());
-  EXPECT_EQ(1, identity_data.nvram_quotes().count(RSA_PUB_EK_CERT));
+  EXPECT_EQ(kEndorsementKeyTypeForEnrollmentID == KEY_TYPE_ECC ? 0 : 1,
+            identity_data.nvram_quotes().count(RSA_PUB_EK_CERT));
+  // The RSA EK cert quote is the only mandatory one, if needed.
+  EXPECT_EQ(identity_data.nvram_quotes().count(RSA_PUB_EK_CERT),
+            identity_data.nvram_quotes().size());
   EXPECT_EQ(IDENTITY_FEATURE_ENTERPRISE_ENROLLMENT_ID,
             identity_data.features());
 }

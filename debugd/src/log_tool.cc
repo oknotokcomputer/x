@@ -426,6 +426,7 @@ const std::vector<Log> kCommandLogsShort{
 const std::vector<Log> kExtraLogs {
 #if USE_CELLULAR
   {kCommand, "mm-status", "/usr/bin/modem status"},
+  {kCommand, "mm-esim-status", "/usr/bin/modem esim status"},
 #endif  // USE_CELLULAR
   {kCommand, "network-devices", "/usr/bin/connectivity show devices"},
   {kCommand, "network-services", "/usr/bin/connectivity show services"},
@@ -452,6 +453,7 @@ const std::vector<Log> kFeedbackLogs {
     "  --grep='iwlwifi.*ADVANCED_SYSASSERT' | wc -l"},
 #if USE_CELLULAR
   {kCommand, "mm-status", "/usr/bin/modem status-feedback"},
+  {kCommand, "mm-esim-status", "/usr/bin/modem esim status_feedback"},
 #endif  // USE_CELLULAR
   {kCommand, "network-devices",
       "/usr/bin/connectivity show-feedback devices"},

@@ -277,6 +277,7 @@ include(sepolicy/file_contexts/sysfs_contexts)
 /run                            u:object_r:cros_run:s0
 /run/arc/debugfs                u:object_r:debugfs:s0
 /run/arc/sdcard(/.*)?           u:object_r:storage_file:s0
+/run/arcvm                      u:object_r:cros_run_arcvm:s0
 /run/cryptohome                 u:object_r:cros_run_cryptohome:s0
 /run/cryptohome/ephemeral_mount u:object_r:cros_ephemeral_mount:s0
 /run/daemon-store               u:object_r:cros_run_daemon_store:s0
@@ -292,13 +293,19 @@ include(sepolicy/file_contexts/sysfs_contexts)
 /run/metrics                    u:object_r:cros_run_metrics:s0
 /run/metrics/external           u:object_r:cros_run_metrics_external:s0
 /run/mount_encrypted            u:object_r:cros_run_mount_encrypted:s0
+/run/pvm                        u:object_r:cros_run_pvm:s0
 /run/rsyslogd                   u:object_r:cros_run_rsyslogd:s0
+/run/seneschal                  u:object_r:cros_run_seneschal:s0
 /run/shill                      u:object_r:cros_run_shill:s0
 /run/systemd                    u:object_r:cros_run_systemd:s0
 /run/systemd/journal            u:object_r:cros_run_systemd_journal:s0
 /run/systemd/journal/pids       u:object_r:cros_run_systemd_journal_pids:s0
+/run/vm                         u:object_r:cros_run_vm:s0
+/run/vm_cicerone(/.*)?          u:object_r:cros_run_vm_cicerone:s0
+/run/vm_cicerone/client(/.*)?   u:object_r:cros_run_vm_cicerone_client:s0
 /run/namespaces                 u:object_r:cros_run_namespaces:s0
 /run/namespaces/mnt_chrome      u:object_r:cros_run_namespaces_mnt_chrome:s0
+/run/namespaces/mnt_concierge   u:object_r:cros_run_namespaces_mnt_concierge:s0
 
 has_arc(`
 /run/arc/cmdline.android        u:object_r:proc_cmdline:s0

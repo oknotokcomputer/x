@@ -1094,9 +1094,9 @@ void Cellular::Connect(CellularService* service, Error* error) {
     return;
   }
 
-  if (!connect_pending_iccid_.empty()) {
-    Error::PopulateAndLog(FROM_HERE, error, Error::kWrongState,
-                          "Connect Failed: Connect already pending.");
+  if (!connect_pending_iccid_.empty() &&
+      connect_pending_iccid_ == service->iccid()) {
+    LOG(WARNING) << "Connect already pending.";
     metrics()->NotifyCellularConnectionResult(error->type());
     return;
   }
@@ -1839,19 +1839,8 @@ void Cellular::ConnectToPendingAfterDelay() {
   std::string pending_iccid = connect_pending_iccid_;
   connect_pending_iccid_.clear();
 
-  if (pending_iccid != iccid_) {
-    SLOG(this, 1) << __func__ << " Pending ICCID: " << pending_iccid
-                  << " != ICCID: " << iccid_;
-    return;
-  }
-  if (service_ && service_->iccid() != iccid_) {
-    SLOG(this, 1) << __func__ << " Pending ICCID: " << pending_iccid
-                  << " != Service ICCID: " << service_->iccid();
-    return;
-  }
-
   CellularServiceRefPtr service =
-      manager()->cellular_service_provider()->FindService(iccid_);
+      manager()->cellular_service_provider()->FindService(pending_iccid);
   if (!service) {
     LOG(WARNING) << "No matching service for connect to.";
     return;

@@ -101,6 +101,9 @@ bool ParseOutput(const std::string& output,
       counter.tx_packets += pkts;
       counter.tx_bytes += bytes;
     }
+
+    if (it == lines.cend())
+      break;
   }
   return true;
 }

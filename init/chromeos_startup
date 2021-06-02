@@ -33,6 +33,12 @@ USE_LVM_STATEFUL_PARTITION=0
 # debugging failures.
 TMPFILES_LOG="/run/tmpfiles.log"
 
+# STRICT_CONFIGS lists the tmpfiles.d configurations that are enforced with a
+# stateful clobber. Note that since bash is not being used there is not array
+# support and the quotes will need to be removed from dereferences if more than
+# one config is provided.
+STRICT_CONFIGS="/usr/lib/tmpfiles.d/chromeos.conf"
+
 # Unmounts the incomplete mount setup during the failure path. Failure to
 # set up mounts in this script result in the entire stateful partition getting
 # wiped using clobber-state.
@@ -503,10 +509,15 @@ force_clean_file_attrs /mnt/stateful_partition/unencrypted
 # Checks and updates stateful partition.
 dev_update_stateful_partition
 
-# Apply /mnt/stateful_partition specific tmpfiles.d configurations.
+# Apply strict tmpfiles.d configs for /mnt/stateful_partition.
 /bin/systemd-tmpfiles --create --remove --boot \
-  --prefix /mnt/stateful_partition 2>>"${TMPFILES_LOG}" ||
+  --prefix /mnt/stateful_partition \
+  "${STRICT_CONFIGS}" 2>>"${TMPFILES_LOG}" ||
     cleanup_mounts "tmpfiles.d for /mnt/stateful_partition failed"
+
+# Apply all tmpfiles.d configs are applied for /mnt/stateful_partition.
+/bin/systemd-tmpfiles --create --remove --boot \
+  --prefix /mnt/stateful_partition 2>>"${TMPFILES_LOG}" || :
 
 # Mount /home.  This mount inherits nodev,noexec,nosuid from
 # /mnt/stateful_partition above.
@@ -611,11 +622,17 @@ if [ "${DISABLE_STATEFUL_SECURITY_HARDENING}" = "false" ]; then
   done
 fi
 
-# Apply /var and /home specific tmpfiles.d configurations.
+# Apply strict tmpfiles.d configs for /var and /home.
 /bin/systemd-tmpfiles --create --remove --boot \
   --prefix /home \
-  --prefix /var 2>>"${TMPFILES_LOG}" ||
+  --prefix /var \
+  "${STRICT_CONFIGS}" 2>>"${TMPFILES_LOG}" ||
     cleanup_mounts "tmpfiles.d for /home and /var failed"
+
+# Apply all tmpfiles.d configs are applied for /var and /home.
+/bin/systemd-tmpfiles --create --remove --boot \
+  --prefix /home \
+  --prefix /var 2>>"${TMPFILES_LOG}" || :
 
 # /run is now tmpfs used for runtime data. Make sure /var/run and /var/lock are
 # bind-mounted to /run and /run/lock respectively for backwards compatibility.

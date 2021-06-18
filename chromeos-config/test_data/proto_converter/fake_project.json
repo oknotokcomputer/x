@@ -556,12 +556,34 @@
           "disable-dark-resume": "0",
           "internal-backlight-no-als-ac-brightness": "80.5",
           "internal-backlight-no-als-battery-brightness": "63.4",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
+          "set-cellular-transmit-power-for-proximity": "1",
           "set-cellular-transmit-power-for-tablet-mode": "1",
+          "set-wifi-transmit-power-for-activity-proximity": "1",
+          "set-wifi-transmit-power-for-proximity": "1",
           "suspend-to-idle": "1",
           "turn-off-screen-timeout-ms": "3000",
           "usb-min-ac-watts": "20",
           "use-modemmanager-for-dynamic-sar": "1",
           "wake-on-dp": "1"
+        },
+        "proximity-sensor": {
+          "semtech-config": [
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_a/semtech_config_wifi-left_cellular.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_a/semtech_config_wifi-left_cellular.json"
+              },
+              "location": "wifi-left_cellular"
+            },
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_a/semtech_config_wifi-right.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_a/semtech_config_wifi-right.json"
+              },
+              "location": "wifi-right"
+            }
+          ]
         },
         "resource": {
           "ac": {
@@ -802,6 +824,8 @@
           "internal-backlight-no-als-ac-brightness": "80.5",
           "internal-backlight-no-als-battery-brightness": "63.4",
           "set-cellular-transmit-power-dpr-gpio": "0",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
+          "set-cellular-transmit-power-for-proximity": "1",
           "set-cellular-transmit-power-for-tablet-mode": "1",
           "set-wifi-transmit-power-for-tablet-mode": "1",
           "suspend-to-idle": "1",
@@ -1560,12 +1584,33 @@
           "internal-backlight-no-als-battery-brightness": "63.2",
           "min-visible-backlight-level": "1000",
           "set-cellular-transmit-power-dpr-gpio": "20",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
           "set-cellular-transmit-power-for-proximity": "1",
+          "set-wifi-transmit-power-for-activity-proximity": "1",
+          "set-wifi-transmit-power-for-proximity": "1",
           "set-wifi-transmit-power-for-tablet-mode": "1",
           "suspend-to-idle": "1",
           "turn-off-screen-timeout-ms": "0",
           "usb-min-ac-watts": "20",
           "wake-on-dp": "1"
+        },
+        "proximity-sensor": {
+          "semtech-config": [
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json"
+              },
+              "location": "wifi-left_cellular"
+            },
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-right.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-right.json"
+              },
+              "location": "wifi-right"
+            }
+          ]
         },
         "scheduler-tune": {
           "boost-urgent": 20,
@@ -1715,12 +1760,33 @@
           "internal-backlight-no-als-battery-brightness": "63.2",
           "min-visible-backlight-level": "1000",
           "set-cellular-transmit-power-dpr-gpio": "20",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
           "set-cellular-transmit-power-for-proximity": "1",
+          "set-wifi-transmit-power-for-activity-proximity": "1",
+          "set-wifi-transmit-power-for-proximity": "1",
           "set-wifi-transmit-power-for-tablet-mode": "1",
           "suspend-to-idle": "1",
           "turn-off-screen-timeout-ms": "0",
           "usb-min-ac-watts": "20",
           "wake-on-dp": "1"
+        },
+        "proximity-sensor": {
+          "semtech-config": [
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json"
+              },
+              "location": "wifi-left_cellular"
+            },
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-right.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-right.json"
+              },
+              "location": "wifi-right"
+            }
+          ]
         },
         "scheduler-tune": {
           "boost-urgent": 20,
@@ -1870,12 +1936,33 @@
           "internal-backlight-no-als-battery-brightness": "63.2",
           "min-visible-backlight-level": "1000",
           "set-cellular-transmit-power-dpr-gpio": "20",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
           "set-cellular-transmit-power-for-proximity": "1",
+          "set-wifi-transmit-power-for-activity-proximity": "1",
+          "set-wifi-transmit-power-for-proximity": "1",
           "set-wifi-transmit-power-for-tablet-mode": "1",
           "suspend-to-idle": "1",
           "turn-off-screen-timeout-ms": "0",
           "usb-min-ac-watts": "20",
           "wake-on-dp": "1"
+        },
+        "proximity-sensor": {
+          "semtech-config": [
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json"
+              },
+              "location": "wifi-left_cellular"
+            },
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-right.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-right.json"
+              },
+              "location": "wifi-right"
+            }
+          ]
         },
         "scheduler-tune": {
           "boost-urgent": 20,
@@ -2025,12 +2112,33 @@
           "internal-backlight-no-als-battery-brightness": "63.2",
           "min-visible-backlight-level": "1000",
           "set-cellular-transmit-power-dpr-gpio": "20",
+          "set-cellular-transmit-power-for-activity-proximity": "1",
           "set-cellular-transmit-power-for-proximity": "1",
+          "set-wifi-transmit-power-for-activity-proximity": "1",
+          "set-wifi-transmit-power-for-proximity": "1",
           "set-wifi-transmit-power-for-tablet-mode": "1",
           "suspend-to-idle": "1",
           "turn-off-screen-timeout-ms": "0",
           "usb-min-ac-watts": "20",
           "wake-on-dp": "1"
+        },
+        "proximity-sensor": {
+          "semtech-config": [
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-left_cellular.json"
+              },
+              "location": "wifi-left_cellular"
+            },
+            {
+              "file": {
+                "build-path": "proto_converter/test_data/proto_converter/sw_build_config/proximity-sensor/project_wl/semtech_config_wifi-right.json",
+                "system-path": "/usr/share/chromeos-assets/proximity-sensor/project_wl/semtech_config_wifi-right.json"
+              },
+              "location": "wifi-right"
+            }
+          ]
         },
         "scheduler-tune": {
           "boost-urgent": 20,

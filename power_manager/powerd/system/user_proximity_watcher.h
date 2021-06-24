@@ -148,6 +148,8 @@ class UserProximityWatcher : public UserProximityWatcherInterface,
   bool use_proximity_for_wifi_ = false;
   bool use_activity_proximity_for_cellular_ = false;
   bool use_activity_proximity_for_wifi_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SarWatcher);
 };
 
 }  // namespace system

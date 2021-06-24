@@ -209,14 +209,13 @@ class DaemonDelegateImpl : public DaemonDelegate {
 
   std::unique_ptr<system::UserProximityWatcherInterface>
   CreateUserProximityWatcher(PrefsInterface* prefs,
-                             system::UdevInterface* udev,
-                             TabletMode initial_tablet_mode) override {
+                             system::UdevInterface* udev) override {
     auto watcher = std::make_unique<system::UserProximityWatcher>();
     auto config = std::make_unique<brillo::CrosConfig>();
     brillo::CrosConfigInterface* configIntf = nullptr;
     if (config->Init())
       configIntf = config.get();
-    watcher->Init(prefs, udev, configIntf, initial_tablet_mode);
+    watcher->Init(prefs, udev, configIntf);
     return watcher;
   }
 

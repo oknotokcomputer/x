@@ -18,10 +18,6 @@ void UserProximityWatcherStub::RemoveObserver(UserProximityObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void UserProximityWatcherStub::HandleTabletModeChange(TabletMode mode) {
-  tablet_mode_changes_.push_back(mode);
-}
-
 void UserProximityWatcherStub::AddSensor(int id, uint32_t role) {
   for (auto& observer : observers_) {
     observer.OnNewSensor(id, role);

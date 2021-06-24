@@ -7,7 +7,6 @@
 
 #include <base/macros.h>
 #include <base/observer_list.h>
-#include <vector>
 
 #include "power_manager/common/power_constants.h"
 #include "power_manager/powerd/system/user_proximity_watcher_interface.h"
@@ -21,21 +20,15 @@ class UserProximityWatcherStub : public UserProximityWatcherInterface {
   UserProximityWatcherStub() = default;
   ~UserProximityWatcherStub() override = default;
 
-  const std::vector<TabletMode>& tablet_mode_changes() const {
-    return tablet_mode_changes_;
-  }
-
   // UserProximityWatcherInterface overrides:
   void AddObserver(UserProximityObserver* observer) override;
   void RemoveObserver(UserProximityObserver* observer) override;
-  void HandleTabletModeChange(TabletMode mode) override;
 
   void AddSensor(int id, uint32_t role);
   void SendEvent(int id, UserProximity proximity);
 
  private:
   base::ObserverList<UserProximityObserver> observers_;
-  std::vector<TabletMode> tablet_mode_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(UserProximityWatcherStub);
 };

@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -87,8 +86,15 @@ bool SarWatcher::Init(PrefsInterface* prefs, UdevInterface* udev) {
     return false;
   }
 
-  for (auto const& iio_dev : iio_devices)
-    OnNewUdevDevice(iio_dev);
+  for (auto const& iio_dev : iio_devices) {
+    std::string devlink;
+    if (!IsIioProximitySensor(iio_dev, &devlink))
+      continue;
+    if (!OnSensorDetected(iio_dev.syspath, devlink)) {
+      LOG(ERROR) << "Unable to set up proximity sensor " << iio_dev.syspath;
+    }
+  }
+
   return true;
 }
 
@@ -111,7 +117,14 @@ void SarWatcher::RemoveObserver(UserProximityObserver* observer) {
 void SarWatcher::OnUdevEvent(const UdevEvent& event) {
   if (event.action != UdevEvent::Action::ADD)
     return;
-  OnNewUdevDevice(event.device_info);
+
+  std::string devlink;
+  if (!IsIioProximitySensor(event.device_info, &devlink))
+    return;
+
+  if (!OnSensorDetected(event.device_info.syspath, devlink))
+    LOG(ERROR) << "Unable to setup proximity sensor "
+               << event.device_info.syspath;
 }
 
 void SarWatcher::OnFileCanReadWithoutBlocking(int fd) {
@@ -348,14 +361,6 @@ bool SarWatcher::OnSensorDetected(const std::string& syspath,
   }
 
   return true;
-}
-
-void SarWatcher::OnNewUdevDevice(const UdevDeviceInfo& device_info) {
-  std::string devlink;
-  if (!IsIioProximitySensor(device_info, &devlink))
-    return;
-  if (!OnSensorDetected(device_info.syspath, devlink))
-    LOG(ERROR) << "Unable to setup proximity sensor " << device_info.syspath;
 }
 
 }  // namespace system

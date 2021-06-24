@@ -72,9 +72,7 @@ UserProximityWatcher::~UserProximityWatcher() {
     udev_->RemoveSubsystemObserver(kIioUdevSubsystem, this);
 }
 
-bool UserProximityWatcher::Init(PrefsInterface* prefs,
-                                UdevInterface* udev,
-                                brillo::CrosConfigInterface* config) {
+bool UserProximityWatcher::Init(PrefsInterface* prefs, UdevInterface* udev) {
   prefs->GetBool(kSetCellularTransmitPowerForProximityPref,
                  &use_proximity_for_cellular_);
   prefs->GetBool(kSetWifiTransmitPowerForProximityPref,
@@ -87,8 +85,6 @@ bool UserProximityWatcher::Init(PrefsInterface* prefs,
 
   udev_ = udev;
   udev_->AddSubsystemObserver(kIioUdevSubsystem, this);
-
-  config_ = config;
 
   std::vector<UdevDeviceInfo> iio_devices;
   if (!udev_->GetSubsystemDevices(kIioUdevSubsystem, &iio_devices)) {
@@ -226,6 +222,7 @@ uint32_t UserProximityWatcher::GetUsableSensorRoles(const SensorType type,
 
 bool UserProximityWatcher::SetIioRisingFallingValue(
     const std::string& syspath,
+    brillo::CrosConfigInterface* config,
     const std::string& config_path,
     const std::string& config_name,
     const std::string& path_prefix,
@@ -234,9 +231,9 @@ bool UserProximityWatcher::SetIioRisingFallingValue(
   std::string rising_config = "thresh-rising" + config_name;
   std::string falling_config = "thresh-falling" + config_name;
   bool set_rising =
-      config_->GetString(config_path, rising_config, &rising_value);
+      config->GetString(config_path, rising_config, &rising_value);
   bool set_falling =
-      config_->GetString(config_path, falling_config, &falling_value);
+      config->GetString(config_path, falling_config, &falling_value);
 
   if (!set_rising && !set_falling)
     return true;
@@ -270,7 +267,8 @@ bool UserProximityWatcher::SetIioRisingFallingValue(
 
 bool UserProximityWatcher::ConfigureSarSensor(const std::string& syspath,
                                               uint32_t role) {
-  if (!config_) {
+  auto config = std::make_unique<brillo::CrosConfig>();
+  if (!config->Init()) {
     /* Ignore on non-unibuild boards */
     LOG(INFO)
         << "cros config not found. Skipping proximity sensor configuration";
@@ -292,15 +290,15 @@ bool UserProximityWatcher::ConfigureSarSensor(const std::string& syspath,
 
   std::string channel;
 
-  if (!config_->GetString(config_path, "channel", &channel)) {
+  if (!config->GetString(config_path, "channel", &channel)) {
     LOG(INFO)
         << "Could not get proximity sensor channel from cros_config. Ignoring";
     return true;
   }
 
   std::string sampling_frequency;
-  if (config_->GetString(config_path, "sampling-frequency",
-                         &sampling_frequency)) {
+  if (config->GetString(config_path, "sampling-frequency",
+                        &sampling_frequency)) {
     if (!udev_->SetSysattr(syspath, "sampling_frequency", sampling_frequency)) {
       LOG(ERROR) << "Could not set proximity sensor sampling frequency";
       return false;
@@ -308,7 +306,7 @@ bool UserProximityWatcher::ConfigureSarSensor(const std::string& syspath,
   }
 
   std::string gain;
-  if (config_->GetString(config_path, "hardwaregain", &gain)) {
+  if (config->GetString(config_path, "hardwaregain", &gain)) {
     std::string gain_path = "in_proximity" + channel + "_hardwaregain";
     if (!udev_->SetSysattr(syspath, gain_path, gain)) {
       LOG(ERROR) << "Could not set proximity sensor hardware gain";
@@ -316,20 +314,20 @@ bool UserProximityWatcher::ConfigureSarSensor(const std::string& syspath,
     }
   }
 
-  if (!SetIioRisingFallingValue(syspath, config_path, "",
+  if (!SetIioRisingFallingValue(syspath, config.get(), config_path, "",
                                 "events/in_proximity" + channel + "_",
                                 "_value")) {
     return false;
   }
 
-  if (!SetIioRisingFallingValue(syspath, config_path, "-hysteresis",
-                                "events/in_proximity" + channel + "_",
-                                "_hysteresis")) {
+  if (!SetIioRisingFallingValue(
+          syspath, config.get(), config_path, "-hysteresis",
+          "events/in_proximity" + channel + "_", "_hysteresis")) {
     return false;
   }
 
-  if (!SetIioRisingFallingValue(syspath, config_path, "-period", "events/",
-                                "_period")) {
+  if (!SetIioRisingFallingValue(syspath, config.get(), config_path, "-period",
+                                "events/", "_period")) {
     return false;
   }
 

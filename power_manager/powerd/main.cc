@@ -26,7 +26,6 @@
 #include <base/time/time.h>
 #include <brillo/daemons/daemon.h>
 #include <brillo/flag_helper.h>
-#include <cros_config/cros_config.h>
 #include <metrics/metrics_library.h>
 
 #include "power_manager/common/metrics_sender.h"
@@ -211,11 +210,7 @@ class DaemonDelegateImpl : public DaemonDelegate {
   CreateUserProximityWatcher(PrefsInterface* prefs,
                              system::UdevInterface* udev) override {
     auto watcher = std::make_unique<system::UserProximityWatcher>();
-    auto config = std::make_unique<brillo::CrosConfig>();
-    brillo::CrosConfigInterface* configIntf = nullptr;
-    if (config->Init())
-      configIntf = config.get();
-    watcher->Init(prefs, udev, configIntf);
+    watcher->Init(prefs, udev);
     return watcher;
   }
 

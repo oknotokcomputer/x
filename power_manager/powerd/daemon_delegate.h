@@ -129,8 +129,7 @@ class DaemonDelegate {
 
   virtual std::unique_ptr<system::UserProximityWatcherInterface>
   CreateUserProximityWatcher(PrefsInterface* prefs,
-                             system::UdevInterface* udev,
-                             TabletMode initial_tablet_mode) = 0;
+                             system::UdevInterface* udev) = 0;
 
   virtual std::unique_ptr<system::DarkResumeInterface> CreateDarkResume(
       PrefsInterface* prefs,

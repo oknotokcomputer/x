@@ -62,12 +62,12 @@ class LteDelegate : public UserProximityHandler::Delegate,
 class UserProximityHandlerTest : public ::testing::Test {
  public:
   UserProximityHandlerTest() {
-    user_proximity_handler_.Init(&user_proximity_watcher_, &wifi_delegate_,
+    user_proximity_handler_.Init(&sar_watcher_, &wifi_delegate_,
                                  &lte_delegate_);
   }
 
  protected:
-  system::UserProximityWatcherStub user_proximity_watcher_;
+  system::UserProximityWatcherStub sar_watcher_;
   WifiDelegate wifi_delegate_;
   LteDelegate lte_delegate_;
   UserProximityHandler user_proximity_handler_;
@@ -76,33 +76,33 @@ class UserProximityHandlerTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(UserProximityHandlerTest, DetectSensor) {
-  user_proximity_watcher_.AddSensor(
+  sar_watcher_.AddSensor(
       1, system::UserProximityObserver::SensorRole::SENSOR_ROLE_WIFI);
   CHECK_EQ(JoinActions(kWifiSensorDetected, nullptr),
            wifi_delegate_.GetActions());
 
-  user_proximity_watcher_.AddSensor(
+  sar_watcher_.AddSensor(
       1, system::UserProximityObserver::SensorRole::SENSOR_ROLE_LTE);
   CHECK_EQ(JoinActions(kLteSensorDetected, nullptr),
            lte_delegate_.GetActions());
 }
 
 TEST_F(UserProximityHandlerTest, ProximityChange) {
-  user_proximity_watcher_.AddSensor(
+  sar_watcher_.AddSensor(
       1, system::UserProximityObserver::SensorRole::SENSOR_ROLE_WIFI);
-  user_proximity_watcher_.AddSensor(
+  sar_watcher_.AddSensor(
       2, system::UserProximityObserver::SensorRole::SENSOR_ROLE_WIFI);
   wifi_delegate_.GetActions();  //  consume the detection events
 
-  user_proximity_watcher_.SendEvent(1, UserProximity::FAR);
+  sar_watcher_.SendEvent(1, UserProximity::FAR);
   CHECK_EQ(JoinActions(nullptr), wifi_delegate_.GetActions());
 
-  user_proximity_watcher_.SendEvent(2, UserProximity::FAR);
+  sar_watcher_.SendEvent(2, UserProximity::FAR);
   CHECK_EQ(JoinActions(kWifiChangeFar, nullptr), wifi_delegate_.GetActions());
 
-  user_proximity_watcher_.SendEvent(1, UserProximity::NEAR);
+  sar_watcher_.SendEvent(1, UserProximity::NEAR);
   CHECK_EQ(JoinActions(kWifiChangeNear, nullptr), wifi_delegate_.GetActions());
-  user_proximity_watcher_.SendEvent(2, UserProximity::NEAR);
+  sar_watcher_.SendEvent(2, UserProximity::NEAR);
   CHECK_EQ(JoinActions(nullptr), wifi_delegate_.GetActions());
 }
 

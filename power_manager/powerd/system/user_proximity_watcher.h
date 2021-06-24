@@ -116,8 +116,11 @@ class UserProximityWatcher : public UserProximityWatcherInterface,
   // as tablet mode or notebook mode.
   void CompensateSensor(const SensorInfo& sensor);
 
-  // Enables or disables the sensor.
-  bool EnableDisableSensor(const SensorInfo& sensor, bool enable);
+  // Gets IIO sensor enable paths
+  void GetIioEnablePath(const SensorInfo& sensor,
+                        std::string* either,
+                        std::string* falling,
+                        std::string* rising);
   // Disables the sensor
   bool DisableSensor(const SensorInfo& sensor);
   // Enables the sensor

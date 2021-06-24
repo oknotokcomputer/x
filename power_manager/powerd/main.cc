@@ -213,9 +213,10 @@ class DaemonDelegateImpl : public DaemonDelegate {
                              TabletMode initial_tablet_mode) override {
     auto watcher = std::make_unique<system::UserProximityWatcher>();
     auto config = std::make_unique<brillo::CrosConfig>();
-    if (!config->Init())
-      config = nullptr;
-    watcher->Init(prefs, udev, std::move(config), initial_tablet_mode);
+    brillo::CrosConfigInterface* configIntf = nullptr;
+    if (config->Init())
+      configIntf = config.get();
+    watcher->Init(prefs, udev, configIntf, initial_tablet_mode);
     return watcher;
   }
 

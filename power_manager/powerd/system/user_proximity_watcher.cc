@@ -72,11 +72,10 @@ UserProximityWatcher::~UserProximityWatcher() {
     udev_->RemoveSubsystemObserver(kIioUdevSubsystem, this);
 }
 
-bool UserProximityWatcher::Init(
-    PrefsInterface* prefs,
-    UdevInterface* udev,
-    std::unique_ptr<brillo::CrosConfigInterface> config,
-    TabletMode tablet_mode) {
+bool UserProximityWatcher::Init(PrefsInterface* prefs,
+                                UdevInterface* udev,
+                                brillo::CrosConfigInterface* config,
+                                TabletMode tablet_mode) {
   prefs->GetBool(kSetCellularTransmitPowerForProximityPref,
                  &use_proximity_for_cellular_);
   prefs->GetBool(kSetWifiTransmitPowerForProximityPref,
@@ -91,7 +90,7 @@ bool UserProximityWatcher::Init(
   udev_ = udev;
   udev_->AddSubsystemObserver(kIioUdevSubsystem, this);
 
-  config_ = std::move(config);
+  config_ = config;
 
   std::vector<UdevDeviceInfo> iio_devices;
   if (!udev_->GetSubsystemDevices(kIioUdevSubsystem, &iio_devices)) {

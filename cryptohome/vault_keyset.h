@@ -325,6 +325,7 @@ class VaultKeyset {
   FRIEND_TEST_ALL_PREFIXES(CryptoTest, ScryptStepTest);
   FRIEND_TEST_ALL_PREFIXES(LeCredentialsManagerTest, Encrypt);
   FRIEND_TEST_ALL_PREFIXES(LeCredentialsManagerTest, EncryptFail);
+  FRIEND_TEST_ALL_PREFIXES(LeCredentialsManagerTest, EncryptTestReset);
 };
 
 }  // namespace cryptohome

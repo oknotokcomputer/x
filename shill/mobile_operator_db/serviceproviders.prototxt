@@ -2726,6 +2726,8 @@ mno {
       username : "guest"
       password : "guest"
       dns : "211.136.20.203"
+      ip_type : IPV4V6
+      is_attach_apn : true
     }
   }
 }

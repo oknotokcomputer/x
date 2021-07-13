@@ -484,6 +484,8 @@ class Cellular : public Device,
   void SetSimSlotProperties(const std::vector<SimProperties>& slot_properties,
                             int primary_slot);
 
+  void SetRegistered();
+
   // Creates or destroys services as required.
   void UpdateServices();
 

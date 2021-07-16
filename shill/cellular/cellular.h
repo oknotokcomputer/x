@@ -457,6 +457,7 @@ class Cellular : public Device,
   void StopModem(Error* error, const EnabledStateChangedCallback& callback);
   void StopModemCallback(const EnabledStateChangedCallback& callback,
                          const Error& error);
+  void DestroySockets();
 
   bool ShouldBringNetworkInterfaceDownAfterDisabled() const override;
 

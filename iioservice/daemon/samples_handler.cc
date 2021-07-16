@@ -563,7 +563,7 @@ void SamplesHandler::UpdateChannelsEnabledOnThread(
     for (int32_t chn_index : iio_chn_indices) {
       auto chn = iio_device_->GetChannel(chn_index);
       if (!chn || !chn->IsEnabled()) {
-        LOG(ERROR) << "Failed to enable chn with index: " << chn_index;
+        LOGF(ERROR) << "Failed to enable chn with index: " << chn_index;
         failed_indices.push_back(chn_index);
         continue;
       }
@@ -686,7 +686,7 @@ void SamplesHandler::OnSampleAvailableWithoutBlocking() {
         continue;
 
       if (sample->find(chn_index) == sample->end()) {
-        LOG(ERROR) << "Missing chn index: " << chn_index << " in sample";
+        LOGF(ERROR) << "Missing chn index: " << chn_index << " in sample";
         continue;
       }
 
@@ -711,7 +711,7 @@ void SamplesHandler::OnSampleAvailableWithoutBlocking() {
       libmems::IioDevice::IioSample client_sample;
       for (int32_t chn_index : client_data->enabled_chn_indices) {
         if (sample->find(chn_index) == sample->end()) {
-          LOG(ERROR) << "Missing chn: " << chn_index << " in sample";
+          LOGF(ERROR) << "Missing chn: " << chn_index << " in sample";
           continue;
         }
 
@@ -723,8 +723,8 @@ void SamplesHandler::OnSampleAvailableWithoutBlocking() {
         }
 
         if (sample_data.chns.find(chn_index) == sample_data.chns.end()) {
-          LOG(ERROR) << "Missed chn index: " << chn_index
-                     << " in moving averages";
+          LOGF(ERROR) << "Missed chn index: " << chn_index
+                      << " in moving averages";
           continue;
         }
 

@@ -468,7 +468,7 @@ bool VaultKeyset::Save(const FilePath& filename) {
 }
 
 std::string VaultKeyset::GetLabel() const {
-  if (key_data_.has_value() & !key_data_->label().empty()) {
+  if (key_data_.has_value() && !key_data_->label().empty()) {
     return key_data_->label();
   }
   // Fallback for legacy keys, for which the label has to be inferred from the

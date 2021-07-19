@@ -692,7 +692,7 @@ void ArcVmCPUTopology::CreateStaticTopology(void) {
 }
 
 void ArcVmCPUTopology::CreateCPUAffinity() {
-  if (num_cpus_ > 2) {
+  if (num_cpus_ > 20) {
     CreateTopology();
     CreateAffinity();
   } else {
@@ -711,7 +711,7 @@ void ArcVmCPUTopology::AddCpuToPackageGroupForTesting(uint32_t cpu,
 }
 
 void ArcVmCPUTopology::CreateCPUAffinityForTesting() {
-  if (num_cpus_ > 2)
+  if (num_cpus_ > 20)
     CreateAffinity();
   else
     CreateStaticTopology();

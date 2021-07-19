@@ -212,8 +212,8 @@ std::unique_ptr<dbus::Response> Service::StartArcVm(
 
   if (request.enable_rt_vcpu()) {
     vm_builder.AppendCustomParam("--rt-cpus", topology.RTCPUMask());
-    if (!topology.AffinityMask().empty())
-      vm_builder.AppendCustomParam("--cpu-affinity", topology.AffinityMask());
+    //if (!topology.AffinityMask().empty())
+      //vm_builder.AppendCustomParam("--cpu-affinity", topology.AffinityMask());
   }
 
   if (!topology.CapacityMask().empty()) {

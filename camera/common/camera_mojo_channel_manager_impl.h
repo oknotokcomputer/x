@@ -138,8 +138,12 @@ class CameraMojoChannelManagerImpl final : public CameraMojoChannelManager {
   // specific interface on all camera HALs.
   static CameraMojoChannelManagerImpl* instance_;
 
+  // This lock is to protect |sensor_hal_client_|'s accesses from different
+  // threads.
+  base::Lock sensor_lock_;
   // The SensorHalClient instance that connects to iioservice for sensors data.
-  std::unique_ptr<SensorHalClientImpl> sensor_hal_client_;
+  std::unique_ptr<SensorHalClientImpl> sensor_hal_client_
+      GUARDED_BY(sensor_lock_);
 };
 
 }  // namespace cros

@@ -96,12 +96,12 @@ CameraMojoChannelManagerImpl::CameraMojoChannelManagerImpl()
     LOGF(ERROR) << "Failed to watch socket path";
     return;
   }
-
-  sensor_hal_client_ = std::make_unique<SensorHalClientImpl>(this);
 }
 
 CameraMojoChannelManagerImpl::~CameraMojoChannelManagerImpl() {
   if (ipc_thread_.IsRunning()) {
+    base::AutoLock lock(sensor_lock_);
+    sensor_hal_client_.reset();
     ipc_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&CameraMojoChannelManagerImpl::TearDownMojoEnvOnIpcThread,
@@ -208,6 +208,10 @@ CameraMojoChannelManagerImpl::CreateCameraAlgorithmOpsRemote(
 }
 
 SensorHalClient* CameraMojoChannelManagerImpl::GetSensorHalClient() {
+  base::AutoLock lock(sensor_lock_);
+  if (!sensor_hal_client_) {
+    sensor_hal_client_ = std::make_unique<SensorHalClientImpl>(this);
+  }
   return sensor_hal_client_.get();
 }
 

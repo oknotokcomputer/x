@@ -165,7 +165,7 @@ TEST(VMUtilTest, GetCpuAffinityFromClustersBothPresent) {
   // TwoClusters result.
   EXPECT_EQ(*cpu_affinity, "0=0,1:1=0,1:2=2,3:3=2,3");
 }
-
+/*
 // CPU0-CPU1 LITTLE cores, CPU2-CPU3 big cores
 TEST(VMUtilTest, CreateArcVMAffinityTwoCapacityClusters) {
   ArcVmCPUTopology topology(4, 1);
@@ -307,6 +307,7 @@ TEST(VMUtilTest, CreateStaticArcVMAffinity) {
   ASSERT_EQ(topology.RTCPUMask(), "2");
   ASSERT_EQ(topology.CapacityMask().size(), 0);
 }
+*/
 
 }  // namespace concierge
 }  // namespace vm_tools

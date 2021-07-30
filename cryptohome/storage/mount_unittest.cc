@@ -272,8 +272,9 @@ class MountTest
   void ExpectCryptohomeMountShadowOnly(const TestUser& user) {
     ExpectCryptohomeKeySetup(user);
     if (ShouldTestEcryptfs()) {
-      EXPECT_CALL(platform_, Mount(user.vault_path, user.vault_mount_path,
-                                   "ecryptfs", kDefaultMountFlags, _))
+      EXPECT_CALL(platform_,
+                  Mount(user.vault_path, user.vault_mount_path, "ecryptfs",
+                        kDefaultMountFlags | MS_NOSYMFOLLOW, _))
           .WillOnce(Return(true));
     }
     EXPECT_CALL(platform_, CreateDirectory(user.vault_mount_path))
@@ -287,8 +288,9 @@ class MountTest
     ExpectCryptohomeKeySetup(user);
     ExpectDaemonStoreMounts(user, false /* ephemeral_mount */);
     if (ShouldTestEcryptfs()) {
-      EXPECT_CALL(platform_, Mount(user.vault_path, user.vault_mount_path,
-                                   "ecryptfs", kDefaultMountFlags, _))
+      EXPECT_CALL(platform_,
+                  Mount(user.vault_path, user.vault_mount_path, "ecryptfs",
+                        kDefaultMountFlags | MS_NOSYMFOLLOW, _))
           .WillOnce(Return(true));
     }
     EXPECT_CALL(platform_, FileExists(base::FilePath(kLockedToSingleUserFile)))
@@ -395,7 +397,7 @@ class MountTest
         .WillOnce(Return(true));
 
     EXPECT_CALL(platform_, Mount(kLoopDevice, _, kEphemeralMountType,
-                                 kDefaultMountFlags, _))
+                                 kDefaultMountFlags | MS_NOSYMFOLLOW, _))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(platform_,
                 SetSELinuxContext(Property(&FilePath::value,
@@ -844,11 +846,11 @@ TEST_P(MountTest, MountDmcrypt) {
 
   EXPECT_CALL(platform_,
               Mount(_, user->vault_mount_path, kDmcryptContainerMountType,
-                    kDefaultMountFlags, kDmcryptContainerMountOptions))
+                    kDefaultMountFlags | MS_NOSYMFOLLOW, _))
       .WillOnce(Return(true));
   EXPECT_CALL(platform_,
               Mount(_, user->vault_cache_path, kDmcryptContainerMountType,
-                    kDefaultMountFlags, kDmcryptContainerMountOptions))
+                    kDefaultMountFlags | MS_NOSYMFOLLOW, _))
       .WillOnce(Return(true));
 
   EXPECT_TRUE(mnt_helper.PerformMount(options, user->username, "foo", "bar",
@@ -1029,10 +1031,12 @@ TEST_P(MountTest, RememberMountOrderingTest) {
   FilePath dest2("/dest/baz");
   {
     InSequence sequence;
-    EXPECT_CALL(platform_, Mount(src, dest0, _, kDefaultMountFlags, _))
+    EXPECT_CALL(platform_,
+                Mount(src, dest0, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
         .WillOnce(Return(true));
     EXPECT_CALL(platform_, Bind(src, dest1, _, true)).WillOnce(Return(true));
-    EXPECT_CALL(platform_, Mount(src, dest2, _, kDefaultMountFlags, _))
+    EXPECT_CALL(platform_,
+                Mount(src, dest2, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
         .WillOnce(Return(true));
     EXPECT_CALL(platform_, Unmount(dest2, _, _)).WillOnce(Return(true));
     EXPECT_CALL(platform_, Unmount(dest1, _, _)).WillOnce(Return(true));
@@ -1161,7 +1165,7 @@ TEST_P(MountTest, MountCryptohomeToMigrateFromEcryptfs) {
     EXPECT_CALL(platform_, CreateDirectory(temporary_mount))
         .WillOnce(Return(true));
     EXPECT_CALL(platform_, Mount(user->vault_path, temporary_mount, "ecryptfs",
-                                 kDefaultMountFlags, _))
+                                 kDefaultMountFlags | MS_NOSYMFOLLOW, _))
         .WillOnce(Return(true));
 
     // Key set up for both dircrypto and ecryptfs.
@@ -1503,7 +1507,7 @@ TEST_P(EphemeralNoUserSystemTest, OwnerUnknownMountCreateTest) {
   EXPECT_CALL(platform_,
               Mount(_, _, kEphemeralMountType, kDefaultMountFlags, _))
       .Times(0);
-  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags, _))
+  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, Bind(_, _, _, _)).WillRepeatedly(Return(true));
   EXPECT_CALL(platform_, IsDirectoryMounted(user->vault_mount_path))
@@ -1554,7 +1558,8 @@ TEST_P(EphemeralNoUserSystemTest, OwnerUnknownMountIsEphemeralTest) {
   // known owner, a mount request with the |ensure_ephemeral| flag set fails.
   TestUser* user = &helper_.users[0];
 
-  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags, _)).Times(0);
+  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
+      .Times(0);
 
   ASSERT_EQ(MOUNT_ERROR_EPHEMERAL_MOUNT_BY_OWNER,
             mount_->MountEphemeralCryptohome(user->username));
@@ -1858,7 +1863,8 @@ TEST_P(EphemeralOwnerOnlySystemTest, OwnerMountIsEphemeralTest) {
   TestUser* owner = &helper_.users[3];
   set_policy(true, owner->username, false);
 
-  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags, _)).Times(0);
+  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
+      .Times(0);
 
   ASSERT_EQ(MOUNT_ERROR_EPHEMERAL_MOUNT_BY_OWNER,
             mount_->MountEphemeralCryptohome(owner->username));
@@ -2414,9 +2420,10 @@ TEST_P(EphemeralNoUserSystemTest, MountGuestUserDir) {
       platform_,
       Stat(Property(&FilePath::value, StartsWith(kEphemeralCryptohomeDir)), _))
       .WillOnce(Return(false));
-  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags, _)).Times(0);
+  EXPECT_CALL(platform_, Mount(_, _, _, kDefaultMountFlags | MS_NOSYMFOLLOW, _))
+      .Times(0);
   EXPECT_CALL(platform_, Mount(FilePath("/dev/loop7"), _, kEphemeralMountType,
-                               kDefaultMountFlags, _))
+                               kDefaultMountFlags | MS_NOSYMFOLLOW, _))
       .WillOnce(Return(true));
   EXPECT_CALL(platform_,
               SetSELinuxContext(Property(&FilePath::value,

@@ -1988,6 +1988,9 @@ void ArcSetup::SetupSensorOnPreChroot(const base::FilePath& rootfs) {
           path.Append("buffer/hwfifo_timeout")));
       EXIT_IF(!AllowContainerToWriteSensorAttribute(
           path.Append("sampling_frequency")));
+      // Kernel 3.18 devices have differently named nodes
+      EXIT_IF(!AllowContainerToWriteSensorAttribute(path.Append("flush")));
+      EXIT_IF(!AllowContainerToWriteSensorAttribute(path.Append("frequency")));
       if (name == "cros-ec-ring")
         cros_ec_ring_dir = path;
     }

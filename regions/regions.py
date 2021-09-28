@@ -490,6 +490,10 @@ REGIONS_LIST = [
         KML.ANSI,
         'Romania with US International keyboard layout',
     ),
+    Region(
+        'ro.us', ['xkb:us::eng', 'xkb:ro::rum'], 'Europe/Bucharest', [
+            'ro', 'hu', 'de', 'en-GB'], KML.ANSI,
+        'Romania with US keyboard'),
     ]
 
 """A list of :py:class:`regions.Region` objects for

@@ -352,6 +352,7 @@ struct sl_linux_dmabuf {
   struct sl_context* ctx;
   uint32_t id;
   uint32_t version;
+  struct sl_global* host_global;
   struct sl_global* host_drm_global;
   struct zwp_linux_dmabuf_v1* internal;
 };
@@ -450,6 +451,8 @@ struct sl_global* sl_text_input_manager_global_create(struct sl_context* ctx);
 struct sl_global* sl_text_input_x11_global_create(struct sl_context* ctx);
 
 struct sl_global* sl_pointer_constraints_global_create(struct sl_context* ctx);
+
+struct sl_global* sl_linux_dmabuf_global_create(struct sl_context* ctx);
 
 void sl_set_display_implementation(struct sl_context* ctx,
                                    struct wl_client* client);

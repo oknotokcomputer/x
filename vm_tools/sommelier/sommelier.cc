@@ -3597,9 +3597,9 @@ void sl_spawn_xwayland(sl_context* ctx,
     args[i++] = "-nolisten";
     args[i++] = "tcp";
     args[i++] = "-rootless";
-    // Use software rendering unless we have a DRM device and glamor is
+    // Use software rendering unless we have a DRM or magma device and glamor is
     // enabled.
-    if (!ctx->drm_device || !glamor || !strcmp(glamor, "0"))
+    if ((!ctx->drm_device && !ctx->magma_device) || !glamor || !strcmp(glamor, "0"))
       args[i++] = "-shm";
     args[i++] = "-displayfd";
     args[i++] = display_fd_str;
@@ -3869,6 +3869,24 @@ int real_main(int argc, char** argv) {
     }
 
     ctx.drm_device = drm_device;
+  } else if (glamor && !strcmp(glamor, "1")) {
+    // If glamor enabled, provide a default magma device.
+    const char* kMagmaDevice = "/dev/magma0";
+
+    int fd = open(kMagmaDevice, O_RDWR | O_CLOEXEC);
+    if (fd == -1) {
+      fprintf(stderr, "error: could not open %s (%s)\n", kMagmaDevice,
+              strerror(errno));
+      return EXIT_FAILURE;
+    }
+
+    ctx.gbm = gbm_create_device(fd);
+    if (!ctx.gbm) {
+      fprintf(stderr, "error: couldn't create gbm device for magma\n");
+      return EXIT_FAILURE;
+    }
+
+    ctx.magma_device = kMagmaDevice;
   }
 
   wl_array_init(&ctx.dpi);

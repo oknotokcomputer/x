@@ -516,6 +516,42 @@ force_clean_file_attrs /mnt/stateful_partition/unencrypted
 # Checks and updates stateful partition.
 dev_update_stateful_partition
 
+# TODO(b/189503059) This is for debugging only.
+fix_stateful_ownership() {
+  local non_root_perms
+
+  set -- \
+    /mnt/stateful_partition \
+    /mnt/stateful_partition/home \
+    /mnt/stateful_partition/unencrypted
+
+  # If the directories are symlinks, log and give up for now.
+  if [ -L /mnt/stateful_partition ] || [ -L /mnt/stateful_partition/home ] || \
+     [ -L /mnt/stateful_partition/unencrypted ]; then
+    ls -ld "$@" | sed -e 's/^/SYMLINK: /' >> "${TMPFILES_LOG}"
+    return
+  fi
+
+  # Check for the wrong ownership.
+  non_root_perms="$(
+    stat --format="%n %G %U" "$@" | grep -v ' root root$'
+  )"
+  if [ -z "${non_root_perms}" ]; then
+    return
+  fi
+  echo "${non_root_perms}" >> "${TMPFILES_LOG}"
+
+  # Ignore errors here because some of these directories may not exist.
+  chown root:root /mnt/stateful_partition \
+    /mnt/stateful_partition/home \
+    /mnt/stateful_partition/home/chronos \
+    /mnt/stateful_partition/home/root \
+    /mnt/stateful_partition/unencrypted \
+    /mnt/stateful_partition/cache \
+    /mnt/stateful_partition/preserve || :
+}
+fix_stateful_ownership || :
+
 # Apply /mnt/stateful_partition specific tmpfiles.d configurations.
 /bin/systemd-tmpfiles --create --remove --boot \
   --prefix /mnt/stateful_partition 2>>"${TMPFILES_LOG}" ||

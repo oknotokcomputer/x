@@ -1,5 +1,10 @@
 # Fingerprint Study Tool
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/biod/study/README.md
+***
+
 The fingerprint study tool allows you to capture raw fingerprint samples from
 study participants in order to analyze the performance of a fingerprint system.
 

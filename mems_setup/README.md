@@ -1,5 +1,10 @@
 # Chrome OS MEMS Setup Code
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/mems_setup/README.md
+***
+
 ## `/usr/sbin/mems_setup`
 
 This tool handles the boot-time setup of cros_ec sensors on the device, such as

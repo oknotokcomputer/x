@@ -1,5 +1,10 @@
 # Chrome OS ML Service: How to publish and use your ML models
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ml/docs/publish_and_use_model.md
+***
+
 This page explains how to publish a trained ML model so that the ML Service
 can make it available at runtime for inference, as well as how to use it in
 Chromium side.

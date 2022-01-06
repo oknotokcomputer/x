@@ -1,5 +1,10 @@
 # Crash Reporter Security
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/docs/security.md
+***
+
 As a tool that usually runs as root in order to access the data in various
 log and proc and sys files, we have to be extra careful while also processing
 untrusted data -- the coredumps and process state are entirely under the

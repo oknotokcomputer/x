@@ -1,5 +1,10 @@
 # Overview
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/runtime_probe/README.md
+***
+
 Runtime Probe is essentially a command line tool that consumes the
 [probe syntax](https://chromium.googlesource.com/chromiumos/platform/factory/+/HEAD/py/probe/README.md#detail-usage-the-syntax-of-a-probe-config-file)
 and outputs the

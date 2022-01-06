@@ -1,5 +1,10 @@
 # Garcon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/garcon/README.md
+***
+
 Garcon is a daemon that runs inside the container for Linux VMs. Its purpose
 is for bi-directional communication with the host for various application and
 container level features. It uses vsock for the communication with the host over

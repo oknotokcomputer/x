@@ -1,5 +1,10 @@
 # Collecting VM logs
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/docs/logging.md
+***
+
 The [syslog](../syslog) directory implements a communication protocol for
 gathering and persisting kernel and system logs for VMs.  This diagram shows the
 flow of logs from the VM to the host system.

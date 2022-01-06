@@ -1,5 +1,10 @@
 # Chrome OS IIO Sensor Utility Library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/libmems/README.md
+***
+
 ## `Project goal and motivation`
 
 This library provides a set of wrapper and test helpers around libiio.

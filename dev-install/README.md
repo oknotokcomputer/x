@@ -1,5 +1,10 @@
 # Development Image Installer
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dev-install/README.md
+***
+
 The dev-install tool is used to install developer tools on a release image.
 This is most used by external CrOS users who want to take their existing CrOS
 system, put it into dev mode, and then quickly install a bunch of useful tools.

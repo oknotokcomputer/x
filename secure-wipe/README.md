@@ -1,5 +1,10 @@
 # Chromium OS Secure Wipe
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/secure-wipe/README.md
+***
+
 Full disk wipe code for factory and recovery images.
 
 Due to indirection performed by flash storage firmware (e.g. for the purpose of

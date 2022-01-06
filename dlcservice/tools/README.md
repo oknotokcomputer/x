@@ -1,5 +1,10 @@
 # Downloadable Content (DLC) Service Daemon Utility
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice/tools/README.md
+***
+
 ## dlcservice-util
 
 This is a wrapper utility for `dlcservice`. It can be used to install and

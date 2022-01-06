@@ -1,5 +1,10 @@
 ## ManaTEE Runtime
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/sirenia/manatee-runtime/README.md
+***
+
 This library is the API endpoint for TEE applications to communicate with
 Trichechus.
 

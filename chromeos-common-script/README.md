@@ -1,5 +1,10 @@
 # Chromium OS Common Script.
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/chromeos-common-script/README.md
+***
+
 Files in this folder will be compiled by
 `chromeos-base/chromeos-common-script`.
 

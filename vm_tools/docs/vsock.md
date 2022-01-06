@@ -1,5 +1,10 @@
 # virtio-vsock
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/docs/vsock.md
+***
+
 virtio-vsock provides a way for applications running on a guest VM and the host
 system to communicate with each other using the standard socket interface
 (`socket`, `connect`, `bind`, `listen`, `accept`).  It defines a new socket

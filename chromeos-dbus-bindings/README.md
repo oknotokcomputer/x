@@ -1,5 +1,10 @@
 # chromeos-dbus-bindings
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/chromeos-dbus-bindings/README.md
+***
+
 **chromeos-dbus-bindings** was created to supplement [libbrillo] and
 simplify the implementation of [D-Bus] daemons and proxies. It generates C++
 classes from the XML specifications of the D-Bus interface. Instead of dealing

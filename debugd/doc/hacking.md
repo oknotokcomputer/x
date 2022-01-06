@@ -1,5 +1,10 @@
 # Hacking debugd
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/debugd/docs/hacking.md
+***
+
 [iface]: ../dbus_bindings/org.chromium.debugd.xml
 [impl]: implementation.md
 [design]: design.md

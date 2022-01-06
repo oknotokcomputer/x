@@ -1,5 +1,10 @@
 # ImageLoader Manifest Parser
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/imageloader/manifest.md
+***
+
 Library for parsing ImageLoader manifest files. ImageLoader uses these files
 to verify and mount images (e.g. DLC images).
 

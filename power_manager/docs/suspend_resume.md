@@ -1,5 +1,10 @@
 # Chrome OS Suspend and Resume
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/suspend_resume.md
+***
+
 ## Overview
 
 This flowchart depicts the process that powerd's `Suspender` class follows to

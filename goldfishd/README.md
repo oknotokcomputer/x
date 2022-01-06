@@ -1,5 +1,10 @@
 # Goldfishd: Android Emulator Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/goldfishd/README.md
+***
+
 ## About
 
 Goldfishd (Android Emulator Daemon) is a daemon for getting messages sent from

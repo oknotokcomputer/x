@@ -1,5 +1,10 @@
 # Chrome OS Session Manager
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/login_manager/README.md
+***
+
 `session_manager` is responsible for managing the lifecycle of the Chrome
 process. It confusingly lives in the `login_manager` directory and is installed
 by the [chromeos-login] package.

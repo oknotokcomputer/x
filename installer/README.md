@@ -1,5 +1,10 @@
 # Chromium OS Installer
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/installer/README.md
+***
+
 Files in this folder will be compiled by `chromeos-base/chromeos-installer`
 package into few programs, including:
 

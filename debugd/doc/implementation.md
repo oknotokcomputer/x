@@ -1,5 +1,10 @@
 # Implementation: debugd
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/debugd/docs/implementation.md
+***
+
 [chromeos-dbus-bindings]: https://chromium.googlesource.com/aosp/platform/external/dbus-binding-generator/
 
 The debug daemon uses [chromeos-dbus-bindings] to serve DBus clients.

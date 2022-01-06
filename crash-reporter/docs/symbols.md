@@ -1,5 +1,10 @@
 # Symbol Life Cycle
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/docs/symbols.md
+***
+
 Our crash reporting system strives to minimize on-device processing to keep the
 runtime as light, fast, and small as possible.
 This means we do quite a lot of work when building Chromium OS, as well as

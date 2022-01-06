@@ -1,5 +1,10 @@
 # Kerberos
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/kerberos/README.md
+***
+
 This directory contains the Kerberos service, which provides functionality for
 getting and managing Kerberos tickets. It is used by Chrome to provide Kerberos
 Single-SignOn (SSO). Think of it as a fancy wrapper around kinit, kpasswd and

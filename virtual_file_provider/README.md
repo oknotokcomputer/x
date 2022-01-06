@@ -1,5 +1,10 @@
 # Virtual File Provider
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/virtual_file_provider/README.md
+***
+
 Virtual File Provider is a service which provides file descriptors which forward
 access requests to chrome.
 From the accessing process's perspective, the file descriptor behaves like a

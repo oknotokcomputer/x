@@ -1,5 +1,10 @@
 # Media Perception Service
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/media_perception/README.md
+***
+
 ## Summary
 
 The media perception service provides the backend for intelligent features on

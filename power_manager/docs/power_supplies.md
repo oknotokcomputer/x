@@ -1,5 +1,10 @@
 # Chrome OS Power Supplies
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/power_supplies.md
+***
+
 powerd's [PowerSupply] class is responsible for reading information about power
 supplies (e.g. line power and batteries) from device directories under
 `/sys/class/power_supply` in [sysfs]. The [kernel documentation] contains

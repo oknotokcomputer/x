@@ -1,5 +1,10 @@
 # USB Bouncer
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/usb_bouncer/README.md
+***
+
 Tools for managing USBGuard allow-lists and configuration on Chrome OS
 
 Particularly the following operations are supported:

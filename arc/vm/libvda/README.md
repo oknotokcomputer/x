@@ -1,5 +1,10 @@
 # libvda
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/vm/libvda/README.md
+***
+
 ## About
 
 libvda is a library that provides a C API for video decoding as defined in

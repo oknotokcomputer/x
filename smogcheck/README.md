@@ -1,5 +1,10 @@
 # Smogcheck I2C Library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/smogcheck/README.md
+***
+
 C library to communicate with I2C bus directly.
 
 Notes:

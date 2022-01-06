@@ -1,5 +1,10 @@
 # ARC adbd ConfigFS / FunctionFS proxy for Developer Mode
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/adbd/README.md
+***
+
 This sets up the ADB gadget to allow Chromebooks that have the necessary
 hardware / kernel support to be able to use ADB over USB. This avoids exposing
 ConfigFS into the container.

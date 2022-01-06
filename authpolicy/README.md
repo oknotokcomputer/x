@@ -1,5 +1,10 @@
 # Authpolicy
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/authpolicy/README.md
+***
+
 This directory contains the Authpolicy service which provides functionality to
 join Active Directory (AD) domains, authenticate users against AD and to fetch
 device and user policies from AD in its native GPO format, convert them into

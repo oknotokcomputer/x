@@ -1,5 +1,10 @@
 # Chrome OS Platform Camera
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/camera/README.md
+***
+
 The repository hosts the core Chrome OS platform camera components, including:
 
 - Camera Hardware Abstraction Layers (HALs) of different platforms

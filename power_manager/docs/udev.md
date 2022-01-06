@@ -1,5 +1,10 @@
 # Chrome OS Power Management udev Usage
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/udev.md
+***
+
 powerd uses the udev interface to learn about hardware changes.
 
 ## Inhibiting and configuring wakeup for input devices

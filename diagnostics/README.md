@@ -1,5 +1,10 @@
 # Device Telemetry and Diagnostics
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/diagnostics/README.md
+***
+
 This implements daemons and libraries providing device telemetry and
 diagnostics.
 

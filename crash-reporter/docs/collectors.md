@@ -1,5 +1,10 @@
 # Crash Collectors
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/docs/collectors.md
+***
+
 For each major class of crash reports, we define a dedicated *collector*.
 This is a simple way to encapsulate all related logic in a single module.
 

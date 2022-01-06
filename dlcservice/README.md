@@ -1,5 +1,10 @@
 # Downloadable Content (DLC) Service Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice/README.md
+***
+
 Read [Developer Doc] instead on how to use DLC framework.
 
 ## dlcservice

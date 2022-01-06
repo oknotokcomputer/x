@@ -1,5 +1,10 @@
 # DNS
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/patchpanel/dns/README.md
+***
+
 This directory contains DNS library which is a modified copy of Chromium's DNS
 code (net/dns). The current files are taken from milestone M88 of the code
 with the latest commit hash of `ad67ec1efbf21306b583c4daf34cf2ba4c591237`.

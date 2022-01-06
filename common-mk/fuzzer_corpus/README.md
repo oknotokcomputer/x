@@ -1,5 +1,10 @@
 # fuzzer_corpus: A corpus of files to be tested against all fuzzer targets
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/common-mk/fuzzer_corpus/README.md
+***
+
 ## Overview
 
 `fuzzer_corpus` is a centralized directory with files that are used for testing

@@ -1,5 +1,10 @@
 # libpasswordprovider
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/libpasswordprovider/README.md
+***
+
 This directory contains the Password Provider library, which is used to store
 and retrieve the user's password. The password is stored using kernel keyrings.
 

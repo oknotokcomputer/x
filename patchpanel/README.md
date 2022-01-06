@@ -1,5 +1,10 @@
 # Patchpanel
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/patchpanel/README.md
+***
+
 This directory contains the Patchpanel platform networking service daemon
 (formerly arc-networkd).
 

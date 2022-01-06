@@ -1,11 +1,16 @@
-[TOC]
-
 # Crosh -- The Chromium OS shell
+
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crosh/README.md
+***
 
 This is the homepage/documentation for the crosh, the Chromium OS shell.
 If you're on a CrOS devices right now, you should be able to launch crosh
 by hitting Ctrl+Alt+T.  If you aren't on CrOS, then most likely that won't
 do anything useful :).
+
+[TOC]
 
 # For Users
 

@@ -1,5 +1,10 @@
 # Overview
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/hardware_verifier/README.md
+***
+
 Hardware Verifier is a command line tool that checks if the device is
 compliant.  The program obtains the hardware
 [probe result](https://chromium.googlesource.com/chromiumos/platform/factory/+/HEAD/py/probe/README.md#output-format)

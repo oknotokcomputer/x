@@ -1,5 +1,10 @@
 # Chrome OS Screen Brightness Behavior
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/screen_brightness.md
+***
+
 At boot, the panel backlight's brightness is set to 40% (computed linearly) of
 its maximum level by the `boot-splash` Upstart job. This happens before the boot
 splash animation is displayed by frecon.

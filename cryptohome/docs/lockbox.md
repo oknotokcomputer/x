@@ -1,5 +1,10 @@
 # Lockbox
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cryptohome/docs/lockbox.md
+***
+
 Cryptohome manages a tamper-evident file which is meant to contain
 install-lifetime system attributes.
 

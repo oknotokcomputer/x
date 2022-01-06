@@ -1,5 +1,10 @@
 # Shutdown From Suspend
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/shutdown_from_suspend.md
+***
+
 [TOC]
 
 ## Introduction

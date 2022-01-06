@@ -1,5 +1,10 @@
 # Chrome OS Keyboard Backlight Behavior
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/keyboard_backlight.md
+***
+
 On devices that possess backlit keyboards, powerd is responsible for adjusting
 the backlight brightness.
 

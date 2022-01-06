@@ -1,5 +1,10 @@
 # Trace Events
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/trace_events/README.md
+***
+
 **A framework for adding trace events to your Rust code.**
 
 ---

@@ -1,5 +1,10 @@
 # How to add a tab for a new model in `chrome://machine-learning-internals`
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ml/docs/add_model_to_internals.md
+***
+
 The internals page `chrome://machine-learning-internals` contains tools for
 controlling the ML Service (connecting, disconnecting) and evaluating a subset
 of models for benchmarking or debugging purposes. To make a new model available

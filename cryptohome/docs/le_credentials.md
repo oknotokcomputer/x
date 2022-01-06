@@ -1,5 +1,10 @@
 # Low-Entropy (LE) Credential Protection
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cryptohome/docs/le_credentials.md
+***
+
 This feature enables us to protect low-entropy credentials, which allows the UI
 to offer PIN codes as an authentication mechanism for sign-in.
 

@@ -1,5 +1,10 @@
 # `biod`: Biometrics Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/biod/README.md
+***
+
 `biod` (Biometrics Daemon) is a daemon for enrolling, authenticating and
 managing biometrics data for faster unlocking. It manages all biometric sensors
 for all users of the device.

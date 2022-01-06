@@ -1,5 +1,10 @@
 # p2p: Service for sharing files between Chrome OS devices
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/p2p/README.md
+***
+
 [TOC]
 
 ## About

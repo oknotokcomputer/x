@@ -1,5 +1,10 @@
 # imageloader
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/imageloader/README.md
+***
+
 This aims to provide a generic utility to verify and load (mount) signed disk
 images through DBUS IPC.
 

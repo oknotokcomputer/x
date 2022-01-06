@@ -1,5 +1,10 @@
 # Chrome OS arc-setup.
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/setup/README.md
+***
+
 ## `/usr/sbin/arc-setup`
 
 `arc-setup` handles setup/teardown of ARC container or upgrading container.

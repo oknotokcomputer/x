@@ -1,5 +1,10 @@
 # WiFi Testbed tools
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/wifi-testbed/README.md
+***
+
 `testbed_regulatory` is a replacement for the "CRDA" application for
 the ChromeOS WiFi testbed.  This is a sealed environment which is
 not exposed to the open air.  As such, this program creates a

@@ -1,5 +1,10 @@
 # **Running detachable base fw tests**
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/hammerd/hammertests/README.md
+***
+
 FAFT is currently not supported for detachable base tests because it does not
 support two ECs on the same device.
 [Tracking bug](https://issuetracker.google.com/36075961). Because of this,

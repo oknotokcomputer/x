@@ -1,5 +1,10 @@
 # CrOS TPM2 Simulator
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/tpm2-simulator/README.md
+***
+
 This project is the front end for a software TPM 2.0. It exposes [libtpm2]
 as two file descriptors to accept commands from a client.
 

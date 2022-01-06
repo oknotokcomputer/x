@@ -1,5 +1,10 @@
 # Chromium OS Crash Reporter
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/README.md
+***
+
 This is the project for handling all crash related operations on the device.
 The intention is to be as low-overhead as possible while still maximizing
 the usefulness of crash reports and minimizing collection of any & all PII data.

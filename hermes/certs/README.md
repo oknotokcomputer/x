@@ -1,5 +1,10 @@
 # Certificates
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/hermes/certs/README.md
+***
+
 As mentioned in the main README, communication between the eUICC and the
 SM-DP+ or SM-DS uses HTTPS, as mandated by the relevant standards. The GSMA
 root certificates were created specifically for TLS certificate verification of

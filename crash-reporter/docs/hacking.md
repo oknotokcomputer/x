@@ -1,5 +1,10 @@
 # Developing, Breaking, Fixing, and Testing
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/docs/hacking.md
+***
+
 When developing crash-reporter, or even simply running a dev or test image,
 there's a few settings to be aware of that control/override runtime behavior.
 

@@ -1,5 +1,10 @@
 # Fingerprint Performance Analysis
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/biod/study/ANALYSIS.md
+***
+
 This document gives a high level overview of what is required for the post
 fingerprint sample collection analysis.
 

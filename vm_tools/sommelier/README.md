@@ -1,5 +1,10 @@
 # Sommelier - Nested Wayland compositor with support for X11 forwarding
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/sommelier/README.md
+***
+
 Sommelier is an implementation of a Wayland compositor that delegates
 compositing to a 'host' compositor. Sommelier includes a set of features that
 allows it to run inside a tight jail or virtual machine.

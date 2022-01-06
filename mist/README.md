@@ -1,5 +1,10 @@
 # mist: Modem Interface Switching Tool
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/mist/README.md
+***
+
 ## Overview
 
 `mist` is a Chromium OS utility for switching USB cellular dongles into the

@@ -1,5 +1,10 @@
 # hammerd: A daemon to update hammer
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/hammerd/README.md
+***
+
 ## Summary
 
 hammer is the base of detachable, connected via USB over pogo pins. hammer runs

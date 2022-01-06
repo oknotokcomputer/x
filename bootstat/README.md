@@ -1,5 +1,10 @@
 # CrOS bootstat
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/bootstat/README.md
+***
+
 This is the Chromium OS 'bootstat' utility.  The utility is used
 to generate timestamps and other performance statistics during
 system boot.

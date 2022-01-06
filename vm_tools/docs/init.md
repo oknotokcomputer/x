@@ -1,5 +1,10 @@
 # Pid 1 (init)
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/docs/init.md
+***
+
 `maitred` provides init-like functionality for processes inside the VM.
 
 ## Early setup

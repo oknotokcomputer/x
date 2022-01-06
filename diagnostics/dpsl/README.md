@@ -1,5 +1,10 @@
 # DPSL library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/diagnostics/dpsl/README.md
+***
+
 This directory contains the DPSL library ("diagnostics_processor support
 library").
 

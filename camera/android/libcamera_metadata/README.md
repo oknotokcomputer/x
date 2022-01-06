@@ -1,5 +1,10 @@
 ## Android libcamera_metadata
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/camera/android/libcamera_metadata/README.md
+***
+
 This is a copy of the libcamera_medatada from Android goog/pi-arc-dev branch:
 
 - Copy `include/` and `src/*.c` from `android/system/media/camera/`

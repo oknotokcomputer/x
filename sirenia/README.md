@@ -1,5 +1,10 @@
 # ManaTEE Runtime Design
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/sirenia/README.md
+***
+
 The runtime environment and middleware for ManaTEE as well as the API endpoints
 for communicating with `sirenia` from TEEs or Chrome OS. The parent directory
 for the code is named `manatee_runtime` and has 3 subdirectories.

@@ -1,5 +1,10 @@
 # Chrome OS Federated Computation Service
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/federated/README.md
+***
+
 ## Summary
 
 The federated computation service provides a common runtime for federated

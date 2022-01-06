@@ -1,5 +1,10 @@
 # Chrome OS ML Service: How to upgrade the libhandwriting library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ml/docs/upgrade_handwriting_library.md
+***
+
 This page explains how to upgrade the handwriting recognition library. The doc
 assumes that you have already obtained a new release
 "libhandwriting-0.0.3.tar.gz" and want to upgrade to it from

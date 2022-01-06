@@ -1,5 +1,10 @@
 # p9 - Server implementation of the [9p] file system protocol
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/p9/README.md
+***
+
 This directory contains the protocol definition and a server implementation of
 the [9p] file system protocol.
 

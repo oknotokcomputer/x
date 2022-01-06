@@ -1,5 +1,10 @@
 # Utilities for soft-clearing TPM states
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/tpm_softclear_utils/README.md
+***
+
 This is a collection of utilities that reset TPM states and
 data, including TPM ownership, NVRAM, keys, DA counter, etc, for both
 TPM 1.2 and 2.0.

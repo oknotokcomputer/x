@@ -1,5 +1,10 @@
 # The Chromium OS Platform
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/
+***
+
 This repo holds (most) of the custom code that makes up the Chromium OS
 platform.  That largely covers daemons, programs, and libraries that were
 written specifically for Chromium OS.

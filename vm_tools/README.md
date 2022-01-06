@@ -1,9 +1,14 @@
-[TOC]
-
 # vm_tools - Utilities for Virtual Machine (VM) orchestration
+
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/README.md
+***
 
 This directory contains various tools for managing the lifetime of VM instances
 and for providing any services those VMs may need while they are running.
+
+[TOC]
 
 ## chunnel
 

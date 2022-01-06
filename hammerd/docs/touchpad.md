@@ -1,5 +1,10 @@
 # Hammer: Secure touchpad firmware
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/hammerd/docs/touchpad.md
+***
+
 ## Summary
 
 hammer runs its own upgradable firmware (base EC, running EC codebase on

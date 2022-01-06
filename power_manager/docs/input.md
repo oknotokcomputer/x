@@ -1,5 +1,10 @@
 # Chrome OS Power Manager Input
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/input.md
+***
+
 powerd uses user input to determine when the system should turn its backlight
 off or suspend in response to inactivity. powerd does not listen for this input
 directly; rather, it receives periodic `HandleUserActivity` D-Bus method calls

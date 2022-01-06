@@ -1,5 +1,10 @@
 # Chrome OS Power Management
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/README.md
+***
+
 The Chrome OS power manager consists of several components:
 
 -   `powerd`: C++ system daemon running as the `power` user that initiates

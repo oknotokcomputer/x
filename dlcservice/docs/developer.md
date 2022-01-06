@@ -1,5 +1,10 @@
 # Chrome OS DLC Developer Guide
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice/docs/developer.md
+***
+
 ## Introduction
 
 This guide describes how to use Chrome OS DLC (Downloadable Content).

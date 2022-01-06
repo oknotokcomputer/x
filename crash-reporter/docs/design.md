@@ -1,5 +1,10 @@
 # Chromium OS Crash Reporting
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crash-reporter/docs/design.md
+***
+
 *2011-05-15*
 
 *** aside

@@ -1,5 +1,10 @@
 # g2ftool : U2F command line interface tool
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/u2fd/g2f_tools/README.md
+***
+
 g2ftool is a command line tool to interact with U2FHID devices, whether
 physical devices or the virtual one provided by u2fd.
 

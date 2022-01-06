@@ -1,5 +1,10 @@
 # Chrome OS Power Management FAQ
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/faq.md
+***
+
 [TOC]
 
 ## How do I prevent a system from going to sleep?

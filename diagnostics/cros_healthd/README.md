@@ -1,5 +1,10 @@
 # cros_healthd: Telemetry and Diagnostics Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/diagnostics/cros_healthd/README.md
+***
+
 cros_healthd provides telemetry and diagnostics support for enterprise-enrolled
 devices.
 

@@ -1,5 +1,10 @@
 # Chrome OS Configuration -- Master Chrome OS Configuration tools / library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/chromeos-config/README.md
+***
+
 This is the homepage/documentation for chromeos-config which provides access to
 the master configuration for Chrome OS.
 

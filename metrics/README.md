@@ -1,5 +1,10 @@
 # Chromium OS Metrics
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/metrics/README.md
+***
+
 The Chromium OS "metrics" package contains utilities for client-side user metric
 collection.
 

@@ -1,5 +1,10 @@
 # Android container in Chrome OS
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/container/bundle/README.md
+***
+
 This document outlines the process by which Android runs in a Linux container in
 Chrome OS.
 

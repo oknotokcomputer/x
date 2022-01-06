@@ -1,5 +1,10 @@
 # bootid-logger - Record the current boot id to log.
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/bootid-logger/README.md
+***
+
 This is intended to be used by [croslog](../croslog/).
 
 Design doc: go/cros-journald-removal

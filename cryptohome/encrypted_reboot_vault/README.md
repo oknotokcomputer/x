@@ -1,5 +1,10 @@
 # Encrypted Reboot Vault
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cryptohome/encrypted_reboot_vault/README.md
+***
+
 Encrypted reboot vault provides an encrypted store for files across reboots in
 absence of the TPM (or if the TPM is going to get cleared on the next reboot).
 The encrypted reboot vault uses pmsg to store a random key that will be used to

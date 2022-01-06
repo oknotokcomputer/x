@@ -1,5 +1,10 @@
 # Shill Architecture
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/shill/doc/architecture.md
+***
+
 ## Devices
 
 In Shill, a network interface is represented by a `Device` instance. Among other

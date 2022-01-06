@@ -1,5 +1,10 @@
 # glib-bridge: message loop interoperation
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/glib-bridge/README.md
+***
+
 New code in platform2 should not be written on top of glib. However, it
 is sometimes unavoidable that we use libraries that were written on top
 of it. Instead of forcing us to write all of our code on top of glib as

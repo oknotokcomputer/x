@@ -1,5 +1,10 @@
 # Diagnostic Routines
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/diagnostics/docs/diag-routines-for-oems.md
+***
+
 This guide details each of the diagnostic routines provided by cros_healthd,
 along with any options the routine supports, a sample invocation run via the
 diag component of cros-health-tool, and sample output from running the routine.

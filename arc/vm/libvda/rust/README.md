@@ -1,5 +1,10 @@
 # Libvda Rust wrapper
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/vm/libvda/rust/README.md
+***
+
 Rust wrapper for libvda. This library is used to enable communication with
 Chrome's GPU process to perform hardware accelerated decoding and encoding.
 It is currently in development to be used by crosvm's virtio-video device.

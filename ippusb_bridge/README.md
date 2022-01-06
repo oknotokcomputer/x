@@ -1,5 +1,10 @@
 # Ippusb Bridge
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ippusb_bridge/README.md
+***
+
 `ippusb_bridge` is a drop-in replacement for [ippusbxd][ippusbxd] for Chrome
 OS. It provides support for connecting to IPP-over-USB printers, and
 forwarding arbitrary protocols (IPP, eSCL, etc.) to those printers via HTTP.

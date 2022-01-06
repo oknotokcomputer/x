@@ -1,5 +1,10 @@
 # foomatic_shell: simple shell used by foomatic-rip
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/foomatic_shell/README.md
+***
+
 This is a simple shell that is used by foomatic-rip to execute small scripts
 included in some PPD files. This shell is supposed to be used instead of
 the default shell for security reason.

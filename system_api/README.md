@@ -1,3 +1,8 @@
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/system_api/README.md
+***
+
 This directory (`platform2/system_api`) contains constants and definitions
 like D-Bus service names that are shared between Chromium and Chromium OS.
 

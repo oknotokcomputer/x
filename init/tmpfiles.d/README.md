@@ -1,5 +1,10 @@
 # tmpfiles.d Configuration Files
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/init/tmpfiles.d/README.md
+***
+
 These `.conf` files define filesystem operations that are needed to setup paths.
 This is commonly creating specific files and directories with specific
 permissions and ownership prior to running a system daemon. For example an

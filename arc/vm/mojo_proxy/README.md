@@ -1,5 +1,10 @@
 # ARCVM mojo proxy
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/arc/vm/mojo_proxy/README.md
+***
+
 ARCVM mojo proxy proxies data sent over file descriptors used for mojo
 communication between the host and the guest.
 

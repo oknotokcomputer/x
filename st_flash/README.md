@@ -1,6 +1,11 @@
 st_flash
 ========
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/st_flash/README.md
+***
+
 This is a tool for updating STM32-based touchpads using the STM IAP protocol.
 
 Installation

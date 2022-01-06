@@ -1,5 +1,10 @@
 # Chrome OS Dark Resume
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/dark_resume.md
+***
+
 [TOC]
 
 ## Introduction

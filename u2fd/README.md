@@ -1,5 +1,10 @@
 # U2Fd : U2FHID Emulation Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/u2fd/README.md
+***
+
 ## About
 
 U2Fd (Universal Second Factor Daemon) is a daemon emulating a U2FHID interface

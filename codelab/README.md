@@ -1,5 +1,10 @@
 # Chrome OS Build codelab
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/codelab/README.md
+***
+
 This codelab walks through an example for
 - modifying code in a userspace program,
 - running unit tests,

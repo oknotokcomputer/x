@@ -1,5 +1,10 @@
 # `biod_proxy`: DBus proxy library for Biometrics Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/biod/biod_proxy/README.md
+***
+
 Note that only boards with the `biod` USE flag build the biod package.
 However, other programs, e.g. cryptohome, may need to link against a dbus
 proxy for biod on all boards. Since the dbus proxy for working with biod

@@ -1,5 +1,10 @@
 # Secure Erase File tool
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/secure_erase_file/README.md
+***
+
 The Chrome OS "secure_erase_file" package contains utilities for securely
 erasing data stored on eMMC devices.
 

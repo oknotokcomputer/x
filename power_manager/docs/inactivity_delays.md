@@ -1,5 +1,10 @@
 # Chrome OS Inactivity Delays
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/inactivity_delays.md
+***
+
 By default, the power manager performs various actions when the system is
 inactive for a given period of time:
 

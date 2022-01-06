@@ -1,5 +1,10 @@
 # crosdns - Hostname resolution service for Chrome OS
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/crosdns/README.md
+***
+
 Design doc: go/crostini-hostnames
 
 This provides a D-Bus service for set/removing entries from the /etc/hosts

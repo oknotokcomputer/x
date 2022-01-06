@@ -1,5 +1,10 @@
 # Passing Chrome flags from `session_manager`
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/login_manager/docs/flags.md
+***
+
 ## Runtime configuration
 
 Chrome sometimes needs to behave differently on different Chrome OS devices.

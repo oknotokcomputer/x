@@ -1,5 +1,10 @@
 # Testing Shill
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/shill/TESTING.md
+***
+
 ## Introduction to shill testing
 
 We test shill using unit tests and integration tests. The unit tests are built

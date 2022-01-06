@@ -1,5 +1,10 @@
 # CUPS Proxy Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cups_proxy/README.md
+***
+
 [//]: # TODO(pihsun): Complete Document.
 
 ## Summary

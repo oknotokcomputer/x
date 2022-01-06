@@ -1,4 +1,10 @@
 # Testing a Probe Function
+
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/runtime_probe/DEVELOPER_GUIDE.md
+***
+
 If a ProbeFunction subtype interacts with the hardware, you probably need to run
 the function in a separated minijail sandbox.  For example, the
 `generic_battery` function has the following files:

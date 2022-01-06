@@ -1,3 +1,8 @@
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/libbrillo/brillo/grpc/README.md
+***
+
 This is an adapter for using the gRPC library with a MessageLoop.
 Its interface consists of two classes:
 * `AsyncGrpcClient` can be used to initiate RPCs and receive the response as a

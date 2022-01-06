@@ -1,5 +1,10 @@
 # Shill
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/shill/README.md
+***
+
 ## Overview
 
 Shill is the connection manager for Chrome OS. It is responsible for such

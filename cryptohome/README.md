@@ -1,5 +1,10 @@
 # Chromium OS cryptohome
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cryptohome/README.md
+***
+
 This directory contains source code and documentation for the cryptohome
 daemon.
 

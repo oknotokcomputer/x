@@ -1,5 +1,10 @@
 # pciguard: Chromeos security tool for external PCI devices
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/pciguard/README.md
+***
+
 ## ABOUT
 
 pciguard is daemon that is listens to following events:

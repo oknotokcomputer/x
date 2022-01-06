@@ -1,5 +1,10 @@
 # Midis: MIDI Service
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/midis/README.md
+***
+
 ## ABOUT
 
 Midis (MIDI service) is a system service for processing

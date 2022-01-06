@@ -1,4 +1,10 @@
 # Suspend and Memory stress testing
+
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/suspend_stress_test.md
+***
+
 *[go/suspend-stress-test]*
 
 [TOC]

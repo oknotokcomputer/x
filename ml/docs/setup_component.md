@@ -1,5 +1,10 @@
 # Chrome OS Ml Service: How to setup a Chrome Component with your ML model
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ml/docs/setup_component.md
+***
+
 <div style="color:#f05000;">
 NOTE: This document is intended for Google internal consumption. The tools and
 steps mentioned here are available to Googlers only.

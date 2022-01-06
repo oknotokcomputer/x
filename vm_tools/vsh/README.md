@@ -1,5 +1,10 @@
 # vsh - Vsock SHell
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/vm_tools/vsh/README.md
+***
+
 vsh is a remote shell that operates over [vsock]. Think of ssh, but replace
 the first 's' with a 'v'.
 

@@ -1,5 +1,10 @@
 # Chrome OS Iio Service
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/iioservice/README.md
+***
+
 The repository hosts the core Chrome OS platform iioservice components,
 including:
 

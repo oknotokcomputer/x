@@ -1,5 +1,10 @@
 # Modem Firmware Daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/modemfwd/README.md
+***
+
 This daemon abstracts out the common portions of updating modem firmware, i.e.
 deciding whether there is currently newer firmware available and getting the
 modem ready to be flashed with new firmware.

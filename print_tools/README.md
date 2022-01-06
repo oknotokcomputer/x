@@ -1,5 +1,10 @@
 # print_tools: various tools related to the native printing system
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/print_tools/README.md
+***
+
 print_diag: this tool sends to a given printer (or other IPP endpoint)
 Get-Printer-Attributes request and returns the received response. The response
 is parsed and can be saved both as JSON file or as a raw binary file. This

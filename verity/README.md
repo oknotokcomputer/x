@@ -1,5 +1,10 @@
 # Verity
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/verity/README.md
+***
+
 Verity is the userspace tool for creating integrity hashes for a device image.
 
 This tool is a frontend for dm-bht, a device-mapper friendly block hash

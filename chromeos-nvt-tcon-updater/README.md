@@ -1,5 +1,10 @@
 # Wrapper library for Novatek TCON firmware updater
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/chromeos-nvt-tcon-updater/README.md
+***
+
 This contains a shell library that assists with integrating the
 Novatek TCON firmware updater into a Chromium OS device.
 

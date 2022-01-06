@@ -1,5 +1,10 @@
 # Trunks
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/trunks/README.md
+***
+
 Trunks is a daemon and library for interfacing with a Trusted Platform Module
 (TPM).
 

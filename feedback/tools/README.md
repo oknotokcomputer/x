@@ -1,5 +1,10 @@
 # Feedback Utility
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/feedback/tools/README.md
+***
+
 ## perf\_data\_extract.py
 
 This is a utility script for devs analyzing the performance profile contained in

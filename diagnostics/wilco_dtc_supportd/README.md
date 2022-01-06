@@ -1,5 +1,10 @@
 # wilco_dtc_supportd daemon
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/diagnostics/wilco_dtc_supportd/README.md
+***
+
 Please see ../README.md for general information.
 
 ## IPC mechanisms

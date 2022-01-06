@@ -1,5 +1,10 @@
 # Touch Firmware Calibration
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/touch_firmware_calibration/README.md
+***
+
 ## Overview
 This package includes command line tools needed to set calibration values to
 evdev devices. When it is build, the following executable will be built:

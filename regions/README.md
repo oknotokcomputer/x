@@ -1,5 +1,10 @@
 # Chromium OS Region Database.
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/regions/README.md
+***
+
 This folder contains the Chromium OS region database.
 
 The database is created in JSON format and available in

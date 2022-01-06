@@ -1,5 +1,10 @@
 # Hacking on shill
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/shill/HACKING.md
+***
+
 To keep the shill source code consistent, please follow the conventions below:
 
 *   Follow the [Chromium C++ style guide](https://chromium.googlesource.com/chromium/src/+/HEAD/styleguide/c++/c++.md)

@@ -1,5 +1,10 @@
 # Ippusb Manager
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/ippusb_manager/README.md
+***
+
 `ippusb_manager` provides support for IPP-over-USB printing in Chrome
 OS. This is jointly achieved with
 [CUPS](https://chromium.googlesource.com/chromiumos/third_party/cups/)

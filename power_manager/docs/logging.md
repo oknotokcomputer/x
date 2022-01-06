@@ -1,5 +1,10 @@
 # Chrome OS Power Manager Logging
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/logging.md
+***
+
 ## Locations
 
 powerd writes logs to the `/var/log/power_manager` directory. It creates a new

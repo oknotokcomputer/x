@@ -1,5 +1,10 @@
 # Chrome OS NNAPI Implementation
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/nnapi/README.md
+***
+
 ## Summary
 
 The [Android Neural Networks API](https://developer.android.com/ndk/guides/neuralnetworks)

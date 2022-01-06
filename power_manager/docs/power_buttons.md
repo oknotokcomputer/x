@@ -1,5 +1,10 @@
 # Chrome OS Power Buttons
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/power_buttons.md
+***
+
 This document describes the expected behavior of power buttons on Chrome OS
 devices as of M71. Earlier versions of Chrome OS have used different behavior.
 

@@ -1,5 +1,10 @@
 # NET > NTLM
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/system-proxy/net/README.md
+***
+
 This directory contains the net NTLM library which is a modified copy of
 Chromium's net NTLM code (net/ntlm). The current files are taken from milestone
 M88 of the code with the latest commit hash of

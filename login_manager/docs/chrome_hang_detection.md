@@ -1,5 +1,10 @@
 # Chrome hang detection in session\_manager
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/login_manager/docs/chrome_hang_detection.md
+***
+
 `session_manager` sends periodic "liveness checks" to Chrome in the form of
 D-Bus method calls and kills Chrome if it doesn't respond in a timely manner.
 Chrome handles D-Bus messages on its UI thread, so a failure to reply indicates

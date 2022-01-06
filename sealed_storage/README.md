@@ -1,5 +1,10 @@
 # SealedStorage
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/sealed_storage/README.md
+***
+
 ## About
 
 SealedStorage library allows to seal data so that it can only be unsealed on a

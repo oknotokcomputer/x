@@ -1,5 +1,10 @@
 # Device Firmware Update (DFU) Notification Library
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cfm-dfu-notification/README.md
+***
+
 ## Summary
 
 The Device Firmware Update Notification Library provides APIs to be used by

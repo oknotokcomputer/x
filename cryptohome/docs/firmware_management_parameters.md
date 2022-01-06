@@ -1,5 +1,10 @@
 # Firmware Management Parameters
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/cryptohome/docs/firmware_management_parameters.md
+***
+
 Cryptohome manages a TPM space which holds management parameters for the
 firmware.
 

@@ -1,5 +1,10 @@
 # Chrome OS Shutdown and Reboot
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/power_manager/docs/shutdown.md
+***
+
 This document describes why and how Chrome OS devices shut down or reboot.
 
 > "Shut down" is a verb. "Shutdown" is a noun.

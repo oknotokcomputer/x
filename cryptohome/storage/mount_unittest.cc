@@ -311,6 +311,9 @@ class MountTest
     EXPECT_CALL(platform_,
                 RestoreSELinuxContexts(base::FilePath(user.base_path), true))
         .WillOnce(Return(true));
+    EXPECT_CALL(platform_,
+                GetFileSize(FilePath("/home/chronos/user/log/chrome"), _))
+        .WillOnce(DoAll(SetArgPointee<1>(0), Return(false)));
   }
 
   void ExpectDownloadsBindMounts(const TestUser& user, bool ephemeral_mount) {
@@ -1111,6 +1114,9 @@ TEST_P(MountTest, MountCryptohomeToMigrateFromEcryptfs) {
 
     EXPECT_CALL(platform_, CreateDirectory(user->vault_mount_path))
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(platform_,
+                GetFileSize(FilePath("/home/chronos/user/log/chrome"), _))
+        .WillOnce(DoAll(SetArgPointee<1>(0), Return(false)));
   }
 
   EXPECT_CALL(platform_,
@@ -1472,6 +1478,9 @@ TEST_P(EphemeralNoUserSystemTest, OwnerUnknownMountCreateTest) {
   EXPECT_CALL(platform_, GetFileEnumerator(SkelDir(), _, _))
       .WillOnce(Return(new NiceMock<MockFileEnumerator>()))
       .WillOnce(Return(new NiceMock<MockFileEnumerator>()));
+  EXPECT_CALL(platform_,
+              GetFileSize(FilePath("/home/chronos/user/log/chrome"), _))
+      .WillOnce(DoAll(SetArgPointee<1>(0), Return(false)));
 
   Mount::MountArgs mount_args = GetDefaultMountArgs();
   mount_args.create_if_missing = true;

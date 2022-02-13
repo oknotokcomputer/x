@@ -124,27 +124,27 @@ TEST_F(DisconnectableClientTest, FailedCallOnNormalConnection) {
   test::TestEvent<StatusOr<int64_t>> res1;
   test::TestEvent<StatusOr<int64_t>> res2;
   test::TestEvent<StatusOr<int64_t>> res3;
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(111, base::Seconds(1), res1.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<FailDelegate>(base::Seconds(2), res2.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(222, base::Seconds(3), res3.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      111, base::TimeDelta::FromSeconds(1), res1.cb()));
+  client_.MaybeMakeCall(std::make_unique<FailDelegate>(
+      base::TimeDelta::FromSeconds(2), res2.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      222, base::TimeDelta::FromSeconds(3), res3.cb()));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   auto result = res1.result();
   ASSERT_OK(result) << result.status();
   EXPECT_THAT(result.ValueOrDie(), Eq(222));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   result = res2.result();
   ASSERT_FALSE(result.ok());
   ASSERT_THAT(result.status().error_code(), Eq(error::CANCELLED))
       << result.status();
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   result = res3.result();
   ASSERT_OK(result) << result.status();
@@ -156,12 +156,12 @@ TEST_F(DisconnectableClientTest, DroppedConnection) {
 
   test::TestEvent<StatusOr<int64_t>> res1;
   test::TestEvent<StatusOr<int64_t>> res2;
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(111, base::Seconds(1), res1.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(222, base::Seconds(2), res2.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      111, base::TimeDelta::FromSeconds(1), res1.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      222, base::TimeDelta::FromSeconds(2), res2.cb()));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   auto result = res1.result();
   ASSERT_OK(result) << result.status();
@@ -181,14 +181,14 @@ TEST_F(DisconnectableClientTest, FailedCallOnDroppedConnection) {
   test::TestEvent<StatusOr<int64_t>> res1;
   test::TestEvent<StatusOr<int64_t>> res2;
   test::TestEvent<StatusOr<int64_t>> res3;
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(111, base::Seconds(1), res1.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<FailDelegate>(base::Seconds(2), res2.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(222, base::Seconds(3), res3.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      111, base::TimeDelta::FromSeconds(1), res1.cb()));
+  client_.MaybeMakeCall(std::make_unique<FailDelegate>(
+      base::TimeDelta::FromSeconds(2), res2.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      222, base::TimeDelta::FromSeconds(3), res3.cb()));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   auto result = res1.result();
   ASSERT_OK(result) << result.status();
@@ -196,7 +196,7 @@ TEST_F(DisconnectableClientTest, FailedCallOnDroppedConnection) {
 
   client_.SetAvailability(/*is_available=*/false);
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   result = res2.result();
   ASSERT_FALSE(result.ok());
@@ -215,12 +215,12 @@ TEST_F(DisconnectableClientTest, ConnectionDroppedThenRestored) {
   test::TestEvent<StatusOr<int64_t>> res1;
   test::TestEvent<StatusOr<int64_t>> res2;
   test::TestEvent<StatusOr<int64_t>> res3;
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(111, base::Seconds(1), res1.cb()));
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(222, base::Seconds(2), res2.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      111, base::TimeDelta::FromSeconds(1), res1.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      222, base::TimeDelta::FromSeconds(2), res2.cb()));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   auto result = res1.result();
   ASSERT_OK(result) << result.status();
@@ -228,7 +228,7 @@ TEST_F(DisconnectableClientTest, ConnectionDroppedThenRestored) {
 
   client_.SetAvailability(/*is_available=*/false);
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   result = res2.result();
   ASSERT_FALSE(result.ok());
@@ -237,10 +237,10 @@ TEST_F(DisconnectableClientTest, ConnectionDroppedThenRestored) {
 
   client_.SetAvailability(/*is_available=*/true);
 
-  client_.MaybeMakeCall(
-      std::make_unique<MockDelegate>(333, base::Seconds(1), res3.cb()));
+  client_.MaybeMakeCall(std::make_unique<MockDelegate>(
+      333, base::TimeDelta::FromSeconds(1), res3.cb()));
 
-  task_environment_.FastForwardBy(base::Seconds(1));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   result = res3.result();
   ASSERT_OK(result) << result.status();

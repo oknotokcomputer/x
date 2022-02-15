@@ -9,20 +9,18 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include <base/files/file_descriptor_watcher_posix.h>
+#include <base/files/file_path.h>
 #include <base/files/scoped_file.h>
 #include <base/macros.h>
 #include <base/memory/weak_ptr.h>
 #include <base/threading/thread.h>
 
 #include "arc/vm/mojo_proxy/message.pb.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace arc {
 
@@ -74,6 +72,10 @@ class MojoProxy {
   MojoProxy& operator=(const MojoProxy&) = delete;
 
   ~MojoProxy();
+
+  void AddExpectedSocketPathForTesting(const base::FilePath& path) {
+    expected_socket_paths_.insert(path);
+  }
 
   // Registers the |fd| whose type is |fd_type| to watch.
   // When |handle| is not 0, associates the specified handle with the given FD.
@@ -167,6 +169,8 @@ class MojoProxy {
   std::unique_ptr<base::FileDescriptorWatcher::Controller> message_watcher_;
 
   base::Thread blocking_task_thread_{"BlockingThread"};
+
+  std::set<base::FilePath> expected_socket_paths_;
 
   // Map from a |handle| (see message.proto for details) to a file
   // instance wrapping the file descriptor and its watcher.

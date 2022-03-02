@@ -2620,9 +2620,13 @@ TEST_F(UserDataAuthExTest, MountGuestValidity) {
 
   mount_req_->set_guest_mount(true);
 
+  SetupMount(kUser);
+  // Expect that existing mounts will be removed.
+  EXPECT_CALL(*mount_, IsMounted()).WillOnce(Return(true));
+  EXPECT_CALL(*mount_, UnmountCryptohome()).WillOnce(Return(true));
+
   EXPECT_CALL(mount_factory_, New(_, _, _, _, _))
-      .WillOnce(Invoke([this](Platform*, HomeDirs*, bool, bool, bool) {
-        SetupMount(kUser);
+      .WillOnce(Invoke([](Platform*, HomeDirs*, bool, bool, bool) {
         NiceMock<MockMount>* res = new NiceMock<MockMount>();
         EXPECT_CALL(*res, MountEphemeralCryptohome(kGuestUserName))
             .WillOnce(Return(MOUNT_ERROR_NONE));
@@ -2654,6 +2658,10 @@ TEST_F(UserDataAuthExTest, MountGuestMountPointBusy) {
   mount_req_->set_guest_mount(true);
 
   SetupMount(kUser);
+  // Expect that existing mounts will be removed, but unmounting will fail.
+  EXPECT_CALL(*mount_, IsMounted()).WillOnce(Return(true));
+  EXPECT_CALL(*mount_, UnmountCryptohome()).WillOnce(Return(false));
+
   EXPECT_CALL(mount_factory_, New(_, _, _, _, _)).Times(0);
 
   bool called = false;

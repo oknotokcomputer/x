@@ -7373,6 +7373,7 @@ mno {
         }
         username : "plus"
         password : "4g"
+        authentication : CHAP
         is_attach_apn : true
       }
     }

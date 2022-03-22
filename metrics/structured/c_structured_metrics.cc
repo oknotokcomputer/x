@@ -14,10 +14,12 @@ namespace bluetooth_device = metrics::structured::events::bluetooth_device;
 
 extern "C" void BluetoothAdapterStateChanged(const char* boot_id,
                                              int64_t system_time,
+                                             bool is_floss,
                                              int state) {
   bluetooth::BluetoothAdapterStateChanged()
       .SetBootId(boot_id)
       .SetSystemTime(system_time)
+      .SetIsFloss(is_floss)
       .SetAdapterState(state)
       .Record();
 }

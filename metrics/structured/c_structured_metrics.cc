@@ -40,6 +40,7 @@ extern "C" void BluetoothPairingStateChanged(const char* boot_id,
 
 extern "C" void BluetoothAclConnectionStateChanged(const char* boot_id,
                                                    int64_t system_time,
+                                                   bool is_floss,
                                                    const char* device_id,
                                                    int device_type,
                                                    int connection_direction,
@@ -49,6 +50,7 @@ extern "C" void BluetoothAclConnectionStateChanged(const char* boot_id,
   bluetooth::BluetoothAclConnectionStateChanged()
       .SetBootId(boot_id)
       .SetSystemTime(system_time)
+      .SetIsFloss(is_floss)
       .SetDeviceId(device_id)
       .SetDeviceType(device_type)
       .SetConnectionDirection(connection_direction)

@@ -277,7 +277,6 @@ int Process::Wait() {
   CHECK_NE(kInvalidProcessId, pid_);
   exit_code_ = WaitImpl();
   CHECK(finished());
-  pid_ = kInvalidProcessId;
   return exit_code_;
 }
 

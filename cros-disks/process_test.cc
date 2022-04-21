@@ -162,9 +162,11 @@ TEST_F(ProcessTest, Run_Success) {
   EXPECT_CALL(process_, StartImpl(_, _)).WillOnce(Return(123));
   EXPECT_CALL(process_, WaitImpl()).Times(0);
   EXPECT_CALL(process_, WaitNonBlockingImpl()).WillOnce(Return(42));
+  EXPECT_EQ(process_.pid(), Process::kInvalidProcessId);
   std::vector<std::string> output;
   EXPECT_EQ(process_.Run(&output), 42);
   EXPECT_THAT(output, IsEmpty());
+  EXPECT_NE(process_.pid(), Process::kInvalidProcessId);
 }
 
 TEST_F(ProcessTest, Run_Fail) {

@@ -1290,6 +1290,7 @@ bool Platform::DetachLoop(const base::FilePath& device_path) {
   // recovery driver once the work on mount refactoring is finished.
   for (const auto& device : GetLoopDeviceManager()->GetAttachedDevices()) {
     if (device->GetDevicePath() == device_path) {
+      std::ignore = device->SetName("");
       return device->Detach();
     }
   }

@@ -395,6 +395,7 @@ chromeos:
           $stylus-category: 'none'
           $test-label: 'WL1_TEST_LABEL'
           $marketing-name: 'BRAND1_MARKETING_NAME1'
+          $extra-ash-feature: 'CloudGamingDevice'
         - $key-id: 'WL2'
           $wallpaper: 'WL2_WALLPAPER'
           $regulatory-label: 'WL2_LABEL'
@@ -403,6 +404,7 @@ chromeos:
           $stylus-category: 'external'
           $test-label: 'WL2_TEST_LABEL'
           $marketing-name: 'BRAND2_MARKETING_NAME2'
+          $extra-ash-feature: '{{$test-extra-ash-feature}}'
       skus:
         - config:
             identity:
@@ -418,11 +420,22 @@ chromeos:
               build-properties:
                 $marketing-name: ''
                 marketing-name: '{{$marketing-name}}'
+            ui:
+              ash-enabled-features:
+              - CommonFeature
+              - '{{$extra-ash-feature}}'
+              $extra-ash-feature: ''
+              $test-extra-ash-feature: ''
 """
 
 INVALID_WHITELABEL_CONFIG = """
             # THIS WILL CAUSE THE FAILURE
             test-label: '{{$test-label}}'
+"""
+
+INVALID_CUSTOM_LABEL_CONFIG_FEATURE = """
+            # THIS WILL CAUSE THE FAILURE
+            $test-extra-ash-feature: 'OtherFeature'
 """
 
 
@@ -488,6 +501,13 @@ chromeos:
 
   def testWhitelabelWithOtherThanBrandChanges(self):
     config = WHITELABEL_CONFIG + INVALID_WHITELABEL_CONFIG
+    with self.assertRaises(cros_config_schema.ValidationError) as ctx:
+      cros_config_schema.ValidateConfig(
+          cros_config_schema.TransformConfig(config))
+    self.assertIn('Whitelabel configs can only', str(ctx.exception))
+
+  def testCustomLabelWithFeatureFlagOtherThanBrandChanges(self):
+    config = WHITELABEL_CONFIG + INVALID_CUSTOM_LABEL_CONFIG_FEATURE
     with self.assertRaises(cros_config_schema.ValidationError) as ctx:
       cros_config_schema.ValidateConfig(
           cros_config_schema.TransformConfig(config))

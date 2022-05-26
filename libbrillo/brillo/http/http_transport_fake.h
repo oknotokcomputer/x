@@ -116,8 +116,9 @@ class BRILLO_EXPORT Transport : public http::Transport {
                        uint16_t port,
                        const std::string& ip_address) override {}
 
-  void SetBufferSize(base::Optional<int> buffer_size) override{};
-  void SetUploadBufferSize(base::Optional<int> buffer_size) override{};
+  void SetBufferSize(base::Optional<int> buffer_size) override {}
+  void SetUploadBufferSize(base::Optional<int> buffer_size) override {}
+  void SetSpeedTestMode(base::Optional<bool> speedtest_mode) override {}
 
  protected:
   void ClearHost() override {}

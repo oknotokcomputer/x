@@ -193,6 +193,11 @@ std::shared_ptr<http::Connection> Transport::CreateConnection(
         curl_handle, CURLOPT_UPLOAD_BUFFERSIZE, upload_buffer_size_.value());
   }
 
+  if (code == CURLE_OK && speedtest_mode_.has_value()) {
+    code = curl_interface_->EasySetOptInt(curl_handle, CURLOPT_SPEEDTEST_MODE,
+                                          speedtest_mode_.value() ? 1 : 0);
+  }
+
   // Setup HTTP request method and optional request body.
   if (code == CURLE_OK) {
     if (method == request_type::kGet) {
@@ -320,6 +325,10 @@ void Transport::SetBufferSize(base::Optional<int> buffer_size) {
 
 void Transport::SetUploadBufferSize(base::Optional<int> buffer_size) {
   upload_buffer_size_ = buffer_size;
+}
+
+void Transport::SetSpeedTestMode(base::Optional<bool> speedtest_mode) {
+  speedtest_mode_ = speedtest_mode;
 }
 
 void Transport::ClearHost() {

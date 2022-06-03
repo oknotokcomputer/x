@@ -3000,12 +3000,12 @@ TEST_F(UserDataAuthExTest, MountPublicUsesPublicMountPasskeyResave) {
 
   EXPECT_CALL(homedirs_, Exists(_)).WillOnce(testing::InvokeWithoutArgs([&]() {
     SetupMount(kUser);
-    EXPECT_CALL(homedirs_, CryptohomeExists(_)).WillOnce(ReturnValue(true));
+    EXPECT_CALL(homedirs_, CryptohomeExists(_, _)).WillOnce(Return(true));
 
     std::vector<std::string> key_labels;
     key_labels.push_back("label");
-    EXPECT_CALL(keyset_management_, GetVaultKeysetLabels(_, _, _))
-        .WillRepeatedly(DoAll(SetArgPointee<2>(key_labels), Return(true)));
+    EXPECT_CALL(keyset_management_, GetVaultKeysetLabels(_, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(key_labels), Return(true)));
     EXPECT_CALL(auth_block_utility_, GetAuthBlockTypeForDerivation(_, _))
         .WillRepeatedly(Return(AuthBlockType::kTpmNotBoundToPcr));
     EXPECT_CALL(auth_block_utility_, GetAuthBlockStateFromVaultKeyset(_, _, _))
@@ -3016,7 +3016,7 @@ TEST_F(UserDataAuthExTest, MountPublicUsesPublicMountPasskeyResave) {
         .WillRepeatedly(Return(ByMove(std::make_unique<VaultKeyset>())));
     EXPECT_CALL(keyset_management_, ShouldReSaveKeyset(_))
         .WillOnce(Return(true));
-    EXPECT_CALL(auth_block_utility_, GetAuthBlockTypeForCreation(_, _, _))
+    EXPECT_CALL(auth_block_utility_, GetAuthBlockTypeForCreation(_, _))
         .WillOnce(Return(AuthBlockType::kTpmEcc));
     EXPECT_CALL(auth_block_utility_, CreateKeyBlobsWithAuthBlock(_, _, _, _, _))
         .WillOnce(ReturnError<CryptohomeCryptoError>());

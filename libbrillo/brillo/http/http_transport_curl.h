@@ -77,7 +77,10 @@ class BRILLO_EXPORT Transport : public http::Transport {
 
   void SetBufferSize(base::Optional<int> buffer_size) override;
   void SetUploadBufferSize(base::Optional<int> buffer_size) override;
-  void SetSpeedTestMode(base::Optional<bool> speedtest_mode) override;
+  void SetDownlinkSpeedTestMode(
+      base::Optional<bool> downlink_speedtest_mode) override;
+  void SetUplinkSpeedTestMode(
+      base::Optional<bool> uplink_speedtest_mode) override;
 
   // Helper methods to convert CURL error codes (CURLcode and CURLMcode)
   // into brillo::Error object.
@@ -151,7 +154,8 @@ class BRILLO_EXPORT Transport : public http::Transport {
   curl_slist* host_list_{nullptr};
   base::Optional<int> buffer_size_;
   base::Optional<int> upload_buffer_size_;
-  base::Optional<bool> speedtest_mode_;
+  base::Optional<bool> dl_speedtest_mode_;
+  base::Optional<bool> ul_speedtest_mode_;
 
   base::WeakPtrFactory<Transport> weak_ptr_factory_for_timer_{this};
   base::WeakPtrFactory<Transport> weak_ptr_factory_{this};

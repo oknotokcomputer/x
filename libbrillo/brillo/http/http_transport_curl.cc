@@ -193,9 +193,16 @@ std::shared_ptr<http::Connection> Transport::CreateConnection(
         curl_handle, CURLOPT_UPLOAD_BUFFERSIZE, upload_buffer_size_.value());
   }
 
-  if (code == CURLE_OK && speedtest_mode_.has_value()) {
-    code = curl_interface_->EasySetOptInt(curl_handle, CURLOPT_SPEEDTEST_MODE,
-                                          speedtest_mode_.value() ? 1 : 0);
+  if (code == CURLE_OK && dl_speedtest_mode_.has_value()) {
+    code =
+        curl_interface_->EasySetOptInt(curl_handle, CURLOPT_DL_SPEEDTEST_MODE,
+                                       dl_speedtest_mode_.value() ? 1 : 0);
+  }
+
+  if (code == CURLE_OK && ul_speedtest_mode_.has_value()) {
+    code =
+        curl_interface_->EasySetOptInt(curl_handle, CURLOPT_UL_SPEEDTEST_MODE,
+                                       ul_speedtest_mode_.value() ? 1 : 0);
   }
 
   // Setup HTTP request method and optional request body.
@@ -327,8 +334,14 @@ void Transport::SetUploadBufferSize(base::Optional<int> buffer_size) {
   upload_buffer_size_ = buffer_size;
 }
 
-void Transport::SetSpeedTestMode(base::Optional<bool> speedtest_mode) {
-  speedtest_mode_ = speedtest_mode;
+void Transport::SetDownlinkSpeedTestMode(
+    base::Optional<bool> downlink_speedtest_mode) {
+  dl_speedtest_mode_ = downlink_speedtest_mode;
+}
+
+void Transport::SetUplinkSpeedTestMode(
+    base::Optional<bool> uplink_speedtest_mode) {
+  ul_speedtest_mode_ = uplink_speedtest_mode;
 }
 
 void Transport::ClearHost() {

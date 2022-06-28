@@ -118,7 +118,10 @@ class BRILLO_EXPORT Transport : public http::Transport {
 
   void SetBufferSize(base::Optional<int> buffer_size) override {}
   void SetUploadBufferSize(base::Optional<int> buffer_size) override {}
-  void SetSpeedTestMode(base::Optional<bool> speedtest_mode) override {}
+  void SetDownlinkSpeedTestMode(
+      base::Optional<bool> downlink_speedtest_mode) override {}
+  void SetUplinkSpeedTestMode(
+      base::Optional<bool> uplink_speedtest_mode) override {}
 
  protected:
   void ClearHost() override {}

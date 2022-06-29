@@ -52,7 +52,11 @@ class MockTransport : public Transport {
 
   MOCK_METHOD(void, SetBufferSize, (base::Optional<int>), (override));
   MOCK_METHOD(void, SetUploadBufferSize, (base::Optional<int>), (override));
-  MOCK_METHOD(void, SetSpeedTestMode, (base::Optional<bool>), (override));
+  MOCK_METHOD(void,
+              SetDownlinkSpeedTestMode,
+              (base::Optional<bool>),
+              (override));
+  MOCK_METHOD(void, SetUplinkSpeedTestMode, (base::Optional<bool>), (override));
 
  protected:
   MOCK_METHOD(void, ClearHost, (), (override));

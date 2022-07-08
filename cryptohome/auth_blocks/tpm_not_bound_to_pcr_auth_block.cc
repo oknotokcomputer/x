@@ -301,7 +301,7 @@ CryptoStatus TpmNotBoundToPcrAuthBlock::DecryptTpmNotBoundToPcr(
                  ErrorActionSet({ErrorAction::kReboot,
                                  ErrorAction::kDevCheckUnexpectedState,
                                  ErrorAction::kAuth}),
-                 CryptoError::CE_TPM_REBOOT)
+                 TpmAuthBlockUtils::TPMErrorToCrypto(err))
           .Wrap(TpmAuthBlockUtils::TPMErrorToCryptohomeCryptoError(
               std::move(err)));
     }

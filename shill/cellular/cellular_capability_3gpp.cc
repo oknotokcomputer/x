@@ -780,7 +780,7 @@ bool CellularCapability3gpp::IsDualStackSupported() {
       if (affected_device.operator_code.size() == 0 ||
           std::find(affected_device.operator_code.begin(),
                     affected_device.operator_code.end(),
-                    mobile_operator_info_->mccmnc()) !=
+                    cellular()->home_provider_info()->mccmnc()) !=
               affected_device.operator_code.end())
         return false;
     }

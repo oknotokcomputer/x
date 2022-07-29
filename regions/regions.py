@@ -494,7 +494,16 @@ REGIONS_LIST = [
         'ro.us', ['xkb:us::eng', 'xkb:ro::rum'], 'Europe/Bucharest', [
             'ro', 'hu', 'de', 'en-GB'], KML.ANSI,
         'Romania with US keyboard'),
-    ]
+    Region(
+        "ua",
+        ["xkb:us::eng", "xkb:ua::ukr"],
+        ["Europe/Kiev"],
+        # "uk" is Ukraine, not United Kingdom.
+        ["uk", "en-US"],
+        KML.ANSI,
+        "Ukraine",
+    ),
+]
 
 """A list of :py:class:`regions.Region` objects for
 all **confirmed** regions.  A confirmed region is a region whose
@@ -1105,11 +1114,6 @@ UNCONFIRMED_REGIONS_LIST = [
     Region(
         'az', 'xkb:az::aze', 'Asia/Baku', ['az', 'ru', 'hy'], KML.ANSI,
         'Azerbaijan'),
-    Region(
-        'ua', 'xkb:ua::ukr', [
-            'Europe/Kiev', 'Europe/Uzhgorod', 'Europe/Zaporozhye'], [
-                'uk', 'ru-UA', 'rom', 'pl', 'hu'], KML.ANSI,
-        'Ukraine'),
     Region(
         'qa', 'xkb:qa::ara', 'Asia/Bahrain', ['ar', 'en'], KML.ANSI,
         'Qatar'),

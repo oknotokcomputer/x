@@ -232,12 +232,9 @@ void EcUsbEndpoint::CleanUp() {
   if (!libusb_is_init_)
     return;
 
-  if (!libusb_is_init_)
-    return;
-
-  ReleaseInterface();
-
   if (endpoint_.dev_handle) {
+    ReleaseInterface();
+
     libusb_->close(endpoint_.dev_handle);
     endpoint_.dev_handle = nullptr;
   }

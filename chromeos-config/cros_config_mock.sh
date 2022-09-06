@@ -108,7 +108,7 @@ if [[ -f /sys/class/dmi/id/product_sku && -z "${SKU_ID}" ]]; then
 fi
 
 if [[ -f /sys/firmware/vpd/ro/whitelabel_tag && -z "${WHITELABEL_TAG}" ]]; then
-  read -r WHITELABEL_TAG </sys/firmware/vpd/ro/whitelabel_tag
+  read -r WHITELABEL_TAG </sys/firmware/vpd/ro/whitelabel_tag || true
 fi
 
 on_exit_unmount () {

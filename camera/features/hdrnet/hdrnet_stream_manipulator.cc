@@ -232,6 +232,8 @@ bool HdrNetStreamManipulator::Initialize(
     const camera_metadata_t* static_info,
     CaptureResultCallback result_callback) {
   gpu_resources_ = gpu_resources;
+  DCHECK(gpu_resources_);
+
   bool ret;
   gpu_resources_->PostGpuTaskSync(
       FROM_HERE,

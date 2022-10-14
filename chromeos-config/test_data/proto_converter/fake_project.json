@@ -349,6 +349,7 @@
         },
         "keyboard": {
           "backlight": true,
+          "mcutype": "prism_rgb_controller",
           "numpad": true
         },
         "modem": {

@@ -317,39 +317,35 @@ elif [ -z "${STATE_DEV}" ]; then
   :
 elif crossystem 'devsw_boot?0' && ! crossystem 'mainfw_type?recovery'; then
   if [ -O "${DEV_MODE_FILE}" ] || needs_clobber_without_devmode_file; then
-    # We're transitioning from dev mode to verified boot.
-    # When coming back from developer mode, we don't need to
-    # clobber as aggressively.  Fast will do the trick.
-    chromeos-boot-alert leave_dev
-    CLOBBER_ARGS='fast keepimg'
-    if [ -O "${DEV_MODE_FILE}" ]; then
-      clobber-log -- "Leave developer mode, dev_mode file present"
-    else
-      clobber-log -- "Leave developer mode, no dev_mode file"
-    fi
-
     # Only fast clobber the non-protected paths in debug build to preserve the
     # testing tools.
     if dev_is_debug_build; then
       dev_update_stateful_partition clobber
-      reboot
-      exit 0
+    else
+      # We're transitioning from dev mode to verified boot.
+      # When coming back from developer mode, we don't need to
+      # clobber as aggressively.  Fast will do the trick.
+      chromeos-boot-alert leave_dev
+      CLOBBER_ARGS='fast keepimg'
+      if [ -O "${DEV_MODE_FILE}" ]; then
+        clobber-log -- "Leave developer mode, dev_mode file present"
+      else
+        clobber-log -- "Leave developer mode, no dev_mode file"
+      fi
     fi
   fi
 elif crossystem 'devsw_boot?1' && ! crossystem 'mainfw_type?recovery'; then
   if [ ! -O "${DEV_MODE_FILE}" ]; then
-    # We're transitioning from verified boot to dev mode.
-    chromeos-boot-alert enter_dev
-    CLOBBER_ARGS='keepimg'
-    clobber-log -- "Enter developer mode"
-
     # Only fast clobber the non-protected paths in debug build to preserve the
     # testing tools.
     if dev_is_debug_build; then
       dev_update_stateful_partition clobber
       touch "${DEV_MODE_FILE}"
-      reboot
-      exit 0
+    else
+      # We're transitioning from verified boot to dev mode.
+      chromeos-boot-alert enter_dev
+      CLOBBER_ARGS='keepimg'
+      clobber-log -- "Enter developer mode"
     fi
   fi
 fi

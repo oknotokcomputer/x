@@ -234,6 +234,10 @@ std::vector<std::string> DHCPv4Config::GetFlags() {
     flags.push_back("-R");  // ARP for default gateway.
     flags.push_back("-P");  // Enable unicast ARP on renew.
   }
+
+  // Disable IPv4LL address
+  flags.push_back("-L");
+
   return flags;
 }
 

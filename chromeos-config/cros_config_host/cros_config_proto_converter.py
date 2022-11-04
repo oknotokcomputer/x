@@ -377,6 +377,11 @@ def _format_power_pref_value(value) -> str:
         return value
     if isinstance(value, collections.abc.Sequence):
         return "\n".join(_format_power_pref_value(x) for x in value)
+    if isinstance(value, collections.abc.Mapping):
+        return "\n".join(
+            f"{_format_power_pref_value(k)} {_format_power_pref_value(v)}"
+            for k, v in sorted(value.items())
+        )
     if isinstance(value, bool):
         return str(int(value))
     if isinstance(
@@ -446,25 +451,13 @@ def _build_derived_connectivity_power_prefs(config: Config) -> dict:
         and hw_features.cellular.HasField("dynamic_power_reduction_config")
     ):
         dpr_config = hw_features.cellular.dynamic_power_reduction_config
-        result[
-            "set-cellular-transmit-power-for-proximity"
-        ] = hw_features.HasField("proximity")
+        result["set-cellular-transmit-power-for-tablet-mode"] = False
         if form_factor in (
             topology_pb2.HardwareFeatures.FormFactor.CONVERTIBLE,
             topology_pb2.HardwareFeatures.FormFactor.DETACHABLE,
         ):
-            if dpr_config.HasField("tablet_mode"):
-                result[
-                    "set-cellular-transmit-power-for-tablet-mode"
-                ] = dpr_config.tablet_mode.value
-            else:
-                result["set-cellular-transmit-power-for-tablet-mode"] = (
-                    form_factor
-                    == topology_pb2.HardwareFeatures.FormFactor.CONVERTIBLE
-                )
-        else:
-            result["set-cellular-transmit-power-for-tablet-mode"] = False
-
+            if dpr_config.tablet_mode:
+                result["set-cellular-transmit-power-for-tablet-mode"] = True
         if (
             result["set-cellular-transmit-power-for-tablet-mode"]
             or result["set-cellular-transmit-power-for-proximity"]
@@ -476,7 +469,20 @@ def _build_derived_connectivity_power_prefs(config: Config) -> dict:
                 ] = wrappers_pb2.UInt32Value(value=dpr_config.gpio)
             elif dpr_config.HasField("modem_manager"):
                 result["use-modemmanager-for-dynamic-sar"] = True
-
+                result[
+                    "use-multi-power-level-dynamic-sar"
+                ] = dpr_config.enable_multi_power_level_sar
+                result[
+                    "set-default-proximity-state-high"
+                ] = dpr_config.enable_default_proximity_state_far
+                result[
+                    "set-cellular-transmit-power-level-mapping"
+                ] = dpr_config.power_level_mapping
+                result[
+                    "set-cellular-regulatory-domain-mapping"
+                ] = dpr_config.regulatory_domain_mapping
+                if result["set-cellular-regulatory-domain-mapping"]:
+                    result["use-regulatory-domain-for-dynamic-sar"] = True
     result[
         "set-wifi-transmit-power-for-tablet-mode"
     ] = hw_features.wifi.HasField("wifi_config")
@@ -2795,14 +2801,15 @@ def _proximity_map(configs, project_name, output_dir, build_root_dir):
                     )
                     if os.path.exists(output_path):
                         with open(output_path) as f:
-                            if f.read() != semtech_file_content:
+                            if f.read().rstrip("\n") != semtech_file_content:
                                 raise Exception(
                                     f"Project {project_name} has conflicting"
                                     f"proximity file content under {filename}"
                                 )
                     else:
                         with open(output_path, "w") as f:
-                            f.write(semtech_file_content)
+                            # Using print function adds proper trailing newline.
+                            print(semtech_file_content, file=f)
                     system_path = (
                         "/usr/share/chromeos-assets"
                         "/proximity-sensor"

@@ -5,6 +5,7 @@
 #include "metrics/serialization/serialization_utils.h"
 
 #include <sys/file.h>
+#include <sys/stat.h>
 
 #include <memory>
 #include <string>
@@ -30,6 +31,12 @@ namespace {
 // Magic string that gets written at the beginning of the message file
 // when the file has been partially uploaded.
 constexpr char kMagicString[] = {'S', 'K', 'I', 'P'};
+// File size limit for UMA metrics cache file to avoid growing larger on network
+// failures.
+constexpr int32_t kMaxMetricsFileSize = 10 * 1024 * 1024;
+// Warning limit to log error messages after UMA metrics cache file reaches this
+// limit, with 4k limit ~5 logs are printed.
+constexpr int32_t kMetricsFileSizeWarningLimit = 4 * 1024;
 
 // Leaves a marker at the beginning of the metrics file, to indicate that the
 // first part of the file has been processed.  The marker starts with a 4-byte
@@ -298,6 +305,21 @@ bool SerializationUtils::WriteMetricsToFile(
   if (HANDLE_EINTR(flock(file_descriptor.get(), LOCK_EX)) < 0) {
     PLOG(ERROR) << filename << ": cannot lock";
     return false;
+  }
+
+  struct stat buf;
+  fstat(file_descriptor.get(), &buf);
+
+  if (buf.st_size >= kMaxMetricsFileSize - kMetricsFileSizeWarningLimit) {
+    // Discard new metrics after file size reaches kMaxMetricsFileSize
+    if (buf.st_size >= kMaxMetricsFileSize - output.length()) {
+      return false;
+    }
+    // When file size reaches kMaxMetricsFileSize - kMetricsFileSizeWarningLimit
+    // log error message and stop logging messages after file is reached to
+    // kMaxMetricsFileSize to avoid log flooding.
+    LOG(ERROR) << filename << " is reaching max allocated space of "
+               << kMaxMetricsFileSize << ", new metrics are dropped";
   }
 
   if (!base::WriteFileDescriptor(file_descriptor.get(), output)) {

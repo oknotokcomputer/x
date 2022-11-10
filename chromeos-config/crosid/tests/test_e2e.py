@@ -525,39 +525,38 @@ def test_frid_match_acpi(tmp_path, executable_path):
         encoding="utf-8",
     )
 
-    assert getvars(result.stdout) == {
-        "SKU": "none",
-        "CONFIG_INDEX": "1",
-        "FIRMWARE_MANIFEST_KEY": "redrix",
-    }
+    assert result.stdout == expected_result
 
 
-def test_frid_match_fdt(tmp_path, executable_path):
-    configs = [
-        make_config("trogdor", frid_match="Google_Trogdor"),
-        make_config("lazor", frid_match="Google_Lazor", sku_id=1),
-        make_config("limozeen", frid_match="Google_Lazor", sku_id=5),
-    ]
-
+def test_factory_override(tmp_path, executable_path):
+    """Test that the --sku-id and --custom-label-tag flags work."""
     make_fake_sysroot(
         tmp_path,
-        configs=configs,
-        fdt_frid="Google_Lazor.1234_5678_910",
-        fdt_sku=5,
+        fdt_frid="Google_Lazor.123_456",
+        fdt_sku=3,
+        configs=TROGDOR_CONFIGS,
     )
 
     result = subprocess.run(
-        [executable_path, "--sysroot", tmp_path],
+        [
+            executable_path,
+            "--sysroot",
+            tmp_path,
+            "-v",
+            "--sku-id",
+            "6",
+            "--custom-label-tag",
+            "lazorwl",
+        ],
         check=True,
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
         encoding="utf-8",
     )
 
     assert getvars(result.stdout) == {
-        "SKU": "5",
-        "CONFIG_INDEX": "2",
+        "SKU": "6",
+        "CONFIG_INDEX": "6",
         "FIRMWARE_MANIFEST_KEY": "limozeen",
     }
 

@@ -3645,6 +3645,9 @@ int real_main(int argc, char** argv) {
   const char* dark_frame_color = getenv("SOMMELIER_DARK_FRAME_COLOR");
   const char* support_damage_buffer = getenv("SOMMELIER_SUPPORT_DAMAGE_BUFFER");
   const char* glamor = getenv("SOMMELIER_GLAMOR");
+  // Default glamor to enabled
+  if (!glamor)
+    glamor = "1";
   const char* fullscreen_mode = getenv("SOMMELIER_FULLSCREEN_MODE");
   const char* peer_cmd_prefix = getenv("SOMMELIER_PEER_CMD_PREFIX");
   const char* xwayland_cmd_prefix = getenv("SOMMELIER_XWAYLAND_CMD_PREFIX");
@@ -3733,6 +3736,8 @@ int real_main(int argc, char** argv) {
       dark_frame_color = sl_arg_value(arg);
     } else if (strstr(arg, "--no-support-damage-buffer") == arg) {
       support_damage_buffer = "0";
+    } else if (strstr(arg, "--no-glamor") == arg) {
+      glamor = "0";
     } else if (strstr(arg, "--glamor") == arg) {
       glamor = "1";
     } else if (strstr(arg, "--fullscreen-mode") == arg) {

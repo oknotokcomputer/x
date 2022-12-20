@@ -117,7 +117,7 @@ void InternalBacklight::AddObserver(BacklightObserver* observer) {}
 
 void InternalBacklight::RemoveObserver(BacklightObserver* observer) {}
 
-bool InternalBacklight::DeviceExists() {
+bool InternalBacklight::DeviceExists() const {
   return true;
 }
 

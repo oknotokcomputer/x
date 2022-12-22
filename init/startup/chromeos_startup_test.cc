@@ -21,6 +21,7 @@
 #include "init/crossystem.h"
 #include "init/crossystem_fake.h"
 #include "init/startup/chromeos_startup.h"
+#include "init/startup/constants.h"
 #include "init/startup/fake_platform_impl.h"
 #include "init/startup/platform_impl.h"
 
@@ -206,26 +207,26 @@ class TPMTest : public ::testing::Test {
 };
 
 TEST_F(TPMTest, OwnedFileTrue) {
-  base::FilePath tpm_file = base_dir.Append("sys/class/tpm/tmp0/device/owned");
+  base::FilePath tpm_file = base_dir.Append(kTPMOwnedPath);
   ASSERT_TRUE(CreateDirAndWriteFile(tpm_file, "1"));
   EXPECT_EQ(startup_->IsTPMOwned(), true);
 }
 
 TEST_F(TPMTest, OwnedFileFalse) {
-  base::FilePath tpm_file = base_dir.Append("sys/class/tpm/tmp0/device/owned");
+  base::FilePath tpm_file = base_dir.Append(kTPMOwnedPath);
   ASSERT_TRUE(CreateDirAndWriteFile(tpm_file, "0"));
   EXPECT_EQ(startup_->IsTPMOwned(), false);
 }
 
 TEST_F(TPMTest, NeedsClobberTPMOwned) {
-  base::FilePath tpm_file = base_dir.Append("sys/class/tpm/tmp0/device/owned");
+  base::FilePath tpm_file = base_dir.Append(kTPMOwnedPath);
   ASSERT_TRUE(CreateDirAndWriteFile(tpm_file, "1"));
   EXPECT_EQ(startup_->IsTPMOwned(), true);
   EXPECT_EQ(startup_->NeedsClobberWithoutDevModeFile(), false);
 }
 
 TEST_F(TPMTest, NeedsClobberPreservationFile) {
-  base::FilePath tpm_file = base_dir.Append("sys/class/tpm/tmp0/device/owned");
+  base::FilePath tpm_file = base_dir.Append(kTPMOwnedPath);
   ASSERT_TRUE(CreateDirAndWriteFile(tpm_file, "0"));
   EXPECT_EQ(startup_->IsTPMOwned(), false);
   base::FilePath preservation_file = base_dir.Append("preservation_request");
@@ -237,7 +238,7 @@ TEST_F(TPMTest, NeedsClobberPreservationFile) {
 }
 
 TEST_F(TPMTest, NeedsClobberInstallFile) {
-  base::FilePath tpm_file = base_dir.Append("sys/class/tpm/tmp0/device/owned");
+  base::FilePath tpm_file = base_dir.Append(kTPMOwnedPath);
   ASSERT_TRUE(CreateDirAndWriteFile(tpm_file, "0"));
   EXPECT_EQ(startup_->IsTPMOwned(), false);
   base::FilePath preservation_file = base_dir.Append("preservation_request");

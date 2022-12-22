@@ -43,7 +43,6 @@ constexpr char kSysKernelDebug[] = "sys/kernel/debug";
 constexpr char kSysKernelSecurity[] = "sys/kernel/security";
 constexpr char kSysKernelTracing[] = "sys/kernel/tracing";
 
-constexpr char kTPMOwnedPath[] = "sys/class/tpm/tmp0/device/owned";
 // This file is created by clobber-state after the transition to dev mode.
 constexpr char kDevModeFile[] = ".developer_mode";
 // Flag file indicating that encrypted stateful should be preserved across

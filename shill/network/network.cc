@@ -201,6 +201,8 @@ void Network::Stop() {
 }
 
 void Network::StopInternal(bool is_failure, bool trigger_callback) {
+  StopPortalDetection();
+
   const bool should_trigger_callback =
       state_ != State::kIdle && trigger_callback;
   StopIPv6();

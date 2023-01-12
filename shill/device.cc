@@ -374,7 +374,6 @@ void Device::ResetConnection() {
 }
 
 void Device::StopAllActivities() {
-  network()->StopPortalDetection();
   StopConnectionDiagnostics();
 }
 

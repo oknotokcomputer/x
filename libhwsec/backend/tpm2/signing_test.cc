@@ -890,7 +890,7 @@ TEST_F(BackendSigningTpm2Test, SignRSAPkcs1v15WithoutDigestAlgorithm) {
 
   auto key = middleware_->CallSync<&Backend::KeyManagement::LoadKey>(
       kFakePolicy, brillo::BlobFromString(kFakeKeyBlob),
-      Backend::KeyManagement::LoadKeyOptions{});
+      Backend::KeyManagement::AutoReload::kFalse);
 
   ASSERT_OK(key);
 

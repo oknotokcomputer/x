@@ -184,6 +184,12 @@ USB_IDS += [
     "05ac:110a",
 ]
 
+# RGB Keyboard
+USB_IDS += [
+    # Google Prism
+    "18d1:5022",
+]
+
 # List of PCI devices (vendorid:deviceid) for which it is safe to enable
 # autosuspend.
 PCI_IDS = []
@@ -331,9 +337,9 @@ PCI_IDS += [
 # Phison
 PCI_IDS += [
     # E13 NVMe Controller (redrix)
-    '1987:5013',
+    "1987:5013",
     # E18 PCIe4 NVMe Controller (vell)
-    '1987:5018',
+    "1987:5018",
 ]
 
 # Do not edit below this line. #################################################

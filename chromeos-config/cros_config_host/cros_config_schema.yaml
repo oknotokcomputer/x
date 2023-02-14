@@ -157,6 +157,16 @@ typeDefs:
      - KEYBOARD
      - POWER_BUTTON
      - RECOVERY_BUTTON
+  storage-type: &storage-type
+    description: "Type of the fixed storage device."
+    type: string
+    enum:
+     - STORAGE_TYPE_UNKNOWN
+     - EMMC
+     - NVME
+     - SATA
+     - UFS
+     - BRIDGED_EMMC
   ath10k-wifi-transmit-power-chain: &ath10k-wifi-transmit-power-chain
     description: "[ath10k] WiFi power chain for use with QCA ath10k drivers. Limits
       in units of 0.25 dBm. 5g band power limit applies to all 5g bands."
@@ -943,6 +953,17 @@ properties:
                     has-sku-number:
                       type: boolean
                   additionalProperties: false
+              additionalProperties: false
+            pvs:
+              type: object
+              description: Contains information needed to run PVS for this model.
+              properties:
+                program:
+                  type: string
+                  description: The program that corresponds to this model.
+                project:
+                  type: string
+                  description: The project that corresponds to this model.
               additionalProperties: false
           additionalProperties: false
           required:

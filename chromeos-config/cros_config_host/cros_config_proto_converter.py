@@ -406,6 +406,36 @@ def _build_fingerprint(hw_topology):
   return result
 
 
+def _build_dgpu(hw_topology):
+    if not hw_topology.HasField("dgpu"):
+        return None
+
+    dgpu = hw_topology.dgpu.hardware_feature.dgpu_config
+    result = {}
+    if dgpu.present == topology_pb2.HardwareFeatures.PRESENT:
+        result["has-dgpu"] = True
+        if dgpu.dgpu_type == topology_pb2.HardwareFeatures.Dgpu.DGPU_NV3050:
+            result["dgpu-type"] = "nv3050"
+        elif dgpu.dgpu_type == topology_pb2.HardwareFeatures.Dgpu.DGPU_NV4050:
+            result["dgpu-type"] = "nv4050"
+        else:
+            result["dgpu-type"] = "unknown"
+
+    return result
+
+
+def _build_uwb(hw_topology):
+    if not hw_topology.HasField("uwb"):
+        return None
+
+    uwb = hw_topology.uwb.hardware_feature.uwb_config
+    result = {}
+    if uwb.present == topology_pb2.HardwareFeatures.PRESENT:
+        result["has-uwb"] = True
+
+    return result
+
+
 def _build_hardware_properties(hw_topology):
   if not hw_topology.HasField('form_factor'):
     return None
@@ -900,6 +930,12 @@ def _transform_build_config(config, config_files, whitelabel):
   _upsert(
       _build_keyboard(config.hw_design_config.hardware_topology), result,
       'keyboard')
+  _upsert(
+      _build_dgpu(config.hw_design_config.hardware_topology), result, "dgpu"
+  )
+  _upsert(
+      _build_uwb(config.hw_design_config.hardware_topology), result, "uwb"
+  )
 
   return result
 

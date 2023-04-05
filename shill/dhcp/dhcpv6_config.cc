@@ -9,11 +9,35 @@
 #include <base/logging.h>
 #include <base/strings/string_number_conversions.h>
 #include <base/strings/stringprintf.h>
+#include <brillo/map_utils.h>
 #include <chromeos/dbus/service_constants.h>
 
 #include "shill/dhcp/dhcp_provider.h"
 #include "shill/logging.h"
 #include "shill/net/ip_address.h"
+
+// Get the Minimum lease time from IPv6 addresses/prefixes
+// Ignore zero lease time and select short lease from non zero leases
+unsigned int GetMinLeaseTime(const shill::Stringmaps &stringmaps) {
+  bool is_lease_available  = false;
+  unsigned int min_lease_duration = 0;
+  for (auto &stringmap : stringmaps) {
+    unsigned int lease_duration = 0;
+    const std::string lease_duration_string =
+        brillo::GetOrDefault(stringmap,
+            shill::kDhcpv6LeaseDurationSecondsProperty, std::string());
+    base::StringToUint(lease_duration_string, &lease_duration);
+    if (!is_lease_available) {
+      min_lease_duration = lease_duration;
+      if (min_lease_duration != 0)
+        is_lease_available = true;
+    } else {
+      if (lease_duration != 0)
+        min_lease_duration = std::min(min_lease_duration, lease_duration);
+    }
+  }
+  return min_lease_duration;
+}
 
 namespace shill {
 
@@ -134,6 +158,7 @@ bool DHCPv6Config::ParseConfiguration(const KeyValueStore& configuration) {
   SLOG(nullptr, 2) << __func__;
   properties_.method = kTypeDHCP6;
   properties_.address_family = IPAddress::kFamilyIPv6;
+  bool lease_updated = false;
 
   if (configuration.Contains<uint32_t>(kConfigurationKeyIPAddressIaid)) {
     properties_.dhcpv6_addresses.clear();
@@ -171,7 +196,7 @@ bool DHCPv6Config::ParseConfiguration(const KeyValueStore& configuration) {
           {kDhcpv6PreferredLeaseDurationSecondsProperty,
            base::NumberToString(preferred_lease_time)},
       });
-      UpdateLeaseTime(lease_time);
+      lease_updated = true;
     }
 
     const auto address_key =
@@ -195,8 +220,12 @@ bool DHCPv6Config::ParseConfiguration(const KeyValueStore& configuration) {
           {kDhcpv6PreferredLeaseDurationSecondsProperty,
            base::NumberToString(preferred_lease_time)},
       });
-      UpdateLeaseTime(lease_time);
+      lease_updated = true;
     }
+  }
+
+  if (lease_updated) {
+     UpdateLeaseTime();
   }
 
   if (configuration.Contains<Strings>(kConfigurationKeyDNS)) {
@@ -210,13 +239,24 @@ bool DHCPv6Config::ParseConfiguration(const KeyValueStore& configuration) {
   return true;
 }
 
-void DHCPv6Config::UpdateLeaseTime(uint32_t lease_time) {
+void DHCPv6Config::UpdateLeaseTime() {
+  unsigned int min_address_lease_duration =
+      GetMinLeaseTime(properties_.dhcpv6_addresses);
+  unsigned int min_prefix_lease_duration =
+      GetMinLeaseTime(properties_.dhcpv6_delegated_prefixes);
+
   // IP address and delegated prefix are provided as separate lease. Use
   // the shorter time of the two lease as the lease time. However, ignore zero
   // lease times as those are for expired leases.
-  if (lease_time > 0 && (properties_.lease_duration_seconds == 0 ||
-                         lease_time < properties_.lease_duration_seconds)) {
-    properties_.lease_duration_seconds = lease_time;
+  if (min_address_lease_duration == 0 && min_prefix_lease_duration == 0) {
+    return;
+  } else if (min_address_lease_duration > 0 &&
+             min_prefix_lease_duration > 0) {
+    properties_.lease_duration_seconds =
+        std::min(min_address_lease_duration, min_prefix_lease_duration);
+  } else {
+    properties_.lease_duration_seconds =
+        std::max(min_address_lease_duration, min_prefix_lease_duration);
   }
 }
 

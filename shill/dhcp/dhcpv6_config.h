@@ -77,7 +77,7 @@ class DHCPv6Config : public DHCPConfig {
   // false otherwise.
   bool ParseConfiguration(const KeyValueStore& configuration);
 
-  void UpdateLeaseTime(uint32_t lease_time);
+  void UpdateLeaseTime();
 
   // Non-temporary address and prefix delegation are considered separate
   // requests with separate leases, which mean there will be a dedicated

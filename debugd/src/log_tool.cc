@@ -263,6 +263,7 @@ const std::array kCommandLogs {
       "edid-decode --skip-hex-dump \"${f}\" 2>/dev/null; "
     "done"},
   Log{kFile, "eventlog", "/var/log/eventlog.txt"},
+  Log{kFile, "fwupd_log", "/var/log/fwupd.log"},
   Log{kCommand, "folder_size_dump",
     "/usr/libexec/debugd/helpers/folder_size_dump --system",
     kRoot, kRoot, 1 * 1024 * 1024 /* 1 MiB*/, LogTool::Encoding::kUtf8, true},

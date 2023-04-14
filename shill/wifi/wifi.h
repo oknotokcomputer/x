@@ -176,6 +176,9 @@ class WiFi : public Device, public SupplicantEventDelegateInterface {
   void StationRemoved(const RpcIdentifier& Station) override{};
   void PskMismatch() override;
 
+  // Unregister and Reregister WiFi device.
+  virtual void Restart();
+
   // Called by WiFiService.
   virtual void ConnectTo(WiFiService* service, Error* error);
 
@@ -656,8 +659,6 @@ class WiFi : public Device, public SupplicantEventDelegateInterface {
   void ResetStationInfoRequests();
 
   void ConnectToSupplicant();
-
-  void Restart();
 
   std::string GetServiceLeaseName(const WiFiService& service);
 

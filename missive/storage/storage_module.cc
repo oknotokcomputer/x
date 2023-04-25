@@ -83,7 +83,7 @@ void StorageModule::Create(
         instance->storage_ = std::move(storage.ValueOrDie());
         std::move(callback).Run(std::move(instance));
       },
-      std::move(instance), std::move(callback));
+      instance, std::move(callback));
 
   // TOOD(b/279057326): dynamically update storage implementation when
   // `legacy_storage_enabled` changes

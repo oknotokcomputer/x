@@ -58,6 +58,7 @@
 #include "shill/upstart/mock_upstart.h"
 #include "shill/vpn/mock_vpn_service.h"
 #include "shill/wifi/mock_wake_on_wifi.h"
+#include "shill/wifi/mock_wifi.h"
 #include "shill/wifi/mock_wifi_provider.h"
 #include "shill/wifi/mock_wifi_service.h"
 #include "shill/wifi/wifi_service.h"

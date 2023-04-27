@@ -135,15 +135,6 @@ class BRILLO_EXPORT Transport : public std::enable_shared_from_this<Transport> {
   // Sets the send buffer size.
   virtual void SetUploadBufferSize(base::Optional<int> buffer_size) {}
 
-  // Sets Downlink SpeedTest Mode, i.e discard read data and
-  // set performance flags
-  virtual void SetDownlinkSpeedTestMode(
-      base::Optional<bool> downlink_speedtest_mode) {}
-
-  // Sets Uplink SpeedTest Mode, i.e use zerocopy and MSG_DONTWAIT flags
-  virtual void SetUplinkSpeedTestMode(
-      base::Optional<bool> uplink_speedtest_mode) {}
-
   // Creates a default http::Transport (currently, using http::curl::Transport).
   static std::shared_ptr<Transport> CreateDefault();
 

@@ -220,9 +220,6 @@ std::vector<std::string> DHCPv4Config::GetFlags() {
 
   flags.push_back("-4");  // IPv4 only.
 
-  // Disable IPv4LL address
-  flags.push_back("-L");
-
   // Apply options from DhcpProperties when applicable.
   if (!hostname_.empty()) {
     flags.push_back("-h");  // Request hostname from server
@@ -237,7 +234,6 @@ std::vector<std::string> DHCPv4Config::GetFlags() {
     flags.push_back("-R");  // ARP for default gateway.
     flags.push_back("-P");  // Enable unicast ARP on renew.
   }
-
   return flags;
 }
 

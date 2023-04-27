@@ -311,11 +311,11 @@ MATCHER_P4(IsDHCPCDArgs,
            has_arp_gateway,
            has_lease_suffix,
            "") {
-  if (arg[0] != "-B" || arg[1] != "-q" || arg[2] != "-4" || arg[3] != "-L") {
+  if (arg[0] != "-B" || arg[1] != "-q" || arg[2] != "-4") {
     return false;
   }
 
-  int end_offset = 4;
+  int end_offset = 3;
   if (has_hostname) {
     if (arg[end_offset] != "-h" || arg[end_offset + 1] != kHostName) {
       return false;

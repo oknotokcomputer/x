@@ -49,6 +49,8 @@ class DHCPv6Config : public DHCPConfig {
   FRIEND_TEST(DHCPv6ConfigCallbackTest, StoppedDuringFailureCallback);
   FRIEND_TEST(DHCPv6ConfigCallbackTest, StoppedDuringSuccessCallback);
   FRIEND_TEST(DHCPv6ConfigTest, ParseConfiguration);
+  FRIEND_TEST(DHCPv6ConfigTest, ParseConfig);
+  FRIEND_TEST(DHCPv6ConfigTest, ParseConfigMultiplePD);
 
   static const char kDHCPCDPathFormatPID[];
 

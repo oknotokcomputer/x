@@ -216,6 +216,286 @@ TEST_F(DHCPv6ConfigTest, StartDhcpcd) {
   EXPECT_FALSE(StartInstance(config_));
 }
 
+TEST_F(DHCPv6ConfigTest, ParseConfig) {
+  const char kConfigIPAddress[] = "2001:db8:0:1::128";
+  const char kConfigDelegatedPrefix[] = "2001:db8:1:101::";
+  const char kConfigNameServer[] = "fec8:0::2";
+  const char kConfigDomainSearch[] = "example.domain";
+  const uint32_t kConfigDelegatedPrefixLength = 56;
+  const uint32_t kConfigIPAddressLeaseTime = 5;
+  const uint32_t kConfigIPAddressPreferredLeaseTime = 4;
+  const uint32_t kConfigDelegatedPrefixLeaseTime = 10;
+  const uint32_t kConfigDelegatedPrefixPreferredLeaseTime = 3;
+
+  // For building configuration strings.
+  const std::string kOne = "1";
+
+  KeyValueStore conf;
+  conf.Set<std::string>(DHCPv6Config::kConfigurationKeyIPAddress + kOne,
+                        kConfigIPAddress);
+  conf.Set<uint32_t>(DHCPv6Config::kConfigurationKeyIPAddressLeaseTime + kOne,
+                     kConfigIPAddressLeaseTime);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyIPAddressPreferredLeaseTime + kOne,
+      kConfigIPAddressPreferredLeaseTime);
+  conf.Set<std::string>(DHCPv6Config::kConfigurationKeyDelegatedPrefix + kOne,
+                        kConfigDelegatedPrefix);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLength + kOne,
+      kConfigDelegatedPrefixLength);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLeaseTime + kOne,
+      kConfigDelegatedPrefixLeaseTime);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixPreferredLeaseTime + kOne,
+      kConfigDelegatedPrefixPreferredLeaseTime);
+  conf.Set<Strings>(DHCPv6Config::kConfigurationKeyDNS, {kConfigNameServer});
+  conf.Set<Strings>(DHCPv6Config::kConfigurationKeyDomainSearch,
+                    {kConfigDomainSearch});
+  conf.Set<std::string>("UnknownKey", "UnknownValue");
+
+  ASSERT_TRUE(config_->ParseConfiguration(conf));
+  const Stringmaps kAddresses = {{
+      {kDhcpv6AddressProperty, kConfigIPAddress},
+      {kDhcpv6LengthProperty, "128"},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressLeaseTime)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressPreferredLeaseTime)},
+  }};
+  EXPECT_EQ(kAddresses, config_->properties_.dhcpv6_addresses);
+  const Stringmaps kDelegatedPrefixes = {{
+      {kDhcpv6AddressProperty, kConfigDelegatedPrefix},
+      {kDhcpv6LengthProperty,
+       base::NumberToString(kConfigDelegatedPrefixLength)},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixLeaseTime)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixPreferredLeaseTime)},
+  }};
+  EXPECT_EQ(kDelegatedPrefixes, config_->properties_.dhcpv6_delegated_prefixes);
+  ASSERT_EQ(1, config_->properties_.dns_servers.size());
+  EXPECT_EQ(kConfigNameServer, config_->properties_.dns_servers[0]);
+  ASSERT_EQ(1, config_->properties_.domain_search.size());
+  EXPECT_EQ(kConfigDomainSearch, config_->properties_.domain_search[0]);
+  // Use IP address lease time since it is shorter.
+  EXPECT_EQ(kConfigIPAddressLeaseTime,
+            config_->properties_.lease_duration_seconds);
+
+  // Higher lease times
+  const char kConfigIPAddress1[] = "2001:db8:0:1::128";
+  const char kConfigDelegatedPrefix1[] = "2001:db8:1:101::";
+  const char kConfigNameServer1[] = "fec8:0::2";
+  const char kConfigDomainSearch1[] = "example.domain";
+  const uint32_t kConfigDelegatedPrefixLength1 = 56;
+  const uint32_t kConfigIPAddressLeaseTime1 = 500;
+  const uint32_t kConfigIPAddressPreferredLeaseTime1 = 400;
+  const uint32_t kConfigDelegatedPrefixLeaseTime1 = 100;
+  const uint32_t kConfigDelegatedPrefixPreferredLeaseTime1 = 30;
+
+  KeyValueStore conf1;
+  conf1.Set<std::string>(DHCPv6Config::kConfigurationKeyIPAddress + kOne,
+                        kConfigIPAddress1);
+  conf1.Set<uint32_t>(DHCPv6Config::kConfigurationKeyIPAddressLeaseTime + kOne,
+                     kConfigIPAddressLeaseTime1);
+  conf1.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyIPAddressPreferredLeaseTime + kOne,
+      kConfigIPAddressPreferredLeaseTime1);
+  conf1.Set<std::string>(DHCPv6Config::kConfigurationKeyDelegatedPrefix + kOne,
+                        kConfigDelegatedPrefix1);
+  conf1.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLength + kOne,
+      kConfigDelegatedPrefixLength1);
+  conf1.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLeaseTime + kOne,
+      kConfigDelegatedPrefixLeaseTime1);
+  conf1.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixPreferredLeaseTime + kOne,
+      kConfigDelegatedPrefixPreferredLeaseTime1);
+  conf1.Set<Strings>(DHCPv6Config::kConfigurationKeyDNS, {kConfigNameServer1});
+  conf1.Set<Strings>(DHCPv6Config::kConfigurationKeyDomainSearch,
+                    {kConfigDomainSearch1});
+  // Clear existing IP address and prefixes leases
+  conf1.Set<uint32_t>(DHCPv6Config::kConfigurationKeyIPAddressIaid, 0);
+  conf1.Set<uint32_t>(DHCPv6Config::kConfigurationKeyDelegatedPrefixIaid, 0);
+  conf1.Set<std::string>("UnknownKey", "UnknownValue");
+
+  ASSERT_TRUE(config_->ParseConfiguration(conf1));
+  const Stringmaps kAddresses1 = {{
+      {kDhcpv6AddressProperty, kConfigIPAddress1},
+      {kDhcpv6LengthProperty, "128"},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressLeaseTime1)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressPreferredLeaseTime1)},
+  }};
+  EXPECT_EQ(kAddresses1, config_->properties_.dhcpv6_addresses);
+  const Stringmaps kDelegatedPrefixes1 = {{
+      {kDhcpv6AddressProperty, kConfigDelegatedPrefix1},
+      {kDhcpv6LengthProperty,
+       base::NumberToString(kConfigDelegatedPrefixLength1)},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixLeaseTime1)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixPreferredLeaseTime1)},
+  }};
+  EXPECT_EQ(kDelegatedPrefixes1,
+            config_->properties_.dhcpv6_delegated_prefixes);
+  ASSERT_EQ(1, config_->properties_.dns_servers.size());
+  EXPECT_EQ(kConfigNameServer, config_->properties_.dns_servers[0]);
+  ASSERT_EQ(1, config_->properties_.domain_search.size());
+  EXPECT_EQ(kConfigDomainSearch, config_->properties_.domain_search[0]);
+  // Use Delegate prefix lease time since it is shorter.
+  EXPECT_EQ(kConfigDelegatedPrefixLeaseTime1,
+            config_->properties_.lease_duration_seconds);
+
+  //Lower lease
+  const char kConfigIPAddress2[] = "2001:db8:0:1::128";
+  const char kConfigDelegatedPrefix2[] = "2001:db8:1:101::";
+  const char kConfigNameServer2[] = "fec8:0::2";
+  const char kConfigDomainSearch2[] = "example.domain";
+  const uint32_t kConfigDelegatedPrefixLength2 = 56;
+  const uint32_t kConfigIPAddressLeaseTime2 = 50;
+  const uint32_t kConfigIPAddressPreferredLeaseTime2 = 40;
+  const uint32_t kConfigDelegatedPrefixLeaseTime2 = 30;
+  const uint32_t kConfigDelegatedPrefixPreferredLeaseTime2 = 15;
+
+  KeyValueStore conf2;
+  conf2.Set<std::string>(DHCPv6Config::kConfigurationKeyIPAddress + kOne,
+                        kConfigIPAddress2);
+  conf2.Set<uint32_t>(DHCPv6Config::kConfigurationKeyIPAddressLeaseTime + kOne,
+                     kConfigIPAddressLeaseTime2);
+  conf2.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyIPAddressPreferredLeaseTime + kOne,
+      kConfigIPAddressPreferredLeaseTime2);
+  conf2.Set<std::string>(DHCPv6Config::kConfigurationKeyDelegatedPrefix + kOne,
+                        kConfigDelegatedPrefix2);
+  conf2.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLength + kOne,
+      kConfigDelegatedPrefixLength2);
+  conf2.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLeaseTime + kOne,
+      kConfigDelegatedPrefixLeaseTime2);
+  conf2.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixPreferredLeaseTime + kOne,
+      kConfigDelegatedPrefixPreferredLeaseTime2);
+  conf2.Set<Strings>(DHCPv6Config::kConfigurationKeyDNS, {kConfigNameServer2});
+  conf2.Set<Strings>(DHCPv6Config::kConfigurationKeyDomainSearch,
+                    {kConfigDomainSearch2});
+  // Clear existing IP address and prefixes leases
+  conf2.Set<uint32_t>(DHCPv6Config::kConfigurationKeyIPAddressIaid, 0);
+  conf2.Set<uint32_t>(DHCPv6Config::kConfigurationKeyDelegatedPrefixIaid, 0);
+  conf2.Set<std::string>("UnknownKey", "UnknownValue");
+
+  ASSERT_TRUE(config_->ParseConfiguration(conf2));
+  const Stringmaps kAddresses2 = {{
+      {kDhcpv6AddressProperty, kConfigIPAddress2},
+      {kDhcpv6LengthProperty, "128"},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressLeaseTime2)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigIPAddressPreferredLeaseTime2)},
+  }};
+  EXPECT_EQ(kAddresses2, config_->properties_.dhcpv6_addresses);
+  const Stringmaps kDelegatedPrefixes2 = {{
+      {kDhcpv6AddressProperty, kConfigDelegatedPrefix2},
+      {kDhcpv6LengthProperty,
+       base::NumberToString(kConfigDelegatedPrefixLength2)},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixLeaseTime2)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixPreferredLeaseTime2)},
+  }};
+  EXPECT_EQ(kDelegatedPrefixes2,
+            config_->properties_.dhcpv6_delegated_prefixes);
+  ASSERT_EQ(1, config_->properties_.dns_servers.size());
+  EXPECT_EQ(kConfigNameServer, config_->properties_.dns_servers[0]);
+  ASSERT_EQ(1, config_->properties_.domain_search.size());
+  EXPECT_EQ(kConfigDomainSearch, config_->properties_.domain_search[0]);
+  // Use IP address lease time since it is shorter.
+  EXPECT_EQ(kConfigDelegatedPrefixLeaseTime2,
+            config_->properties_.lease_duration_seconds);
+}
+
+TEST_F(DHCPv6ConfigTest, ParseConfigMultiplePD) {
+  const char kConfigDelegatedPrefix[] = "2001:db8:1:101::";
+  const uint32_t kConfigDelegatedPrefixLength = 56;
+  const uint32_t kConfigDelegatedPrefixLeaseTime = 10;
+  const uint32_t kConfigDelegatedPrefixPreferredLeaseTime = 3;
+  const char kConfigDelegatedPrefix1[] = "2001:db8:1:102::";
+  const uint32_t kConfigDelegatedPrefixLength1 = 60;
+  const uint32_t kConfigDelegatedPrefixLeaseTime1 = 5;
+  const uint32_t kConfigDelegatedPrefixPreferredLeaseTime1 = 2;
+  const char kConfigNameServer[] = "fec8:0::2";
+  const char kConfigDomainSearch[] = "example.domain";
+
+  // For building configuration strings.
+  const std::string kOne = "1";
+  const std::string kTwo = "2";
+
+  KeyValueStore conf;
+  conf.Set<std::string>(DHCPv6Config::kConfigurationKeyDelegatedPrefix + kOne,
+                        kConfigDelegatedPrefix);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLength + kOne,
+      kConfigDelegatedPrefixLength);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLeaseTime + kOne,
+      kConfigDelegatedPrefixLeaseTime);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixPreferredLeaseTime + kOne,
+      kConfigDelegatedPrefixPreferredLeaseTime);
+  conf.Set<std::string>(DHCPv6Config::kConfigurationKeyDelegatedPrefix + kTwo,
+                        kConfigDelegatedPrefix1);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLength + kTwo,
+      kConfigDelegatedPrefixLength1);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixLeaseTime + kTwo,
+      kConfigDelegatedPrefixLeaseTime1);
+  conf.Set<uint32_t>(
+      DHCPv6Config::kConfigurationKeyDelegatedPrefixPreferredLeaseTime + kTwo,
+      kConfigDelegatedPrefixPreferredLeaseTime1);
+  conf.Set<Strings>(DHCPv6Config::kConfigurationKeyDNS, {kConfigNameServer});
+  conf.Set<Strings>(DHCPv6Config::kConfigurationKeyDomainSearch,
+                    {kConfigDomainSearch});
+  conf.Set<std::string>("UnknownKey", "UnknownValue");
+
+  ASSERT_TRUE(config_->ParseConfiguration(conf));
+  Stringmaps kDelegatedPrefixes;
+  kDelegatedPrefixes.push_back({
+      {kDhcpv6AddressProperty, kConfigDelegatedPrefix},
+      {kDhcpv6LengthProperty,
+       base::NumberToString(kConfigDelegatedPrefixLength)},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixLeaseTime)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixPreferredLeaseTime)},
+  });
+  kDelegatedPrefixes.push_back({
+      {kDhcpv6AddressProperty, kConfigDelegatedPrefix1},
+      {kDhcpv6LengthProperty,
+       base::NumberToString(kConfigDelegatedPrefixLength1)},
+      {kDhcpv6LeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixLeaseTime1)},
+      {kDhcpv6PreferredLeaseDurationSecondsProperty,
+       base::NumberToString(kConfigDelegatedPrefixPreferredLeaseTime1)},
+  });
+
+  EXPECT_EQ(2, config_->properties_.dhcpv6_delegated_prefixes.size());
+  EXPECT_EQ(kDelegatedPrefixes[0],
+            config_->properties_.dhcpv6_delegated_prefixes[0]);
+  EXPECT_EQ(kDelegatedPrefixes[1],
+            config_->properties_.dhcpv6_delegated_prefixes[1]);
+  ASSERT_EQ(1, config_->properties_.dns_servers.size());
+  EXPECT_EQ(kConfigNameServer, config_->properties_.dns_servers[0]);
+  ASSERT_EQ(1, config_->properties_.domain_search.size());
+  EXPECT_EQ(kConfigDomainSearch, config_->properties_.domain_search[0]);
+  // Use second prefix lease time since it is shorter.
+  EXPECT_EQ(kConfigDelegatedPrefixLeaseTime1,
+            config_->properties_.lease_duration_seconds);
+}
+
 namespace {
 
 class DHCPv6ConfigCallbackTest : public DHCPv6ConfigTest {

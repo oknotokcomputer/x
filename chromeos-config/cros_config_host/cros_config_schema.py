@@ -897,7 +897,7 @@ def MergeConfigs(configs):
             if not matched:
                 result_json["chromeos"]["configs"].append(to_merge_config)
 
-    return libcros_schema.FormatJson(result_json)
+    return libcros_schema.FormatJson(GenerateFridMatches(result_json))
 
 
 def ReadSchema(schema=None):
@@ -955,9 +955,6 @@ def Main(
     schema_contents = ReadSchema(schema)
     libcros_schema.ValidateConfigSchema(schema_contents, json_transform)
     ValidateConfig(json_transform)
-    json_transform = libcros_schema.FormatJson(
-        GenerateFridMatches(json.loads(json_transform))
-    )
     schema_attrs = libcros_schema.GetSchemaPropertyAttrs(
         libcros_schema.LoadYaml(schema_contents)
     )

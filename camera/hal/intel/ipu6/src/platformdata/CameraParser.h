@@ -69,6 +69,7 @@ private:
     bool mInStaticMetadata;
     MediaControl* mMC;
     CameraMetadata mMetadata;
+    std::string mNvmNodeName;
 
     long* mMetadataCache;
     static const int mMetadataCacheSize = 4096;
@@ -123,6 +124,7 @@ private:
     void parseOutputMap(const char *str, std::vector<UserToPslOutputMap> &outputMap);
 
     std::string replaceStringInXml(CameraParser *profiles, const char *value);
+    void getNVMDirectory(CameraParser* profiles);
 };
 
 } // namespace icamera

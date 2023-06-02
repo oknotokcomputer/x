@@ -19,6 +19,7 @@
 #include <string.h>
 #include <expat.h>
 #include <memory>
+#include <dirent.h>
 
 #include "iutils/CameraLog.h"
 #include "iutils/Utils.h"
@@ -432,6 +433,7 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         pCurrentCam->mMaxNvmDataSize = atoi(atts[1]);
     } else if (strcmp(name, "nvmDirectory") == 0) {
         pCurrentCam->mNvmDirectory = atts[1];
+        mNvmNodeName = atts[1];
     } else if (strcmp(name, "cameraModuleToAiqbMap") == 0) {
         int size = strlen(atts[1]);
         char src[size + 1];
@@ -1772,6 +1774,14 @@ void CameraParser::endParseElement(void *userData, const char *name)
                     LOGXML("@%s, Failed to getLensName", __func__);
                 }
             }
+
+            // I2CBus is adaptor-bus, like 18-0010, and use adaptor id to select NVM path.
+            if ((profiles->mI2CBus.size() >= 2) && !profiles->mNvmNodeName.empty()) {
+                getNVMDirectory(profiles);
+            }
+
+            profiles->mNvmNodeName.clear();
+
             // Merge the content of mMetadata into mCapability.
             ParameterHelper::merge(profiles->mMetadata, &profiles->pCurrentCam->mCapability);
             profiles->mMetadata.clear();
@@ -1797,6 +1807,59 @@ void CameraParser::endParseElement(void *userData, const char *name)
 
     if (strcmp(name, "Common") == 0)
         profiles->mCurrentDataField = FIELD_INVALID;
+}
+
+/* the path of NVM device is in /sys/bus/i2c/devices/i2c-'adaptorId'/firmware_node/XXXX/path. */
+void CameraParser::getNVMDirectory(CameraParser* profiles)
+{
+    LOGXML("@%s", __func__);
+
+    std::string nvmPath("/sys/bus/i2c/devices/i2c-");
+    // attach i2c adaptor id
+    std::size_t found = profiles->mI2CBus.find("-");
+    CheckError(found == std::string::npos, VOID_VALUE, "Failed to get adaptor id");
+    nvmPath += profiles->mI2CBus.substr(0, found);
+    nvmPath += "/firmware_node/";
+    DIR* dir = opendir(nvmPath.c_str());
+    if (dir) {
+        struct dirent* direntPtr = nullptr;
+        while ((direntPtr = readdir(dir)) != nullptr) {
+            if (direntPtr->d_type != DT_DIR) continue;
+
+            std::string fwNodePath(nvmPath.c_str());
+            fwNodePath += direntPtr->d_name;
+            fwNodePath += "/path";
+
+            FILE* fp = fopen(fwNodePath.c_str(), "rb");
+            if (fp) {
+                fseek(fp, 0, SEEK_END);
+                int size = static_cast<int>(ftell(fp));
+                fseek(fp, 0, SEEK_SET);
+                std::unique_ptr<char[]> ptr(new char[size + 1]);
+                ptr[size] = 0;
+                size_t readSize = fread(ptr.get(), sizeof(char), size, fp);
+                fclose(fp);
+
+                if (readSize > 0 && strstr(ptr.get(), "NVM") != nullptr) {
+		    std::string nvmPath(NVM_DATA_PATH);
+		    nvmPath.append("i2c-");
+		    nvmPath.append(direntPtr->d_name);
+		    nvmPath.append("/eeprom");
+		    // Check if eeprom file exists
+		    struct stat buf;
+		    int ret = stat(nvmPath.c_str(), &buf);
+		    LOG1("%s, nvmPath %s, ret %d", __func__, nvmPath.c_str(), ret);
+		    if (ret == 0) {
+			profiles->pCurrentCam->mNvmDirectory = "i2c-";
+			profiles->pCurrentCam->mNvmDirectory += direntPtr->d_name;
+                        LOGXML("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
+			break;
+		    }
+                }
+            }
+        }
+        closedir(dir);
+    }
 }
 
 /**

@@ -209,6 +209,7 @@ class EffectsStreamManipulatorImpl : public EffectsStreamManipulator {
 
     StreamContext* stream_context = nullptr;
     uint32_t frame_number = 0;
+    buffer_handle_t yuv_result_buffer = nullptr;
     std::optional<CameraBufferPool::Buffer> yuv_buffer;
     bool yuv_stream_appended = false;
     bool blob_result_pending = false;
@@ -813,12 +814,10 @@ bool EffectsStreamManipulatorImpl::ProcessCaptureResult(
       if (CaptureContext* capture_context =
               blob_stream_context->GetCaptureContext(result.frame_number())) {
         if (capture_context->blob_intermediate_yuv_pending) {
+          capture_context->yuv_result_buffer = *result_buffer.buffer();
           still_capture_processor_->QueuePendingYuvImage(
               result.frame_number(), *result_buffer.buffer(), base::ScopedFD());
           capture_context->blob_intermediate_yuv_pending = false;
-        }
-        // Don't append the same YUV buffer stream twice.
-        if (capture_context->yuv_stream_appended) {
           continue;
         }
       }
@@ -939,6 +938,16 @@ void EffectsStreamManipulatorImpl::ReturnStillCaptureResult(
         continue;
       CaptureContext& capture_context =
           *stream_context->GetCaptureContext(result.frame_number());
+      if (!capture_context.yuv_stream_appended) {
+        result.AppendOutputBuffer(
+            Camera3StreamBuffer::MakeResultOutput(camera3_stream_buffer_t{
+                .stream = stream_context->yuv_stream_for_blob,
+                .buffer = &capture_context.yuv_result_buffer,
+                .status = CAMERA3_BUFFER_STATUS_OK,
+                .acquire_fence = -1,
+                .release_fence = -1,
+            }));
+      }
       capture_context.yuv_buffer = {};
       capture_context.still_capture_processor_pending = false;
       OnFrameCompleted(*stream_context);

@@ -64,9 +64,6 @@
             "ucm-suffix": "alc5682i.2uf.fake_ref_design"
           }
         },
-        "battery": {
-          "no-battery-boot-supported": true
-        },
         "bluetooth": {
           "flags": {
             "enable-suspend-management": true
@@ -86,6 +83,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -314,9 +312,6 @@
             "ucm-suffix": "alc5682i.1uf2wf.fake_ref_design"
           }
         },
-        "battery": {
-          "no-battery-boot-supported": true
-        },
         "brand-code": "AAAA",
         "branding": {
           "marketing-name": "Fake ChromeOS Device Brandname",
@@ -538,6 +533,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -790,6 +786,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -911,20 +908,16 @@
             "cras-config-dir": "project_b",
             "files": [
               {
-                "destination": "/usr/share/alsa/ucm/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b/HiFi.conf",
-                "source": "project_b/audio/ucm-config/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b/HiFi.conf"
+                "destination": "/usr/share/alsa/ucm/fakeaudiocard.alc5650.alc5650.2uf.project_b/HiFi.conf",
+                "source": "project_b/audio/ucm-config/fakeaudiocard.alc5650.alc5650.2uf.project_b/HiFi.conf"
               },
               {
-                "destination": "/usr/share/alsa/ucm/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b.conf",
-                "source": "project_b/audio/ucm-config/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b/fakeaudiocard.card_suffix.max98373.alc5682i.2uf.project_b.conf"
+                "destination": "/usr/share/alsa/ucm/fakeaudiocard.alc5650.alc5650.2uf.project_b/fakeaudiocard.alc5650.alc5650.2uf.project_b.conf",
+                "source": "project_b/audio/ucm-config/fakeaudiocard.alc5650.alc5650.2uf.project_b/fakeaudiocard.alc5650.alc5650.2uf.project_b.conf"
               },
               {
                 "destination": "/etc/cras/project_b/fakeaudiocard.card_settings",
                 "source": "project_b/audio/cras-config/fakeaudiocard.card_settings"
-              },
-              {
-                "destination": "/etc/sound_card_init/project_b.MAX98373.yaml",
-                "source": "project_b/audio/sound-card-init-config/project_b.MAX98373.yaml"
               },
               {
                 "destination": "/usr/share/alsa/ucm/HDA ATI HDMI/HiFi.conf",
@@ -951,9 +944,7 @@
                 "source": "common/audio/alsa-module-config/alsa-fake_program.conf"
               }
             ],
-            "sound-card-init-conf": "project_b.MAX98373.yaml",
-            "speaker-amp": "MAX98373",
-            "ucm-suffix": "card_suffix.max98373.alc5682i.2uf.project_b"
+            "ucm-suffix": "alc5650.alc5650.2uf.project_b"
           }
         },
         "bluetooth": {
@@ -975,6 +966,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -1184,6 +1176,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -1379,6 +1372,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -1552,6 +1546,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -1712,6 +1707,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -1873,6 +1869,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -2034,6 +2031,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],
@@ -2208,6 +2206,7 @@
                 "support-1080p": false,
                 "support-autofocus": false
               },
+              "has-privacy-switch": false,
               "ids": [
                 "0123:abcd"
               ],

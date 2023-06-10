@@ -11,7 +11,8 @@
 #include <rootdev/rootdev.h>
 #include "init/utils.h"
 
-TEST(GetRootDevice, NoStripPartition) {
+// TODO(b/286154453): Appears to fail when host OS has md array.
+TEST(GetRootDevice, DISABLED_NoStripPartition) {
   base::FilePath root_dev;
   char dev_path[PATH_MAX];
   int ret = rootdev(dev_path, sizeof(dev_path), true, false);

@@ -794,6 +794,7 @@ bool EffectsStreamManipulatorImpl::ProcessCaptureResult(
         num_processed_streams++;
         if (render_result != CameraEffectError::kNoError) {
           metrics_.RecordError(render_result);
+          result.AppendOutputBuffer(std::move(result_buffer));
           continue;
         }
       }

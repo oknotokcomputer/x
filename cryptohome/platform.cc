@@ -67,7 +67,6 @@
 #include <brillo/blkdev_utils/loop_device.h>
 #include <brillo/blkdev_utils/lvm.h>
 #include <brillo/file_utils.h>
-#include <brillo/files/file_util.h>
 #include <brillo/files/safe_fd.h>
 #include <brillo/process/process.h>
 #include <brillo/scoped_umask.h>
@@ -866,15 +865,15 @@ base::FilePath Platform::GetStatefulDevice() {
 }
 
 bool Platform::DeleteFile(const FilePath& path) {
-  return brillo::DeleteFile(path);
+  return base::DeleteFile(path);
 }
 
 bool Platform::DeletePathRecursively(const FilePath& path) {
-  return brillo::DeletePathRecursively(path);
+  return base::DeletePathRecursively(path);
 }
 
 bool Platform::DeleteFileDurable(const FilePath& path) {
-  if (!brillo::DeletePathRecursively(path))
+  if (!base::DeletePathRecursively(path))
     return false;
   return SyncDirectory(path.DirName());
 }

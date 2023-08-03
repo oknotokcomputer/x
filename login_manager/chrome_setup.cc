@@ -1061,6 +1061,11 @@ void AddFeatureManagementFlags(
   if (feature_management->IsFeatureEnabled("FeatureManagementDisableLacros")) {
     builder->AddArg("--disallow-lacros");
   }
+
+  builder->AddArg(base::StringPrintf("--feature-management-level=%d",
+                                     feature_management->GetFeatureLevel()));
+  builder->AddArg(base::StringPrintf("--feature-management-max-level=%d",
+                                     feature_management->GetMaxFeatureLevel()));
 }
 
 void PerformChromeSetup(brillo::CrosConfigInterface* cros_config,

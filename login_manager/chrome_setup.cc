@@ -1055,6 +1055,12 @@ void AddFeatureManagementFlags(
   for (auto feature : features) {
     builder->AddFeatureEnableOverride(feature);
   }
+
+  // TODO(b/294268057): Re-enable Lacros on targeted devices once they have been
+  // stabilized.
+  if (feature_management->IsFeatureEnabled("FeatureManagementDisableLacros")) {
+    builder->AddArg("--disallow-lacros");
+  }
 }
 
 void PerformChromeSetup(brillo::CrosConfigInterface* cros_config,

@@ -151,7 +151,8 @@
           "smbios-name-match": "FAKE_REF_DESIGN"
         },
         "modem": {
-          "firmware-variant": "fake_ref_design"
+          "firmware-variant": "fake_ref_design",
+          "wedge-reboot-delay-ms": 120000
         },
         "name": "fake_ref_design",
         "nnpalm": {
@@ -546,7 +547,8 @@
           "smbios-name-match": "PROJECT_A"
         },
         "modem": {
-          "firmware-variant": "project_a"
+          "firmware-variant": "project_a",
+          "wedge-reboot-delay-ms": 120000
         },
         "name": "project_a",
         "power": {
@@ -1591,7 +1593,8 @@
           "smbios-name-match": "PROJECT_WL"
         },
         "modem": {
-          "firmware-variant": "project_wl"
+          "firmware-variant": "project_wl",
+          "wedge-reboot-delay-ms": 210000
         },
         "name": "project_wl",
         "power": {
@@ -1749,7 +1752,8 @@
           "whitelabel-tag": "loema"
         },
         "modem": {
-          "firmware-variant": "project_wl"
+          "firmware-variant": "project_wl",
+          "wedge-reboot-delay-ms": 210000
         },
         "name": "project_wl",
         "power": {
@@ -1907,7 +1911,8 @@
           "whitelabel-tag": "loemb"
         },
         "modem": {
-          "firmware-variant": "project_wl"
+          "firmware-variant": "project_wl",
+          "wedge-reboot-delay-ms": 210000
         },
         "name": "project_wl",
         "power": {
@@ -2065,7 +2070,8 @@
           "whitelabel-tag": "loemc"
         },
         "modem": {
-          "firmware-variant": "project_wl"
+          "firmware-variant": "project_wl",
+          "wedge-reboot-delay-ms": 210000
         },
         "name": "project_wl",
         "power": {

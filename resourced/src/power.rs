@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use glob::glob;
-use libchromeos::sys::{error, info};
+use libchromeos::sys::{info};
 
 use crate::common;
 use crate::common::{FullscreenVideo, GameMode, RTCAudioActive, VmBootMode};
@@ -351,13 +351,8 @@ impl<C: config::ConfigProvider, P: PowerSourceProvider> PowerPreferencesManager
         }
 
         if let Some(root) = self.root.to_str() {
-            if rtc == RTCAudioActive::Active || fullscreen == FullscreenVideo::Active {
-                if let Err(err) = set_epp(root, "balance_power") {
-                    error!("Failed to set energy performance preference: {:#}", err);
-                }
-            } else if rtc != RTCAudioActive::Active && fullscreen != FullscreenVideo::Active {
-                set_epp(root, "balance_performance")?; // Default EPP
-            }
+            // CfM: always favor performance over power savings
+            set_epp(root, "balance_performance")?; // Default EPP
         } else {
             info!("Converting root path failed: {}", self.root.display());
         }
@@ -1025,17 +1020,17 @@ mod tests {
             (
                 RTCAudioActive::Active,
                 FullscreenVideo::Inactive,
-                "balance_power",
+                "balance_performance",
             ),
             (
                 RTCAudioActive::Inactive,
                 FullscreenVideo::Active,
-                "balance_power",
+                "balance_performance",
             ),
             (
                 RTCAudioActive::Active,
                 FullscreenVideo::Active,
-                "balance_power",
+                "balance_performance",
             ),
             (
                 RTCAudioActive::Inactive,

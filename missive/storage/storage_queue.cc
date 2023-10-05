@@ -645,7 +645,7 @@ StorageQueue::OpenNewWriteableFile() {
                    .AddExtensionASCII(base::NumberToString(generation_id_))
                    .AddExtensionASCII(
                        base::NumberToString(next_sequencing_id_)),
-           .size = /*size=*/0,
+           .size = 0,
            .memory_resource = options_.memory_resource(),
            .disk_space_resource = options_.disk_space_resource(),
            .completion_closure_list = completion_closure_list_}));
@@ -663,6 +663,7 @@ StorageQueue::OpenNewWriteableFile() {
 Status StorageQueue::WriteHeaderAndBlock(
     std::string_view data,
     std::string_view current_record_digest,
+    ScopedReservation data_reservation,
     scoped_refptr<StorageQueue::SingleFile> file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
 
@@ -674,9 +675,6 @@ Status StorageQueue::WriteHeaderAndBlock(
 
   // Prepare header.
   RecordHeader header;
-  // Pad to the whole frame, if necessary.
-  const size_t total_size =
-      RoundUpToFrameSize(RecordHeader::kSize + data.size());
   // Assign sequencing id.
   header.record_sequencing_id = next_sequencing_id_++;
   header.record_hash = base::PersistentHash(data.data(), data.size());
@@ -691,16 +689,9 @@ Status StorageQueue::WriteHeaderAndBlock(
                                 " status=", open_status.ToString()}));
   }
 
-  // The space for this append is being reserved in
-  // StorageQueue::ReserveNewRecordDiskSpace.
-  if (active_write_reservation_size_ < total_size) {
-    return Status(
-        error::RESOURCE_EXHAUSTED,
-        base::StrCat({"Not enough disk space available to write into file=",
-                      file->name()}));
-  }
-  active_write_reservation_size_ -= total_size;
-
+  // The space for this append has been reserved in
+  // `ReserveNewRecordDiskSpace`.
+  file->HandOverReservation(std::move(data_reservation));
   auto write_status = file->Append(header.SerializeToString());
   if (!write_status.ok()) {
     SendResExCaseToUma(ResourceExhaustedCase::CANNOT_WRITE_HEADER);
@@ -718,9 +709,13 @@ Status StorageQueue::WriteHeaderAndBlock(
                         " status=", write_status.status().ToString()}));
     }
   }
-  if (total_size > RecordHeader::kSize + data.size()) {
+
+  // Pad to the whole frame, if necessary.
+  if (const size_t pad_size =
+          RoundUpToFrameSize(RecordHeader::kSize + data.size()) -
+          (RecordHeader::kSize + data.size());
+      pad_size > 0uL) {
     // Fill in with random bytes.
-    const size_t pad_size = total_size - (RecordHeader::kSize + data.size());
     char junk_bytes[FRAME_SIZE];
     crypto::RandBytes(junk_bytes, pad_size);
     write_status = file->Append(std::string_view(&junk_bytes[0], pad_size));
@@ -734,7 +729,8 @@ Status StorageQueue::WriteHeaderAndBlock(
   return Status::StatusOK();
 }
 
-Status StorageQueue::WriteMetadata(std::string_view current_record_digest) {
+Status StorageQueue::WriteMetadata(std::string_view current_record_digest,
+                                   ScopedReservation metadata_reservation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
 
   // Test only: Simulate failure if requested
@@ -756,18 +752,9 @@ Status StorageQueue::WriteMetadata(std::string_view current_record_digest) {
                         .completion_closure_list = completion_closure_list_}));
   RETURN_IF_ERROR(meta_file->Open(/*read_only=*/false));
 
-  // Account for the metadata file size.
-  // The space for this following Append is being reserved in
-  // StorageQueue::ReserveNewRecordDiskSpace.
-  if (active_write_reservation_size_ <
-      sizeof(generation_id_) + current_record_digest.size()) {
-    return Status(
-        error::RESOURCE_EXHAUSTED,
-        base::StrCat({"Not enough disk space available to write into metafile=",
-                      meta_file->name()}));
-  }
-  active_write_reservation_size_ -=
-      sizeof(generation_id_) + current_record_digest.size();
+  // The space for this following Appends has being reserved with
+  // `ReserveNewRecordDiskSpace`.
+  meta_file->HandOverReservation(std::move(metadata_reservation));
 
   // Metadata file format is:
   // - generation id (8 bytes)
@@ -1847,8 +1834,6 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   void ResumeWriteRecord() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(
         storage_queue_->storage_queue_sequence_checker_);
-    // The size of the reservation is unknown until calculated.
-    CHECK_EQ(storage_queue_->active_write_reservation_size_, 0u);
 
     // If we are not at the head of the queue, delay write and expect to be
     // reactivated later.
@@ -1858,20 +1843,21 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     }
 
     CHECK(!buffer_.empty());
-    // active_write_reservation_size_ includes both expected size of META file
-    // and increase in size of DATA file.
-    storage_queue_->active_write_reservation_size_ =
-        sizeof(generation_id_) + current_record_digest_.size() +
-        RoundUpToFrameSize(sizeof(RecordHeader) + buffer_.size());
-
-    Status reserve_result = storage_queue_->ReserveNewRecordDiskSpace(
-        storage_queue_->active_write_reservation_size_);
+    // Total amount of disk space for this write includes both expected size of
+    // META file and increase in size of DATA file.
+    const size_t total_metadata_size =
+        sizeof(generation_id_) + current_record_digest_.size();
+    const size_t total_data_size =
+        RoundUpToFrameSize(RecordHeader::kSize + buffer_.size());
+    const auto reserve_result =
+        ReserveNewRecordDiskSpace(total_metadata_size, total_data_size);
     if (!reserve_result.ok()) {
-      storage_queue_->active_write_reservation_size_ = 0u;
       storage_queue_->degradation_candidates_cb_.Run(
-          storage_queue_, base::BindPostTaskToCurrentDefault(base::BindOnce(
-                              &WriteContext::RetryWithDegradation,
-                              base::Unretained(this), reserve_result)));
+          storage_queue_,
+          base::BindPostTaskToCurrentDefault(base::BindOnce(
+              &WriteContext::RetryWithDegradation, base::Unretained(this),
+              /*space_to_recover=*/total_metadata_size + total_data_size,
+              reserve_result)));
       return;
     }
 
@@ -1888,7 +1874,8 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     scoped_refptr<SingleFile> last_file = assign_result.ValueOrDie();
 
     // Writing metadata ahead of the data write.
-    Status write_result = storage_queue_->WriteMetadata(current_record_digest_);
+    Status write_result = storage_queue_->WriteMetadata(
+        current_record_digest_, std::move(metadata_reservation_));
     if (!write_result.ok()) {
       Response(write_result);
       return;
@@ -1904,7 +1891,8 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     // Write header and block. Store current_record_digest_ with the queue,
     // increment next_sequencing_id_
     write_result = storage_queue_->WriteHeaderAndBlock(
-        buffer_, current_record_digest_, std::move(last_file));
+        buffer_, current_record_digest_, std::move(data_reservation_),
+        std::move(last_file));
     if (!write_result.ok()) {
       Response(write_result);
       return;
@@ -1913,7 +1901,61 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     Response(Status::StatusOK());
   }
 
+  Status ReserveNewRecordDiskSpace(size_t total_metadata_size,
+                                   size_t total_data_size) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(
+        storage_queue_->storage_queue_sequence_checker_);
+
+    // Simulate insufficient disk space for tests, if requested.
+    if (storage_queue_->test_injection_handler_ &&
+        !storage_queue_->test_injection_handler_
+             .Run(test::StorageQueueOperationKind::kWriteLowDiskSpace,
+                  storage_queue_->next_sequencing_id_)
+             .ok()) {
+      SendResExCaseToUma(ResourceExhaustedCase::NO_DISK_SPACE);
+      const uint64_t space_used =
+          storage_queue_->options_.disk_space_resource()->GetUsed();
+      const uint64_t space_total =
+          storage_queue_->options_.disk_space_resource()->GetTotal();
+      return Status(
+          error::RESOURCE_EXHAUSTED,
+          base::StrCat(
+              {"Not enough disk space available to write "
+               "new record.\nSize of new record: ",
+               base::NumberToString(total_metadata_size + total_data_size),
+               "\nDisk space available: ",
+               base::NumberToString(space_total - space_used)}));
+    }
+
+    // Attempt to reserve space for data+header and for metadata.
+    ScopedReservation metadata_reservation(
+        total_metadata_size, storage_queue_->options_.disk_space_resource());
+    ScopedReservation data_reservation(
+        total_data_size, storage_queue_->options_.disk_space_resource());
+    if (!metadata_reservation.reserved() || !data_reservation.reserved()) {
+      const uint64_t space_used =
+          storage_queue_->options_.disk_space_resource()->GetUsed();
+      const uint64_t space_total =
+          storage_queue_->options_.disk_space_resource()->GetTotal();
+      return Status(
+          error::RESOURCE_EXHAUSTED,
+          base::StrCat(
+              {"Not enough disk space available to write "
+               "new record.\nSize of new record: ",
+               base::NumberToString(total_metadata_size + total_data_size),
+               "\nDisk space available: ",
+               base::NumberToString(space_total - space_used)}));
+    }
+
+    // Successfully reserved, take over both reservations and keep them until
+    // appends to files.
+    metadata_reservation_.HandOver(metadata_reservation);
+    data_reservation_.HandOver(data_reservation);
+    return Status::StatusOK();
+  }
+
   void RetryWithDegradation(
+      size_t space_to_recover,
       Status reserve_result,
       std::queue<scoped_refptr<StorageQueue>> degradation_candidates) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(
@@ -1924,8 +1966,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
       return;
     }
     // Candidates found, start shedding from the lowest priority.
-    StartRecordsShedding(storage_queue_->active_write_reservation_size_,
-                         std::move(degradation_candidates));
+    StartRecordsShedding(space_to_recover, std::move(degradation_candidates));
   }
 
   void StartRecordsShedding(
@@ -1936,12 +1977,9 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
     // Prepare callbacks for shedding success and failure.
     // Both will run on the current queue.
-    auto resume_writing_cb =
-        base::BindPostTask(storage_queue_->sequenced_task_runner_,
-                           base::BindOnce(&WriteContext::ResumeWriteRecord,
-                                          base::Unretained(this)));
-    auto writing_failure_cb = base::BindPostTask(
-        storage_queue_->sequenced_task_runner_,
+    auto resume_writing_cb = base::BindPostTaskToCurrentDefault(base::BindOnce(
+        &WriteContext::ResumeWriteRecord, base::Unretained(this)));
+    auto writing_failure_cb = base::BindPostTaskToCurrentDefault(
         base::BindOnce(&WriteContext::DiskSpaceReservationFailure,
                        base::Unretained(this), space_to_recover));
 
@@ -1996,12 +2034,6 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
         status.SaveTo(write_queue_record->mutable_status());
       }
     }
-    if (storage_queue_->active_write_reservation_size_ > 0u) {
-      CHECK(!status.ok());
-      storage_queue_->options_.disk_space_resource()->Discard(
-          storage_queue_->active_write_reservation_size_);
-      storage_queue_->active_write_reservation_size_ = 0u;
-    }
   }
 
   const scoped_refptr<StorageQueue> storage_queue_;
@@ -2033,6 +2065,12 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   std::optional<Record> record_copy_
       GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_);
 
+  // Current write reservation for data and metadata.
+  ScopedReservation data_reservation_
+      GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_);
+  ScopedReservation metadata_reservation_
+      GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_);
+
   // Factory for the `context_queue_`.
   base::WeakPtrFactory<WriteContext> weak_ptr_factory_
       GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_){this};
@@ -2043,38 +2081,6 @@ void StorageQueue::Write(Record record,
                          base::OnceCallback<void(Status)> completion_cb) {
   Start<WriteContext>(std::move(record), std::move(recorder),
                       std::move(completion_cb), this);
-}
-
-Status StorageQueue::ReserveNewRecordDiskSpace(size_t total_size) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(storage_queue_sequence_checker_);
-  if (test_injection_handler_ &&
-      !test_injection_handler_
-           .Run(test::StorageQueueOperationKind::kWriteLowDiskSpace,
-                next_sequencing_id_)
-           .ok()) {
-    SendResExCaseToUma(ResourceExhaustedCase::NO_DISK_SPACE);
-    const uint64_t space_used = options_.disk_space_resource()->GetUsed();
-    const uint64_t space_total = options_.disk_space_resource()->GetTotal();
-    return Status(
-        error::RESOURCE_EXHAUSTED,
-        base::StrCat({"Not enough disk space available to write "
-                      "new record.\nSize of new record: ",
-                      base::NumberToString(total_size),
-                      "\nDisk space available: ",
-                      base::NumberToString(space_total - space_used)}));
-  }
-  if (!options_.disk_space_resource()->Reserve(total_size)) {
-    const uint64_t space_used = options_.disk_space_resource()->GetUsed();
-    const uint64_t space_total = options_.disk_space_resource()->GetTotal();
-    return Status(
-        error::RESOURCE_EXHAUSTED,
-        base::StrCat({"Not enough disk space available to write "
-                      "new record.\nSize of new record: ",
-                      base::NumberToString(total_size),
-                      "\nDisk space available: ",
-                      base::NumberToString(space_total - space_used)}));
-  }
-  return Status::StatusOK();
 }
 
 void StorageQueue::ShedRecords(
@@ -2413,7 +2419,9 @@ StatusOr<scoped_refptr<StorageQueue::SingleFile>>
 StorageQueue::SingleFile::Create(
     const StorageQueue::SingleFile::Settings& settings) {
   // Reserve specified disk space for the file.
-  if (!settings.disk_space_resource->Reserve(settings.size)) {
+  ScopedReservation file_reservation(settings.size,
+                                     settings.disk_space_resource);
+  if (settings.size > 0L && !file_reservation.reserved()) {
     LOG(WARNING) << "Disk space exceeded adding file "
                  << settings.filename.MaybeAsASCII();
     SendResExCaseToUma(ResourceExhaustedCase::DISK_SPACE_EXCEEDED_ADDING_FILE);
@@ -2424,23 +2432,23 @@ StorageQueue::SingleFile::Create(
   }
 
   // Cannot use base::MakeRefCounted, since the constructor is private.
-  return scoped_refptr<StorageQueue::SingleFile>(new SingleFile(settings));
+  return scoped_refptr<StorageQueue::SingleFile>(
+      new SingleFile(settings, std::move(file_reservation)));
 }
 
 StorageQueue::SingleFile::SingleFile(
-    const StorageQueue::SingleFile::Settings& settings)
+    const StorageQueue::SingleFile::Settings& settings,
+    ScopedReservation file_reservation)
     : completion_closure_list_(settings.completion_closure_list),
       filename_(settings.filename),
       size_(settings.size),
       buffer_(settings.memory_resource),
-      memory_resource_(settings.memory_resource),
-      disk_space_resource_(settings.disk_space_resource) {
+      file_reservation_(std::move(file_reservation)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 StorageQueue::SingleFile::~SingleFile() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  disk_space_resource_->Discard(size_);
   Close();
 }
 
@@ -2487,9 +2495,10 @@ void StorageQueue::SingleFile::Close() {
 void StorageQueue::SingleFile::DeleteWarnIfFailed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!handle_);
-  disk_space_resource_->Discard(size_);
-  size_ = 0;
-  DeleteFileWarnIfFailed(filename_);
+  if (DeleteFileWarnIfFailed(filename_)) {
+    file_reservation_.Reduce(0uL);
+    size_ = 0;
+  }
 }
 
 StatusOr<std::string_view> StorageQueue::SingleFile::Read(
@@ -2605,5 +2614,10 @@ StatusOr<uint32_t> StorageQueue::SingleFile::Append(std::string_view data) {
     data = data.substr(result);  // Skip data that has been written.
   }
   return actual_size;
+}
+
+void StorageQueue::SingleFile::HandOverReservation(
+    ScopedReservation append_reservation) {
+  file_reservation_.HandOver(append_reservation);
 }
 }  // namespace reporting

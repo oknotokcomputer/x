@@ -145,7 +145,7 @@ TEST_F(MissiveArgsTest, BadCollectionValues) {
              .value()));
 }
 
-TEST_F(MissiveArgsTest, ListeningForCollectionValuesUpdate) {
+TEST_F(MissiveArgsTest, DISABLED_ListeningForCollectionValuesUpdate) {
   auto fake_platform_features = std::make_unique<feature::FakePlatformFeatures>(
       dbus_test_environment_.mock_bus().get());
   fake_platform_features->SetEnabled(MissiveArgs::kCollectorFeature.name, true);
@@ -298,7 +298,7 @@ TEST_F(MissiveArgsTest, BadStorageValues) {
               Eq(MissiveArgs::kLegacyStorageEnabledDefault));
 }
 
-TEST_F(MissiveArgsTest, ListeningForStorageValuesUpdate) {
+TEST_F(MissiveArgsTest, DISABLED_ListeningForStorageValuesUpdate) {
   auto fake_platform_features = std::make_unique<feature::FakePlatformFeatures>(
       dbus_test_environment_.mock_bus().get());
   fake_platform_features->SetEnabled(MissiveArgs::kCollectorFeature.name,

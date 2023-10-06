@@ -5,6 +5,7 @@
 #ifndef LIBBRILLO_BRILLO_TYPE_NAME_UNDECORATE_H_
 #define LIBBRILLO_BRILLO_TYPE_NAME_UNDECORATE_H_
 
+#include <cstdint>
 #include <string>
 #include <typeinfo>
 

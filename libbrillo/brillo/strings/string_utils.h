@@ -5,6 +5,7 @@
 #ifndef LIBBRILLO_BRILLO_STRINGS_STRING_UTILS_H_
 #define LIBBRILLO_BRILLO_STRINGS_STRING_UTILS_H_
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>

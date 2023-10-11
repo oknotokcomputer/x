@@ -2778,6 +2778,12 @@ void ArcSetup::OnUnmountSdcard() {
 }
 
 void ArcSetup::OnUpdateRestoreconLast() {
+  if (GetSdkVersion() > AndroidSdkVersion::ANDROID_P) {
+    // Currently R container does not support setting security.sehash.
+    // TODO: b/292031836 - Support setting security.sehash on R container.
+    return;
+  }
+
   // On Android, /init writes the security.restorecon_last attribute to /data
   // (and /cache on N) after it finishes updating labels of the files in the
   // directories, but on ARC, writing the attribute fails silently because

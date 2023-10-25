@@ -13,6 +13,7 @@
 #include <base/files/file_path.h>
 #include <base/files/file_util.h>
 #include <base/logging.h>
+#include <base/process/process_metrics.h>
 #include <base/strings/string_util.h>
 #include <chromeos/constants/vm_tools.h>
 #include <dbus/vm_concierge/dbus-constants.h>
@@ -89,6 +90,21 @@ const VariationsFeature kArcVmAAudioMMAPFeature{kArcVmAAudioMMAPFeatureName,
 
 const VariationsFeature kArcVmAAudioMMAPLowLatencyFeature{
     kArcVmAAudioMMAPLowLatencyFeatureName, FEATURE_DISABLED_BY_DEFAULT};
+
+const int64_t kForcedShiftMib = -600;
+
+// Copy of memory computation code from Chrome,
+// with setting forced to use the equivalent of `shift_mib=-xxx`.
+int64_t GetOverriden4GbMemoryMib() {
+  base::SystemMemoryInfoKB info;
+  if (base::GetSystemMemoryInfo(&info)) {
+    const int64_t ram_mib = info.total / 1024;
+    return ram_mib + kForcedShiftMib;
+  } else {
+    LOG(ERROR) << "ForceArcRam: GetSystemMemoryInfo failed.";
+    return 2995;  // Value on Octopus dood.
+  }
+}
 
 // Returns |image_path| on production. Returns a canonicalized path of the image
 // file when in dev mode.
@@ -170,6 +186,8 @@ bool IsValidDataImagePath(const base::FilePath& path) {
 // remove this function. b/219677829
 // Returns true if the StartArcVmRequest contains valid ARCVM config values.
 bool ValidateStartArcVmRequest(StartArcVmRequest* request) {
+  LOG(WARNING) << "ForceArcRam: ARCVM start will check for 4GB and force size "
+                  "if detected";
   // Validate disks.
   static constexpr char kEmptyDiskPath[] = "/dev/null";
   if (request->disks().size() < 1 || request->disks().size() > 4) {
@@ -595,8 +613,14 @@ StartVmResponse Service::StartArcVmInternal(StartArcVmRequest request,
     vm_builder.AppendCustomParam("--hugepages", "");
   }
 
-  const int64_t memory_mib =
+  int64_t memory_mib =
       request.memory_mib() > 0 ? request.memory_mib() : GetVmMemoryMiB();
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 4096) {
+    const int64_t override_memory_mib = GetOverriden4GbMemoryMib();
+    LOG(WARNING) << "ForceArcRam: on 4gb device, overriding RAM size of "
+                 << memory_mib << " with " << override_memory_mib;
+    memory_mib = override_memory_mib;
+  }
   vm_builder.SetMemory(std::to_string(memory_mib));
 
   /* Enable THP if the VM has at least 7G of memory */

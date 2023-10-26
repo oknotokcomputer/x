@@ -91,7 +91,7 @@ const VariationsFeature kArcVmAAudioMMAPFeature{kArcVmAAudioMMAPFeatureName,
 const VariationsFeature kArcVmAAudioMMAPLowLatencyFeature{
     kArcVmAAudioMMAPLowLatencyFeatureName, FEATURE_DISABLED_BY_DEFAULT};
 
-const int64_t kForcedShiftMib = -600;
+const int64_t kForcedShiftMib = -800;
 
 // Copy of memory computation code from Chrome,
 // with setting forced to use the equivalent of `shift_mib=-xxx`.

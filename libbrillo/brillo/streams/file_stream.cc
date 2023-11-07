@@ -6,6 +6,7 @@
 #include <brillo/streams/file_stream.h>
 
 #include <fcntl.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -50,6 +51,10 @@ class FileDescriptor : public FileStream::FileDescriptorInterface {
 
   ssize_t Write(const void* buf, size_t nbyte) override {
     return HANDLE_EINTR(write(fd_, buf, nbyte));
+  }
+
+  ssize_t Send(const void* buf, size_t nbyte, int flags) override {
+    return HANDLE_EINTR(send(fd_, buf, nbyte, flags));
   }
 
   off64_t Seek(off64_t offset, int whence) override {
@@ -274,8 +279,13 @@ StreamPtr FileStream::CreateTemporary(ErrorPtr* error) {
 }
 
 StreamPtr FileStream::FromFileDescriptor(int file_descriptor,
-                                         bool own_descriptor,
-                                         ErrorPtr* error) {
+                                         bool own_descriptor, ErrorPtr* error) {
+  return FromFileDescriptorWithSendFlags(file_descriptor, own_descriptor, error,
+                                         0);
+}
+
+StreamPtr FileStream::FromFileDescriptorWithSendFlags(
+    int file_descriptor, bool own_descriptor, ErrorPtr* error, int send_flags) {
   StreamPtr stream;
   if (file_descriptor < 0 || file_descriptor >= FD_SETSIZE) {
     Error::AddTo(error, FROM_HERE, errors::stream::kDomain,
@@ -309,7 +319,8 @@ StreamPtr FileStream::FromFileDescriptor(int file_descriptor,
   std::unique_ptr<FileDescriptorInterface> fd_interface{
       new FileDescriptor{file_descriptor, own_descriptor}};
 
-  stream.reset(new FileStream{std::move(fd_interface), access_mode});
+  stream.reset(
+      new FileStream{std::move(fd_interface), access_mode, send_flags});
   return stream;
 }
 
@@ -317,8 +328,10 @@ FileStream::FileStream(std::unique_ptr<FileDescriptorInterface> fd_interface,
                        AccessMode mode)
     : fd_interface_(std::move(fd_interface)), access_mode_(mode) {
   switch (fd_interface_->GetFileMode() & S_IFMT) {
+    case S_IFSOCK:   // Socket
+      is_socket_ = true;
+      [[fallthrough]];
     case S_IFCHR:   // Character device
-    case S_IFSOCK:  // Socket
     case S_IFIFO:   // FIFO/pipe
       // We know that these devices are not seekable and stream size is unknown.
       seekable_ = false;
@@ -336,6 +349,12 @@ FileStream::FileStream(std::unique_ptr<FileDescriptorInterface> fd_interface,
       can_get_size_ = true;
       break;
   }
+}
+
+FileStream::FileStream(std::unique_ptr<FileDescriptorInterface> fd_interface,
+                       AccessMode mode, int send_flags)
+    : FileStream(std::move(fd_interface), mode) {
+  send_flags_ = send_flags;
 }
 
 bool FileStream::IsOpen() const {
@@ -462,7 +481,14 @@ bool FileStream::WriteNonBlocking(const void* buffer,
   if (!IsOpen())
     return stream_utils::ErrorStreamClosed(FROM_HERE, error);
 
-  ssize_t written = fd_interface_->Write(buffer, size_to_write);
+  ssize_t written = 0;
+
+  // Socket write will go to Send if send_flags_ is set
+  if (is_socket_ && send_flags_) {
+    written = fd_interface_->Send(buffer, size_to_write, send_flags_);
+  } else {
+    written = fd_interface_->Write(buffer, size_to_write);
+  }
   if (written < 0) {
     // If write() fails, check if this is due to the fact that no data
     // can be presently written and we do non-blocking I/O.

@@ -42,6 +42,7 @@ class BRILLO_EXPORT FileStream : public Stream {
     virtual bool IsOpen() const = 0;
     virtual ssize_t Read(void* buf, size_t nbyte) = 0;
     virtual ssize_t Write(const void* buf, size_t nbyte) = 0;
+    virtual ssize_t Send(const void* buf, size_t nbyte, int flags) = 0;
     virtual off64_t Seek(off64_t offset, int whence) = 0;
     virtual mode_t GetFileMode() const = 0;
     virtual uint64_t GetSize() const = 0;
@@ -93,6 +94,11 @@ class BRILLO_EXPORT FileStream : public Stream {
   static StreamPtr FromFileDescriptor(int file_descriptor,
                                       bool own_descriptor,
                                       ErrorPtr* error);
+
+  static StreamPtr FromFileDescriptorWithSendFlags(int file_descriptor,
+                                                   bool own_descriptor,
+                                                   ErrorPtr* error,
+                                                   int send_flags);
 
   // == Stream capabilities ===================================================
   bool IsOpen() const override;
@@ -155,6 +161,8 @@ class BRILLO_EXPORT FileStream : public Stream {
   // and FromFileDescriptor().
   FileStream(std::unique_ptr<FileDescriptorInterface> fd_interface,
              AccessMode mode);
+  FileStream(std::unique_ptr<FileDescriptorInterface> fd_interface,
+             AccessMode mode, int send_flags);
   FileStream(const FileStream&) = delete;
   FileStream& operator=(const FileStream&) = delete;
 
@@ -170,6 +178,12 @@ class BRILLO_EXPORT FileStream : public Stream {
 
   // Set to false for streams that have unknown size.
   bool can_get_size_{false};
+
+  // Set to false for a non-socket FD.
+  bool is_socket_{false};
+
+  // Flags for socket send
+  int send_flags_{0};
 };
 
 }  // namespace brillo

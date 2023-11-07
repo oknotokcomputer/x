@@ -34,6 +34,7 @@ class GroundTruth final {
   std::string FormFactor();
   std::string StylusCategory();
   std::string HasTouchscreen();
+  std::string HasHdmi();
   std::string HasAudioJack();
   std::string HasSdReader();
   std::string HasSideVolumeButton();

@@ -132,7 +132,6 @@ mojom::SupportStatusPtr GroundTruth::GetEventSupportStatus(
     case mojom::EventCategoryEnum::kPower:
     case mojom::EventCategoryEnum::kAudio:
     case mojom::EventCategoryEnum::kCrash:
-    case mojom::EventCategoryEnum::kExternalDisplay:
       return mojom::SupportStatus::NewSupported(mojom::Supported::New());
     // Need to be determined by boxster/cros_config.
     case mojom::EventCategoryEnum::kKeyboardDiagnostic:
@@ -174,6 +173,18 @@ mojom::SupportStatusPtr GroundTruth::GetEventSupportStatus(
       return mojom::SupportStatus::NewUnsupported(mojom::Unsupported::New(
           WrapUnsupportedString(cros_config_property::kHasSdReader,
                                 has_sd_reader),
+          nullptr));
+    }
+    // TODO(b/291902680): Currently external display event only supports HDMI.
+    // Update ground truth check once we also support DP.
+    case mojom::EventCategoryEnum::kExternalDisplay: {
+      auto has_hdmi = HasHdmi();
+      if (has_hdmi == "true") {
+        return mojom::SupportStatus::NewSupported(mojom::Supported::New());
+      }
+
+      return mojom::SupportStatus::NewUnsupported(mojom::Unsupported::New(
+          WrapUnsupportedString(cros_config_property::kHasHdmi, has_hdmi),
           nullptr));
     }
     case mojom::EventCategoryEnum::kTouchscreen: {
@@ -340,6 +351,11 @@ std::string GroundTruth::StylusCategory() {
 std::string GroundTruth::HasTouchscreen() {
   return ReadCrosConfig(cros_config_path::kHardwareProperties,
                         cros_config_property::kHasTouchscreen);
+}
+
+std::string GroundTruth::HasHdmi() {
+  return ReadCrosConfig(cros_config_path::kHardwareProperties,
+                        cros_config_property::kHasHdmi);
 }
 
 std::string GroundTruth::HasAudioJack() {

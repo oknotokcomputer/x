@@ -478,26 +478,24 @@ void DelegateImpl::GetPsr(GetPsrCallback callback) {
   std::move(callback).Run(std::move(result), std::nullopt);
 }
 
-void DelegateImpl::GetConnectedExternalDisplayConnectors(
-    GetConnectedExternalDisplayConnectorsCallback callback) {
-  base::flat_map<uint32_t, mojom::ExternalDisplayInfoPtr>
-      external_display_connectors;
+void DelegateImpl::GetConnectedHdmiConnectors(
+    GetConnectedHdmiConnectorsCallback callback) {
+  base::flat_map<uint32_t, mojom::ExternalDisplayInfoPtr> hdmi_connectors;
   DisplayUtil display_util;
   if (!display_util.Initialize()) {
-    std::move(callback).Run(std::move(external_display_connectors),
+    std::move(callback).Run(std::move(hdmi_connectors),
                             "Failed to initialize DisplayUtil");
     return;
   }
 
-  std::vector<uint32_t> connector_ids =
-      display_util.GetExternalDisplayConnectorIDs();
+  std::vector<uint32_t> hdmi_connector_ids = display_util.GetHdmiConnectorIDs();
 
-  for (auto connector_id : connector_ids) {
-    external_display_connectors[connector_id] =
+  for (auto connector_id : hdmi_connector_ids) {
+    hdmi_connectors[connector_id] =
         display_util.GetExternalDisplayInfo(connector_id);
   }
 
-  std::move(callback).Run(std::move(external_display_connectors), std::nullopt);
+  std::move(callback).Run(std::move(hdmi_connectors), std::nullopt);
 }
 
 void DelegateImpl::GetPrivacyScreenInfo(GetPrivacyScreenInfoCallback callback) {

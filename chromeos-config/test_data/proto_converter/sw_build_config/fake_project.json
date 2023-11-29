@@ -545,7 +545,8 @@
           "numpad": true
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "fake_ref_design",
         "power": {
@@ -856,7 +857,8 @@
           "numpad": true
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "fake_ref_design",
         "power": {
@@ -1558,7 +1560,8 @@
           "sku-id": 33
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "project_b",
         "power": {
@@ -1854,7 +1857,8 @@
           "sku-id": 34
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "project_b",
         "power": {
@@ -2179,7 +2183,8 @@
           "sku-id": 35
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "project_b",
         "power": {
@@ -6427,6 +6432,7 @@
         },
         "modem": {
           "firmware-variant": "project_wl",
+          "modem-type": "2",
           "wedge-reboot-delay-ms": "210000"
         },
         "name": "project_wl",
@@ -6712,6 +6718,7 @@
         },
         "modem": {
           "firmware-variant": "project_wl",
+          "modem-type": "2",
           "wedge-reboot-delay-ms": "210000"
         },
         "name": "project_wl",
@@ -6997,6 +7004,7 @@
         },
         "modem": {
           "firmware-variant": "project_wl",
+          "modem-type": "2",
           "wedge-reboot-delay-ms": "210000"
         },
         "name": "project_wl",
@@ -7282,6 +7290,7 @@
         },
         "modem": {
           "firmware-variant": "project_wl",
+          "modem-type": "2",
           "wedge-reboot-delay-ms": "210000"
         },
         "name": "project_wl",
@@ -7580,6 +7589,7 @@
         },
         "modem": {
           "firmware-variant": "project_rebrand",
+          "modem-type": "1",
           "wedge-reboot-delay-ms": "180000"
         },
         "name": "project_rebrand",
@@ -7834,7 +7844,8 @@
           "sku-id": 128
         },
         "modem": {
-          "firmware-variant": "fakemodem"
+          "firmware-variant": "fakemodem",
+          "modem-type": "3"
         },
         "name": "project_box",
         "power": {

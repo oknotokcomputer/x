@@ -136,6 +136,7 @@ class MockFileDescriptor : public FileStream::FileDescriptorInterface {
   MOCK_METHOD(bool, IsOpen, (), (const, override));
   MOCK_METHOD(ssize_t, Read, (void*, size_t), (override));
   MOCK_METHOD(ssize_t, Write, (const void*, size_t), (override));
+  MOCK_METHOD(ssize_t, Send, (const void*, size_t, int), (override));
   MOCK_METHOD(off64_t, Seek, (off64_t, int), (override));
   MOCK_METHOD(mode_t, GetFileMode, (), (const, override));
   MOCK_METHOD(uint64_t, GetSize, (), (const, override));
@@ -162,10 +163,15 @@ class FileStreamTest : public testing::Test {
     return *static_cast<MockFileDescriptor*>(stream_->fd_interface_.get());
   }
 
-  void CreateStream(mode_t file_mode, Stream::AccessMode access_mode) {
+  void CreateStream(mode_t file_mode, Stream::AccessMode access_mode,
+                    int send_flags = 0) {
     std::unique_ptr<MockFileDescriptor> fd{new MockFileDescriptor{}};
     EXPECT_CALL(*fd, GetFileMode()).WillOnce(Return(file_mode));
-    stream_.reset(new FileStream(std::move(fd), access_mode));
+    if (!send_flags) {
+      stream_.reset(new FileStream(std::move(fd), access_mode));
+    } else {
+      stream_.reset(new FileStream(std::move(fd), access_mode, send_flags));
+    }
     EXPECT_CALL(fd_mock(), IsOpen()).WillRepeatedly(Return(true));
   }
 
@@ -1104,6 +1110,60 @@ TEST_F(FileStreamTest, FromFileDescriptor_WriteAsync) {
 
   close(fds[0]);
   EXPECT_TRUE(stream->CloseBlocking(nullptr));
+}
+
+// socket WriteNonBlocking with send_flags should go through Send
+TEST_F(FileStreamTest, SocketWriteNonBlockingWithSendFlags) {
+  size_t size = 0;
+  int send_flags = 100;
+  CreateStream(S_IFSOCK, Stream::AccessMode::READ_WRITE, send_flags);
+
+  EXPECT_CALL(fd_mock(), Send(test_write_buffer_, _, send_flags))
+      .WillRepeatedly(ReturnArg<1>());
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(100u, size);
+
+  EXPECT_TRUE(stream_->WriteNonBlocking(test_write_buffer_, 0, &size, nullptr));
+  EXPECT_EQ(0u, size);
+
+  EXPECT_CALL(fd_mock(), Send(test_write_buffer_, _, send_flags))
+      .WillOnce(Return(0));
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(0u, size);
+
+  EXPECT_CALL(fd_mock(), Send(test_write_buffer_, _, send_flags))
+      .WillOnce(SetErrnoAndReturn(EAGAIN, -1));
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(0u, size);
+}
+
+// socket WriteNonBlocking without send_flags should go through Write
+TEST_F(FileStreamTest, SocketWriteNonBlockingWithoutSendFlags) {
+  size_t size = 0;
+  CreateStream(S_IFSOCK, Stream::AccessMode::READ_WRITE);
+
+  EXPECT_CALL(fd_mock(), Write(test_write_buffer_, _))
+      .WillRepeatedly(ReturnArg<1>());
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(100u, size);
+
+  EXPECT_TRUE(stream_->WriteNonBlocking(test_write_buffer_, 0, &size, nullptr));
+  EXPECT_EQ(0u, size);
+
+  EXPECT_CALL(fd_mock(), Write(test_write_buffer_, _)).WillOnce(Return(0));
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(0u, size);
+
+  EXPECT_CALL(fd_mock(), Write(test_write_buffer_, _))
+      .WillOnce(SetErrnoAndReturn(EAGAIN, -1));
+  EXPECT_TRUE(
+      stream_->WriteNonBlocking(test_write_buffer_, 100, &size, nullptr));
+  EXPECT_EQ(0u, size);
 }
 
 }  // namespace brillo

@@ -1,5 +1,8 @@
 include chromiumos/chromite:/OWNERS.au
 
 vapier@chromium.org
+rkonduru@google.com
+kyan@google.com
+
 per-file upstart/preload-network.conf=grundler@chromium.org
 per-file upstart/udev*.conf=grundler@chromium.org

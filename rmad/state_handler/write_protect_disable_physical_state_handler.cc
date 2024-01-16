@@ -124,10 +124,13 @@ WriteProtectDisablePhysicalStateHandler::TryGetNextStateCaseAtBoot() {
 
 bool WriteProtectDisablePhysicalStateHandler::IsReadyForTransition() const {
   // To transition to next state, all the conditions should meet
-  // - HWWP should be disabled.
+  // - It should be HWWP disabled or CHASSIS_OPEN true.
+  //   Cr50 devices' HWWP will follow CHASSIS_OPEN, while Ti50 devices won't, so
+  //   we check both HWWP and CHASSIS_OPEN here (b/257255419).
   // - We can skip enabling factory mode, either factory mode is already enabled
   //   or we want to keep the device open.
-  return CanSkipEnablingFactoryMode() && IsHwwpDisabled();
+  return CanSkipEnablingFactoryMode() &&
+         (IsHwwpDisabled() || IsChassisOpened());
 }
 
 bool WriteProtectDisablePhysicalStateHandler::IsHwwpDisabled() const {
@@ -135,6 +138,11 @@ bool WriteProtectDisablePhysicalStateHandler::IsHwwpDisabled() const {
   return (
       write_protect_utils_->GetHardwareWriteProtectionStatus(&hwwp_enabled) &&
       !hwwp_enabled);
+}
+
+bool WriteProtectDisablePhysicalStateHandler::IsChassisOpened() const {
+  bool chassis_open;
+  return (gsc_utils_->GetChassisOpenStatus(&chassis_open) && chassis_open);
 }
 
 bool WriteProtectDisablePhysicalStateHandler::CanSkipEnablingFactoryMode()
@@ -146,7 +154,7 @@ bool WriteProtectDisablePhysicalStateHandler::CanSkipEnablingFactoryMode()
 void WriteProtectDisablePhysicalStateHandler::CheckWriteProtectOffTask() {
   VLOG(1) << "Check write protection";
 
-  if (IsHwwpDisabled()) {
+  if (IsHwwpDisabled() || IsChassisOpened()) {
     signal_timer_.Stop();
     OnWriteProtectDisabled();
   }

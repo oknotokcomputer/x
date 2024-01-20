@@ -469,8 +469,14 @@ bool RotateAndCropStreamManipulator::ProcessCaptureResultOnThread(
     Camera3CaptureDescriptor result) {
   DCHECK(thread_.IsCurrentThread());
 
+  if (result.is_empty()) {
+    VLOGFID(1, result.frame_number()) << "Skip empty capture result";
+    callbacks_.result_callback.Run(std::move(result));
+    return true;
+  }
+
   auto ctx_it = capture_contexts_.find(result.frame_number());
-  DCHECK(ctx_it != capture_contexts_.end());
+  CHECK(ctx_it != capture_contexts_.end());
   CaptureContext& ctx = ctx_it->second;
 
   DCHECK_GE(ctx.num_pending_buffers, result.num_output_buffers());
@@ -580,7 +586,7 @@ void RotateAndCropStreamManipulator::ReturnStillCaptureResultOnThread(
   DCHECK(thread_.IsCurrentThread());
 
   auto ctx_it = capture_contexts_.find(result.frame_number());
-  DCHECK(ctx_it != capture_contexts_.end());
+  CHECK(ctx_it != capture_contexts_.end());
   CaptureContext& ctx = ctx_it->second;
 
   ctx.yuv_buffer = std::nullopt;

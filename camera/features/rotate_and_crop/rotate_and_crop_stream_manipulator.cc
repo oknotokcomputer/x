@@ -388,14 +388,15 @@ bool RotateAndCropStreamManipulator::ProcessCaptureRequestOnThread(
 
   uint8_t rc_mode_from_crs_degrees =
       DegreesToRotateAndCropMode(client_crs_degrees_);
-  auto [ctx_it, is_inserted] = capture_contexts_.insert(
-      std::make_pair(request->frame_number(),
-                     CaptureContext{
-                         .client_rc_mode = rc_mode_from_crs_degrees,
-                         .hal_rc_mode = rc_mode_from_crs_degrees,
-                         .num_pending_buffers = request->num_output_buffers(),
-                         .metadata_received = false,
-                     }));
+  auto [ctx_it, is_inserted] = capture_contexts_.insert(std::make_pair(
+      request->frame_number(),
+      CaptureContext{
+          .client_rc_mode = rc_mode_from_crs_degrees,
+          .hal_rc_mode = rc_mode_from_crs_degrees,
+          .num_pending_buffers = request->num_output_buffers(),
+          .has_pending_input_buffer = request->has_input_buffer(),
+          .metadata_received = false,
+      }));
   DCHECK(is_inserted);
   CaptureContext& ctx = ctx_it->second;
 
@@ -482,10 +483,15 @@ bool RotateAndCropStreamManipulator::ProcessCaptureResultOnThread(
   DCHECK_GE(ctx.num_pending_buffers, result.num_output_buffers());
   ctx.num_pending_buffers -= result.num_output_buffers();
   ctx.metadata_received |= result.partial_result() == partial_result_count_;
+  if (result.partial_result() == partial_result_count_) {
+    ctx.metadata_received = true;
+  }
+  if (result.has_input_buffer()) {
+    ctx.has_pending_input_buffer = false;
+  }
 
   base::ScopedClosureRunner ctx_deleter;
-  if (ctx.num_pending_buffers == 0 && ctx.metadata_received &&
-      !ctx.has_pending_blob) {
+  if (ctx.IsObsolete()) {
     ctx_deleter.ReplaceClosure(base::BindOnce(
         [](decltype(capture_contexts_)* contexts, uint32_t frame_number) {
           contexts->erase(frame_number);
@@ -588,8 +594,7 @@ void RotateAndCropStreamManipulator::ReturnStillCaptureResultOnThread(
 
   CHECK(ctx.has_pending_blob);
   ctx.has_pending_blob = false;
-  if (ctx.num_pending_buffers == 0 && ctx.metadata_received &&
-      !ctx.has_pending_blob) {
+  if (ctx.IsObsolete()) {
     capture_contexts_.erase(result.frame_number());
   }
 
@@ -683,6 +688,11 @@ bool RotateAndCropStreamManipulator::RotateAndCropOnThread(
   }
 
   return true;
+}
+
+bool RotateAndCropStreamManipulator::CaptureContext::IsObsolete() {
+  return num_pending_buffers == 0 && metadata_received && !has_pending_blob &&
+         !has_pending_input_buffer;
 }
 
 }  // namespace cros

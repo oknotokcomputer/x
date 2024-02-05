@@ -549,7 +549,7 @@ std::ostream& operator<<(std::ostream& stream,
 std::ostream& operator<<(std::ostream& stream,
                          const PortalDetector::Result& result) {
   stream << "{ num_attempts=" << result.num_attempts << ", HTTP probe";
-  if (result.IsHTTPProbeComplete()) {
+  if (!result.IsHTTPProbeComplete()) {
     stream << " in-flight";
   } else {
     stream << " result=" << result.http_result
@@ -560,7 +560,7 @@ std::ostream& operator<<(std::ostream& stream,
     stream << " duration=" << result.http_duration;
   }
   stream << ", HTTPS probe";
-  if (result.IsHTTPSProbeComplete()) {
+  if (!result.IsHTTPSProbeComplete()) {
     stream << " in-flight";
   } else {
     stream << " result=" << result.https_result
@@ -572,6 +572,7 @@ std::ostream& operator<<(std::ostream& stream,
   if (result.probe_url) {
     stream << ", probe_url=" << result.probe_url->ToString();
   }
+  stream << ", is_complete=" << std::boolalpha << result.IsComplete();
   return stream << "}";
 }
 

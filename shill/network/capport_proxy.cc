@@ -99,6 +99,8 @@ std::unique_ptr<CapportProxy> CapportProxy::Create(
 
   http_transport->SetInterface(std::string(interface));
   http_transport->SetDefaultTimeout(transport_timeout);
+  http_transport->UseCustomCertificate(
+      brillo::http::Transport::Certificate::kNss);
   return std::make_unique<CapportProxy>(metrics, api_url,
                                         std::move(http_transport),
                                         std::string(interface) + ": ");

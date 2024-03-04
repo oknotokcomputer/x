@@ -123,9 +123,11 @@ CapportProxy::~CapportProxy() {
   }
 }
 
-void CapportProxy::SendRequest(StatusCallback callback) {
-  LOG_IF(DFATAL, IsRunning())
-      << logging_tag_ << "The previous request is still running";
+bool CapportProxy::SendRequest(StatusCallback callback) {
+  if (IsRunning()) {
+    LOG(WARNING) << "The previous request is still running";
+    return false;
+  }
   callback_ = std::move(callback);
 
   // TODO(b/305129516): Add metrics to record latency and success/failure count.
@@ -138,6 +140,7 @@ void CapportProxy::SendRequest(StatusCallback callback) {
                                             weak_ptr_factory_.GetWeakPtr()),
                              base::BindOnce(&CapportProxy::OnRequestError,
                                             weak_ptr_factory_.GetWeakPtr()));
+  return true;
 }
 
 void CapportProxy::Stop() {
